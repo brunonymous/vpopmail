@@ -1,0 +1,546 @@
+<?xml version="1.0"?>
+<!DOCTYPE abw PUBLIC "-//W3C//DTD ABW 1.0 Strict//EN" "http://www.abisource.com/awml.dtd">
+<abiword version="0.9.0" fileformat="1.0">
+<!-- =====================================================================  -->
+<!-- This file is an AbiWord document.                                      -->
+<!-- AbiWord is a free, Open Source word processor.                         -->
+<!-- You may obtain more information about AbiWord at www.abisource.com     -->
+<!-- You should not edit this file by hand.                                 -->
+<!-- =====================================================================  -->
+
+<!--         Build_ID          = (none) -->
+<!--         Build_Version     = 0.9.0 -->
+<!--         Build_Options     = LicensedTrademarks:Off Debug:Off BiDi:Off Optimize:On Gnome:Off LibXML:Off Pspell:Off Scripting:On -->
+<!--         Build_Target      = /usr/src/redhat/BUILD/abiword-0.9.0/abi/src/Linux_2.4.2-2_i386_OPT/obj -->
+<!--         Build_CompileTime = 12:25:27 -->
+<!--         Build_CompileDate = Jul 30 2001 -->
+
+<lists>
+<l id="1026426839" parentid="0" type="0" start-value="1" list-delim="%L." list-decimal="."/>
+<l id="511343606" parentid="0" type="5" start-value="0" list-delim="%L" list-decimal="NULL"/>
+</lists>
+<pagesize pagetype="Letter" orientation="portrait" width="8.500000" height="11.000000" units="inch" page-scale="1.000000"/>
+<section>
+<p><c props="lang:en-US">vpopmail Administration Guide</c></p>
+<p><c props="lang:en-US">by Ken Jones</c></p>
+<p><c props="lang:en-US">http://www.inter7.com/</c></p>
+<p><c props="lang:en-US"></c></p>
+<p><c props="lang:en-US">Quick Install</c></p>
+<p><c props="lang:en-US"></c></p>
+<p level="1" listid="1026426839" parentid="0" props="font-family:Times New Roman; font-style:normal; font-weight:normal; bgcolor:transparent; start-value:1; list-style:Numbered List; text-indent:-0.3000in; text-decoration:none; lang:en-US; color:000000; font-size:12pt; margin-left:0.5000in; text-position:normal; field-font:NULL"><field type="list_label"></field><c type="list_label">	</c><c props="lang:en-US">tar zxf vpopmail-XX.tar.gz</c></p>
+<p level="1" listid="1026426839" props="font-family:Times New Roman; list-decimal:.; font-weight:normal; lang:en-US; font-style:normal; margin-left:0.5000in; text-decoration:none; list-style:Numbered List; list-delim:%L; bgcolor:transparent; color:000000; font-size:12pt; text-indent:-0.3000in; text-position:normal; start-value:1; field-font:NULL"><field type="list_label"></field><c type="list_label">	</c><c props="lang:en-US">cd vpopmail-XX</c></p>
+<p level="1" listid="1026426839" props="font-family:Times New Roman; list-decimal:.; font-weight:normal; lang:en-US; font-style:normal; margin-left:0.5000in; text-decoration:none; list-style:Numbered List; list-delim:%L; bgcolor:transparent; color:000000; font-size:12pt; text-indent:-0.3000in; text-position:normal; start-value:1; field-font:NULL"><field type="list_label"></field><c type="list_label">	</c><c props="lang:en-US">addgroup -g 89 vchkpw</c></p>
+<p level="1" listid="1026426839" props="font-family:Times New Roman; list-decimal:.; font-weight:normal; lang:en-US; font-style:normal; margin-left:0.5000in; text-decoration:none; list-style:Numbered List; list-delim:%L; bgcolor:transparent; color:000000; font-size:12pt; text-indent:-0.3000in; text-position:normal; start-value:1; field-font:NULL"><field type="list_label"></field><c type="list_label">	</c><c props="lang:en-US">adduser -u 89 -g 89 vpopmail</c></p>
+<p level="1" listid="1026426839" parentid="0" style="Normal" props="font-family:Times New Roman; list-decimal:.; margin-left:0.5000in; start-value:1; font-style:normal; text-indent:-0.3000in; color:000000; list-delim:%L; bgcolor:transparent; font-size:12pt; list-style:Numbered List; text-position:normal; font-weight:normal; text-decoration:none; lang:en-US; field-font:NULL"><field type="list_label"></field><c type="list_label">	</c><c props="lang:en-US">./configure</c></p>
+<p level="1" listid="1026426839" parentid="0" style="Normal" props="font-family:Times New Roman; list-decimal:.; margin-left:0.5000in; start-value:1; font-style:normal; text-indent:-0.3000in; color:000000; list-delim:%L; bgcolor:transparent; font-size:12pt; list-style:Numbered List; text-position:normal; font-weight:normal; text-decoration:none; lang:en-US; field-font:NULL"><field type="list_label"></field><c type="list_label">	</c><c props="lang:en-US">make</c></p>
+<p level="1" listid="1026426839" style="Normal" props="font-family:Times New Roman; list-decimal:.; margin-left:0.5000in; bgcolor:transparent; start-value:1; font-style:normal; text-indent:-0.3000in; text-position:normal; color:000000; list-delim:%L; lang:en-US; list-style:Numbered List; font-size:12pt; font-weight:normal; text-decoration:none; field-font:NULL"><field type="list_label"></field><c type="list_label">	</c><c props="lang:en-US">make install-strip</c></p>
+<p><c props="lang:en-US"></c></p>
+<p><c props="lang:en-US">Features</c></p>
+<p><c props="lang:en-US"></c></p>
+<p level="1" listid="0" parentid="0" style="Normal" props="font-family:Times New Roman; color:000000; margin-left:0in; bgcolor:transparent; start-value:1; font-style:normal; text-indent:0in; list-style:Numbered List; lang:en-US; text-decoration:none; text-position:normal; font-weight:normal; font-size:12pt; field-font:NULL"><c props="lang:en-US"></c><c type="list_label">Authentication modules can be chosen at compile time for</c></p>
+<p level="1" listid="511343606" parentid="0" style="Normal" props="font-family:Times New Roman; list-decimal:.; margin-left:1.0000in; start-value:0; font-style:normal; text-indent:-0.3000in; list-style:Bullet List; color:000000; list-delim:%L; bgcolor:transparent; text-decoration:none; text-position:normal; font-weight:normal; font-size:12pt; lang:en-US; field-font:Symbol"><c type="list_label"></c><field type="list_label"></field><c type="list_label">	cdb hash files</c></p>
+<p level="1" listid="511343606" parentid="0" style="Normal" props="font-family:Times New Roman; list-decimal:.; margin-left:1.0000in; start-value:0; font-style:normal; text-indent:-0.3000in; list-style:Bullet List; color:000000; list-delim:%L; bgcolor:transparent; text-decoration:none; text-position:normal; font-weight:normal; font-size:12pt; lang:en-US; field-font:Symbol"><c type="list_label"></c><field type="list_label"></field><c type="list_label">	mysql</c></p>
+<p level="1" listid="511343606" parentid="0" style="Normal" props="font-family:Times New Roman; list-decimal:.; margin-left:1.0000in; start-value:0; font-style:normal; text-indent:-0.3000in; list-style:Bullet List; color:000000; list-delim:%L; bgcolor:transparent; text-decoration:none; text-position:normal; font-weight:normal; font-size:12pt; lang:en-US; field-font:Symbol"><c type="list_label"></c><field type="list_label"></field><c type="list_label">	oracle</c></p>
+<p level="1" listid="511343606" parentid="0" style="Normal" props="font-family:Times New Roman; list-decimal:.; margin-left:1.0000in; start-value:0; font-style:normal; text-indent:-0.3000in; list-style:Bullet List; color:000000; list-delim:%L; bgcolor:transparent; text-decoration:none; text-position:normal; font-weight:normal; font-size:12pt; lang:en-US; field-font:Symbol"><c type="list_label"></c><field type="list_label"></field><c type="list_label">	ldap</c></p>
+<p level="1" listid="511343606" parentid="0" style="Normal" props="font-family:Times New Roman; list-decimal:.; margin-left:1.0000in; start-value:0; font-style:normal; text-indent:-0.3000in; list-style:Bullet List; color:000000; list-delim:%L; bgcolor:transparent; text-decoration:none; text-position:normal; font-weight:normal; font-size:12pt; lang:en-US; field-font:Symbol"><c type="list_label"></c><field type="list_label"></field><c type="list_label">	sybase</c></p>
+<p level="1" listid="0" parentid="0" style="Normal" props="font-family:Times New Roman; list-decimal:.; margin-left:0in; start-value:0; font-style:normal; text-indent:0in; text-decoration:none; list-delim:%L; bgcolor:transparent; font-size:12pt; list-style:Bullet List; text-position:normal; font-weight:normal; color:000000; lang:en-US; field-font:Symbol"><c type="list_label"></c></p>
+<p><c props="lang:en-US">Automatic directory layout to efficently support 100,000s of domains on NFS or Unix file systems.</c></p>
+<p><c props="lang:en-US"></c></p>
+<p><c props="lang:en-US">Command line programs to manage the email server.</c></p>
+<p><c props="lang:en-US"></c></p>
+<p><c props="lang:en-US"></c></p>
+<p><c props="lang:en-US"></c></p>
+<p><c props="lang:en-US"></c></p>
+<p><c props="lang:en-US"></c></p>
+<p><c props="lang:en-US"></c>vpopmail Adminstration Guide</p>
+<p><c></c>by Ken Jones</p>
+<p>http://www.inter7.com/vpopmail</p>
+<p><c></c></p>
+<p><c></c>Quick Install Guide</p>
+<p>To quickly install vpopmail</p>
+<p></p>
+<p>	unpack vpopmail distribution</p>
+<p>	add vchkpw group</p>
+<p>	add vpopmail user with vchkpw group</p>
+<p>	./configure</p>
+<p>	make</p>
+<p>	make install-strip</p>
+<p><c></c></p>
+<p>	</p>
+<p></p>
+<p>You are now ready to add virtual domains and virtual users. See</p>
+<p>vadddomain and vadduser. You also need to modify your pop server</p>
+<p>startup line to use the vchkpw program for authentication.&lt;/P&gt;</p>
+<p></p>
+<p>Setting up all email to be virtual</p>
+<p>We recommend that all domains be setup as virtualdomains. </p>
+<p></p>
+<p>Configuration options</p>
+<p>Most used options&lt;</p>
+<p>--enable-roaming-users=n|y Enable or disable open relay after pop</p>
+<p>authentication. Default is no&lt;/H5&gt;</p>
+<p></p>
+<p>	&lt;DD&gt;Setting this to yes means that the clients IP address is added</p>
+<p>	to the list of IP's that are allowed to relay through the smtp</p>
+<p>	server after they authenticate with pop. A cronjob program,</p>
+<p>	clearopensmtp, clears out any IP's that were authenticated over 3</p>
+<p>	hours ago. This option requires you run the smtp server with</p>
+<p>	tcpserver and the -x /etc/tcp.smtp.cdb option (or where ever you put</p>
+<p>	your tcp.smtp.cdb file).&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-hardquota=#|n Set and Enable hard quota or n for no quota&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Set's the default hard quota limit for each pop account. The</p>
+<p>	default is 50 megs. Any incoming mail which would take the user over</p>
+<p>	their hard quota limit is bounced with a message. This message can</p>
+<p>	be customized. </p>
+<p>	&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	If you wish to turn off quotas set this option to NOQUOTA, i.e.</p>
+<p>	--enable-hardquota=NOQUOTA&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-default-domain=name Default domain name, default is null.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;We recommend you run all your email as virtual domains. You can</p>
+<p>	pick one domain to be the default. If you have just one domain set</p>
+<p>	it with this option. The default domain name users can authenticate</p>
+<p>	with just their user name, and don't need to use</p>
+<p>	&amp;lt;user&amp;gt;%&amp;lt;virtualdomain&amp;gt;. </p>
+<p>	&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-ip-alias-domains=y|n enable virutal domain lookup via</p>
+<p>reverse ip address lookup for virtual domains. </p>
+<p>&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;By default, ever domain uses name based virtual domains. That</p>
+<p>	is: users must supply their domain name in their pop name. i.e.</p>
+<p>	&amp;lt;user&amp;gt;%&amp;lt;virtualdomain&amp;gt;. This can be overridden for one</p>
+<p>	domain using the --enable-default-domain option.&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	&lt;BR&gt;</p>
+<p>	&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	Vpopmail also supports IP based virtual domains. If this option is</p>
+<p>	turned on, and the user does not supply %&amp;lt;virtualdomain&amp;gt; then</p>
+<p>	a reverse IP lookup is done on the server IP address that the client</p>
+<p>	connected to. If the servers IP address resolves to a domain name,</p>
+<p>	then vpopmail uses that name as the domain. For example:&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	&lt;BR&gt;</p>
+<p>	&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	IP w.x.y.z resolves to test.com. User sets their pop server ip to</p>
+<p>	w.x.y.z and connects. Vpopmail gets the connection, checks the IP of</p>
+<p>	the SERVER side of the connection. Does a reverse IP lookup and</p>
+<p>	obtains test.com. User sends joe as their pop user name. Vpopmail</p>
+<p>	uses test.com as the domain. </p>
+<p>	&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	&lt;BR&gt;</p>
+<p>	&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	You can mix and match name and ip based virtual domains.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-relay-clear-minutes=360 expire time for roaming users after</p>
+<p>pop authentication.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;If --enable-roamin-users=y  is set then this option sets how</p>
+<p>	long clearopensmtp should keep IP's in the list. The default is 3</p>
+<p>	hours.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>Mysql options&lt;/H4&gt;</p>
+<p>&lt;H4&gt;--enable-mysql=n|y use mysql, default is no&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Enable using mysql authentication. </p>
+<p>	&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	&lt;BR&gt;</p>
+<p>	&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	NOTE: be sure to edit vmysql.h and set the mysql server name/ip,</p>
+<p>	mysql user and mysql users password. This user must have the ability</p>
+<p>	to create a database vpopmail and create tables within that</p>
+<p>	database.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>--enable-sqlincdir= Directory where sql include files are.&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Set the directory where the mysql include files are. By default</p>
+<p>	it is set to /usr/local/mysql. </p>
+<p>	&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>--enable-sqllibdir=/usr/lib/mysql Directory where sql libs are.&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Set the directory where the mysql libmysqlclient.a file is. By</p>
+<p>	default it looks in /usr/lib/mysql&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>--enable-sqllibs=mysqlclient libraries for sql linking.&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Set the library to link in. By default this is libmysqlclient.a.</p>
+<p>		&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>--enable-large-site=n|y Default is no, tune for large numbers of</p>
+<p>users per domain&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;By default vpopmail puts all domain information in one table -</p>
+<p>	vpopmail. This is the most efficent method for sites most sites. If</p>
+<p>	you are running one site with a very large number of users, you may</p>
+<p>	want to set this option to be yes. If set to yes, vpopmail will</p>
+<p>	create a table for each virtual domain. The main difference is that</p>
+<p>	the domain name is not stored in the database since the table</p>
+<p>	contains the domains name. For sites with 500,000+ users it can save</p>
+<p>	significant disk space. However, for sites with large numbers of</p>
+<p>	virtual domains it can decrease mysql system performance.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>Vpasswd/cdb options&lt;/H4&gt;</p>
+<p>&lt;H5&gt;--enable-ucspi-dir=dir Directory where the compiled ucspi package</p>
+<p>is.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Set the directory where the ucspi-tcp package is located. By</p>
+<p>	default this is set to ../ucspi-tcp-0.84. Vpopmail uses headers in</p>
+<p>	this directory and uses two .a files.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>Logging options&lt;/H4&gt;</p>
+<p>&lt;H5&gt;--enable-logging=e|y|n Turn on (y) or off (n) logging to syslog</p>
+<p>or (e) only log errors </p>
+<p>&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Set the level of logging. By default it only logs pop</p>
+<p>	authentication errors. You can turn off all logging by setting it to</p>
+<p>	no. And you can log all pop authentications by setting it to yes.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-log-name=vpopmail set syslog name.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Over ride the default vpopmail syslog name.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>User/group options&lt;/H4&gt;</p>
+<p>&lt;H5&gt;--enable-vpopuser=vpopmail user vchkpw was installed as.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;If for some reason you want to install this package under a</p>
+<p>	different user name, use this option.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-vpopgroup=vchkpw group vchkpw was installed as.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;If for some reason you want to install this package under a</p>
+<p>	different group name, use this option.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-admin-email=email-address e-mail of system administrator.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Override the default email administrator address.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>Directory and file location options&lt;/H4&gt;</p>
+<p>&lt;H5&gt;--enable-tcpserver-file=/etc/tcp.smtp File where tcpserver -x</p>
+<p>relay information is stored.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Set the file name of your tcp.smtp file. By default the</p>
+<p>	configure program looks in /etc and then in /etc/tcprules.d</p>
+<p>	directories.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-qmaildir=dir directory where qmail is installed.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;If you installed qmail into a directory other than /var/qmail,</p>
+<p>	use this option.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-tcprules-prog=/usr/local/bin/tcprules where is your tcprules</p>
+<p>program.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;If you installed the tcprules program into a directory other</p>
+<p>	than /usr/local/bin, use this option.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-apop-file=/etc/apop-secrets directory where apop secrerts</p>
+<p>are stored.&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Over ride the default location of the apop-secrets file.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>Other options&lt;/H4&gt;</p>
+<p>&lt;H5&gt;--enable-apop=y|n Enable or disable apop authentication. </p>
+<p>&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Disable apop by setting this option to no. The default is yes</p>
+<p>	(pop and apop).&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H5&gt;</p>
+<p>--enable-passwd=y|n Enable or disable /etc/passwd (or shadow)</p>
+<p>authentication. </p>
+<p>&lt;/H5&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;Over ride the automatic configuration. By default the</p>
+<p>	configuration program will automatically detect if you are using</p>
+<p>	passwd and shadow passwords. By setting this option to no, you will</p>
+<p>	disable all /etc/passwd authentication.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H3&gt;</p>
+<p>Qmail and Virtual domains&lt;/H3&gt;</p>
+<p>&lt;P&gt;Qmail has an idea of email domains that are &amp;quot;local&amp;quot; and</p>
+<p>&amp;quot;virtual&amp;quot;. Local domains are ones which primarily match</p>
+<p>against /etc/passwd. Virtual domains match against domains listed in</p>
+<p>the qmail control file &amp;quot;virtualdomains&amp;quot;. Vpopmail makes use</p>
+<p>of the qmail users/assign file and virtualdomains file. The</p>
+<p>users/assign file gets compiled into a users/cdb file. It is a hashed</p>
+<p>database to speed searches for patterns. If a pattern is matched then</p>
+<p>qmail delivers the email to the directory defined in the file using</p>
+<p>the uid and gid which as also defined. Vpopmail makes use of this</p>
+<p>method to have qmail deliver all virtual domain email as the single</p>
+<p>uid/gid vpopmail/vchkpw. It also uses it to direct delivery to a</p>
+<p>vpopmail/domains/&amp;lt;virtualdomain&amp;gt; directory.&lt;/P&gt;</p>
+<p>&lt;P&gt;Once qmail-local gets the information from the users/assign file</p>
+<p>it performs standard .qmail file processing in the directory. Normal</p>
+<p>.qmail-&amp;lt;user&amp;gt; files can be used for forwarding, aliases or</p>
+<p>invoking programs such as ezmlm. If no matches are found qmail-local</p>
+<p>looks for a .qmail-default file. This is the last stage in</p>
+<p>qmail-locals delivery mechansim. Vpopmail uses this file to invoke</p>
+<p>the vdelivermail program. This program takes two parameters, the</p>
+<p>first is not used (it is there for backward compatibility). The</p>
+<p>second parameter is the default delivery if a virtual domain user can</p>
+<p>not be found. Basicly, it can be a directory to deliver the email to,</p>
+<p>an email address to forward the email to, the string</p>
+<p>&amp;quot;bounce-no-mailbox&amp;quot; to bounce the mail back to the sender</p>
+<p>or the string &amp;quot;delete&amp;quot; to drop/delete the mail.&lt;/P&gt;</p>
+<p>&lt;P&gt;Once vdelivermail is started up, it uses the core vpopmail api</p>
+<p>calls to check for a virtual domain user. If the user exists, the</p>
+<p>email is delivered into their directory. If vpopmail was configured</p>
+<p>for hard quotas (default is yes with 50Meg quota), then the size of</p>
+<p>the users current email files in their Maildir/new and Maildir/cur</p>
+<p>directories are counted. If the user is over quota the email is</p>
+<p>bounced back to the user with a bounce message that can be</p>
+<p>customized. If the message is 1Kbytes or smaller the email will</p>
+<p>always be delivered. This is so system administration programs can</p>
+<p>always get a message through to the user. </p>
+<p>&lt;/P&gt;</p>
+<p>&lt;H3&gt;Converting current user accounts&lt;/H3&gt;</p>
+<p>&lt;P&gt;The vconvert program can convert email accounts from one format</p>
+<p>into another format. Conversion can be between /etc/passwd, vpasswd</p>
+<p>files, mysql (small version) and mysql (large version. </p>
+<p>&lt;/P&gt;</p>
+<p>&lt;P&gt;Most current vpopmail users would probably be interested in how to</p>
+<p>convert current domains into mysql domains. To make it simple to</p>
+<p>convert an entire machine to mysql, use the following command:</p>
+<p>vconvert -c -s  This will go through all the domains in</p>
+<p>~vpopmail/domains directory and read each vpasswd file and load the</p>
+<p>contents into the vpopmail.vpopmail mysql table. The vpasswd file is</p>
+<p>left untouched for safety. Vconvert can also be run against one or</p>
+<p>more domains at a time. This is done by running the command as so:</p>
+<p>vconvert \c \s domain1 domain2 ...&lt;/P&gt;</p>
+<p>&lt;P&gt;To convert all users (except root and system accounts) into a</p>
+<p>mysql domain run the following command: vconvert -e -s domain. This</p>
+<p>reads all /etc/passwd accounts and creates mysql entries using their</p>
+<p>passwords. The passwords can be in either /etc/passwd or /etc/shadow.</p>
+<p>These passwords should work under vchkpw authentication program. </p>
+<p>&lt;/P&gt;</p>
+<p>&lt;H3&gt;Security and pop server under tcpserver&lt;/H3&gt;</p>
+<p>&lt;P&gt;If all of your pop email accounts are under virtual domains, you</p>
+<p>can increase the security of your pop server by running it under the</p>
+<p>uid and gid of vpopmail/vchkpw using the tcpserver -u and -g options.&lt;/P&gt;</p>
+<p>&lt;H3&gt;Commands&lt;/H3&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;&lt;BR&gt;</p>
+<p>&lt;/P&gt;</p>
+<p>&lt;H3&gt;Quota's&lt;/H3&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;&lt;BR&gt;</p>
+<p>&lt;/P&gt;</p>
+<p>&lt;H3&gt;Bouncing mail&lt;/H3&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;&lt;BR&gt;</p>
+<p>&lt;/P&gt;</p>
+<p>&lt;H3&gt;&lt;a name="directorystructure"&gt;Directory structure&lt;/a&gt;&lt;/H3&gt;</p>
+<p>&lt;H4&gt;Overall vpopmail directory structure&lt;/H4&gt;</p>
+<p>&lt;P&gt;Vpopmail gets it's own home directory. Under this directory there</p>
+<p>are the following:&lt;/P&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;bin - contains all the binaries&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	lib - contains the libvpopmail.a file&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	include - contains the C header files&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	users - for backward compatibility for people who mix /etc/passwd</p>
+<p>	users with vpopmail users in one domain&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	domains - where all the virtual domains are kept.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>Virtual domain user directory structure&lt;/H4&gt;</p>
+<p>&lt;P&gt;Vpopmail uses an adaptive directory structure based on a state</p>
+<p>file &amp;quot;.dir-control&amp;quot; which is automatically managed by the</p>
+<p>core vpopmail api functions &amp;quot;vadduser&amp;quot; and &amp;quot;vdeluser&amp;quot;.</p>
+<p>For sites with 100 users or less, all user directories are stored in</p>
+<p>the virtual domain directory. For sites that go above 100 users the</p>
+<p>adaptive directory structure goes into effect. The basic idea is to</p>
+<p>break up the user Maildir directories across multple directories and</p>
+<p>sub directories so that there are never more than 100 user</p>
+<p>directories in a single directory.&lt;/P&gt;</p>
+<p>&lt;P&gt;The default directory setup allows for 62 directories in 3 levels</p>
+<p>and 100 user directories per directory. The total number of user</p>
+<p>directories is equal to 100 + (62 * 100) + (62 * 62 * 100) + (62 * 62</p>
+<p>* 62 * 100) = over 24 million directories. This should be more than</p>
+<p>sufficent for any site and probably goes beyond the technology of</p>
+<p>directory structures. </p>
+<p>&lt;/P&gt;</p>
+<p>&lt;P&gt;If you are going to be storing large numbers of user directories,</p>
+<p>make sure you set your file system to have a higher than normal</p>
+<p>percentage of inodes. </p>
+<p>&lt;/P&gt;</p>
+<p>&lt;P&gt;Vpopmail will automatically create these directories and sub</p>
+<p>directories as needed and populate each directory with up to 100 user</p>
+<p>accounts. As soon as a directory reaches 100 users it will create the</p>
+<p>next directory or sub directory and store the new users directory</p>
+<p>there. </p>
+<p>&lt;/P&gt;</p>
+<p>&lt;P&gt;Look in the source code release directory contrib/ for a</p>
+<p>contributed directory reorganization program.</p>
+<p>&lt;/P&gt;</p>
+<p>&lt;H3&gt;Internationalization&lt;/H3&gt;</p>
+<p>&lt;P&gt;There is two messages that get inserted into emails. These are</p>
+<p>both for bounced messages. The first is for no such user and the</p>
+<p>second is for user over quota. Site administrators can customize</p>
+<p>these messages by creating a .over-quota.msg and .no-user.msg file in</p>
+<p>a virtual domain directory or in the main virtual domain directory.</p>
+<p>If a .over-quota.msg file or .no-user.msg file are not found in the</p>
+<p>virtual domain directory, then they are checked for in the main</p>
+<p>virtual domain directory. If they are not found there, then the</p>
+<p>default compiled message is included in the bounce message.&lt;/P&gt;</p>
+<p>&lt;H3&gt;dot-qmail processing&lt;/H3&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;Every virtualdomain get's it's own</p>
+<p>directory under ~vpopmail/domains. Qmail's user/assign file gets an</p>
+<p>entry for each domain that&lt;/P&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;points qmail-local deliveries into this</p>
+<p>directory. Therefore, all normal .qmail file processing works in each</p>
+<p>virtual domain. .qmail files just need the user name extension to</p>
+<p>work, i.e. .qmail-joe for user joe. Ezmlm uses .qmail files for</p>
+<p>processing, so it will work under vpopmail.&lt;/P&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;&lt;BR&gt;</p>
+<p>&lt;/P&gt;</p>
+<p>&lt;P&gt;If no user matches a .qmail file then the .qmail-default file is</p>
+<p>processed. This file contains the vdelivermail program. This program</p>
+<p>reads the authentication database (mysql or vpasswd.cdb) and</p>
+<p>deliveres the mail into the users directory. The last parameter of</p>
+<p>vdelivermail can be a maildir owned by vpopmail/vchkpw so that all</p>
+<p>default mail reception ends up there. Or it can have an email</p>
+<p>address, and all default mail is forwarded to this address. Last but</p>
+<p>not least, the last parameter to vdelivermail can be the text</p>
+<p>&lt;FONT FACE="courier, monospace"&gt;bounce-no-mailbox.&lt;/FONT&gt;&lt;FONT FACE="times, serif"&gt;</p>
+<p>This will bounce all non matching emails back to the sender.&lt;/FONT&gt;&lt;/P&gt;</p>
+<p>&lt;H3&gt;qmailadmin&lt;/H3&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;Qmailadmin provides a web based</p>
+<p>interface for managing vpopmail domains. As of version 0.26, it uses</p>
+<p>the vpopmail api. Which means it can manage mysql or vpasswd.cdb</p>
+<p>authentication. It allows for adding pop users, managing</p>
+<p>forwards/aliases, ezmlm mailing lists and autoresponders.&lt;/P&gt;</p>
+<p>&lt;H3&gt;sqwebmail&lt;/H3&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;Sqwebmail is a web based email client.</p>
+<p>It reads and writes directly to the users Maildirs. It can talk to</p>
+<p>vpopmail vpasswd files. We have a modified version of 0.24 on</p>
+<p>&lt;A HREF="http://www.inter7.com/vpopmail"&gt;http://www.inter7.com/vpopmail&lt;/A&gt;</p>
+<p>which uses vpopmail api. It also supports setting the users password</p>
+<p>and lets the user forward their mail. Hopefully these changes will be</p>
+<p>intergrated into the standard distribution :)&lt;/P&gt;</p>
+<p>&lt;H3&gt;courier-imap&lt;/H3&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;Courier-imap is a IMAP server that</p>
+<p>supports Maildirs. It's current release supports vpopmail vpasswd</p>
+<p>files. We will be integrating the vpopmail api into the main</p>
+<p>distribution soon.&lt;/P&gt;</p>
+<p>&lt;H3&gt;mysql authentication&lt;/H3&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;&lt;BR&gt;</p>
+<p>&lt;/P&gt;</p>
+<p>&lt;H3&gt;cdb authentication&lt;/H3&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;&lt;BR&gt;</p>
+<p>&lt;/P&gt;</p>
+<p>&lt;H3&gt;&lt;A name="vpopmail-api"&gt;vpopmail API&lt;/a&gt;&lt;/H3&gt;</p>
+<p>&lt;P&gt;As of version 3.4.10 vpopmail builds a library located in</p>
+<p>~vpopmail/lib/libvpopmail.a . Linking this library into your</p>
+<p>application will provide access to the following C functions. The</p>
+<p>associated header files are located in ~vpopmail/include.&lt;/P&gt;</p>
+<p>&lt;H4&gt;int vadddomain( char *domain)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;domain = the new virtual domain&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	&lt;BR&gt;&lt;BR&gt;</p>
+<p>	&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vdeldomain( char *domain )&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD STYLE="margin-bottom: 0.2in"&gt;domain = virtual domain to delete&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vadduser( char *user, char *domain, char *password, int apop)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;user = new user name&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	domain = virtual domain&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	password = clear text password&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	apop = 0 for pop and 1 for apop&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vdeluser( char *user, char *domain)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;user = user to delete&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	domain = virtual domain&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vpasswd( char *user, char *domain, char *password)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;user = user to change password for&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	domain = virtual domain&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	password = clear text password </p>
+<p>	&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vsetuserquota( char *user, char *domain, char *quota)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;user = user name to change quota for&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	domain = virtual domain&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	char = quota in bytes. M/m and K/k abbrieviations apply. 5M 5m and</p>
+<p>	5000000 all equal 5 million bytes hard quota&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H3&gt;</p>
+<p>vpopmail authentication API&lt;/H3&gt;</p>
+<p>&lt;H4&gt;int vauth_addomain( char *domain)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD STYLE="margin-bottom: 0.2in"&gt;domain = domain name to add to</p>
+<p>	authentication system&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vauth_deldomain( char *domain)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD STYLE="margin-bottom: 0.2in"&gt;domain = domain name to delete from</p>
+<p>	authentication system&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vauth_adduser( char *user, char *domain, char *crypted_password,</p>
+<p>char *dir, int apop)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;user = user to add from authentication system&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	domain = domain name&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	crypted_password = encrypted password&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	dir = full path to directory where users Maildir is stored.&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	apop = 0 for POP and 1 for APOP&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vauth_deluser( char *user, char *domain)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;user = user to delete from authentication system&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	domain = domain name&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vauth_password( char *user, char *domain, char *crypted_password)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;user = user to change password in authentication system&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	domain = domain name&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	crypted_password = the encrypted password&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vauth_setquota( char *user, char *domain, char *quota)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;user = user to set quota for in authentication system&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	domain = domain name&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	quota = quota in bytes or using M/m or K/k abbrieviations. 5M = 5m =</p>
+<p>	5000000 </p>
+<p>	&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>struct *passwd vauth_getpw( char *user, char *domain)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;user = user name to retrieve password entry from authentication</p>
+<p>	system&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	domain = domain name&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>int vauth_setpw( struct *passwd, char *domain)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;passwd = pointer to a passwd structure to store in</p>
+<p>	authentication system. </p>
+<p>	&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	domain = domain name for this passwd structure&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>struct *vauth_user( char *user, char *domain, char *password, char</p>
+<p>*apop)&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;user = user name to authenticate&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	domain = domain name&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	password = clear text password&lt;/DD&gt;&lt;DD STYLE="margin-bottom: 0.2in"&gt;</p>
+<p>	apop = not used in version 3.4.10&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;H4&gt;</p>
+<p>struct *vauth_getall( char *domain, int first, int sort_it )&lt;/H4&gt;</p>
+<p>&lt;DL&gt;</p>
+<p>	&lt;DD&gt;domain = domain name to retrieve password structure from</p>
+<p>	authentication system&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	first = 1 to get first record, 0 = get next record </p>
+<p>	&lt;/DD&gt;&lt;DD&gt;</p>
+<p>	sort_it = 1 to have the user list sorted alphabetically. This has no</p>
+<p>	effect on vpasswd/cdb method, since all users are added</p>
+<p>	alphabetically. With mysql it adds an order by pw_name to the query.&lt;/DD&gt;&lt;/DL&gt;</p>
+<p>&lt;P STYLE="margin-bottom: 0in"&gt;</p>
+<p>&lt;BR&gt;</p>
+<p>&lt;/P&gt;</p>
+<p>&lt;/BODY&gt;</p>
+<p>&lt;/HTML&gt;</p>
+<p></p>
+</section>
+</abiword>

@@ -1,0 +1,111 @@
+<HTML> 
+<HEAD> 
+<TITLE>vadddomain - add new virtual domain 
+</TITLE> 
+</HEAD>
+
+<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSYS">SYNOPSYS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#OPTIONS">OPTIONS</A>
+	<LI><A HREF="#RETURN_VALUE">RETURN VALUE</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<h4><A NAME="NAME">NAME</A></h4>
+vadddomain - add a virtual user to a domain
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SYNOPSYS">SYNOPSYS</A></h4>
+<STRONG>vadddomain</STRONG>
+
+<STRONG>[virtual domain ] [postmaster password] -a -q quota </STRONG>
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="DESCRIPTION">DESCRIPTION</A></h4>
+Add a new virtual domain. All qmail files and system are automatically updated.
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="OPTIONS">OPTIONS</A></h4>
+<DL>
+<DT><STRONG>[virtual domain]</STRONG><DD>
+Name of the new virtual domain
+<P>
+<DT><STRONG>[postmaster password]</STRONG><DD>
+The password for the RFC required postmaster account. If the password is
+not supplied on the command line then vadddomain will prompt for the password
+twice. 
+<P>
+<DT><STRONG>-a</STRONG><DD>
+Use apop instead of pop.
+<P>
+<DT><STRONG>-q quota</STRONG><DD>
+Set the hard quota limit for the postmaster account.
+<P>
+
+
+<P>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<h4><A NAME="RETURN_VALUE">RETURN VALUE</A></h4>
+0 if all steps were successful, non-zero otherwise. If any of the steps
+fail, a diagnostic message is printed.
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SEE_ALSO">SEE ALSO</A></h4>
+<CODE><a href="vdeldomain.html">vdeldomain</a></CODE><BR>
+<CODE><a href="vpasswd.html">vpasswd</a></CODE><BR>
+<CODE><a href="vsetuserquota.html">vsetuserquota</a></CODE><BR>
+<CODE><a href="index.html">vpopmail</a></CODE><BR>
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="NOTES">NOTES</A></h4>
+The virtual domain becomes active after running this program. No additional
+files need to be modified. A new directory is added under ~vpopmail/domains
+to house all the email accounts for the new virtual domain.
+<P>
+Must be run as root.
+
+<P>
+<P>
+<HR>
+<h4><A NAME="AUTHOR">AUTHOR</A></h4>
+<a href=http://www.inter7.com/vpopmail/AUTHORS>AUTHORS</a>
+
+<P>
+</DL>
+</BODY>
+</HTML>

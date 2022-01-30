@@ -1,0 +1,1510 @@
+/*
+ * $Id$
+ * Copyright (C) 1999-2009 Inter7 Internet Technologies, Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ */
+#include <pwd.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sqlda.h>
+#include <sqlcpr.h>
+#include <sqlca.h>
+#include <sys/types.h>
+#include <string.h>
+#include <time.h>
+#include "config.h"
+#include "vpopmail.h"
+#include "vauth.h"
+#include "voracle.h"
+#include "vlimits.h"
+
+//  Variables to control debug output
+#ifdef VPOPMAIL_DEBUG
+int show_trace=0;
+int show_query=0;
+int dump_data=0;
+#endif
+
+#ifndef SQL_CRSR
+#define SQL_CRSR
+  struct sql_cursor
+  {
+    unsigned int curocn;
+    void *ptr1;
+    void *ptr2;
+    unsigned int magic;
+  };
+  typedef struct sql_cursor sql_cursor;
+  typedef struct sql_cursor SQL_CURSOR;
+#endif /* SQL_CRSR */
+
+
+/* SQLLIB Prototypes */
+extern int sqlcxt (/*_ void **, unsigned int *,
+                   struct sqlexd *, struct sqlcxp * _*/);
+extern int sqlcx2t(/*_ void **, unsigned int ,
+                   struct sqlexd *, struct sqlcxp * _*/);
+extern int sqlbuft(/*_ void **, char * _*/);
+extern int sqlgs2t(/*_ void **, char * _*/);
+extern int sqlorat(/*_ void **, unsigned int *, void * _*/);
+
+
+typedef struct { unsigned short len; unsigned char arr[1]; } VARCHAR;
+
+
+static int update_open = 0;
+
+#define SQL_BUF_SIZE 2048
+EXEC SQL BEGIN DECLARE SECTION;
+  char SqlBufRead[SQL_BUF_SIZE];
+  char SqlBufUpdate[SQL_BUF_SIZE];
+  char SqlBufCreate[SQL_BUF_SIZE];
+  time_t Vauthtime;
+  char Vip_addr[18];
+  char Vpw_name[32];
+  char Vpw_domain[64];
+  char Vpw_passwd[40];
+  uid_t Vpw_uid;
+  uid_t Vpw_gid;
+  char Vpw_gecos[48];
+  char Vpw_dir[160];
+  char Vpw_shell[20];
+#ifdef CLEAR_PASS
+  char Vpw_clear_passwd[16];
+#endif
+#ifdef VALIAS
+  char Vpw_alias[32];
+  VARCHAR Vpw_alias_line[255];
+#endif
+  int cur_users;
+  int level_cur;
+  int level_max;
+  int level_start0;
+  int level_start1;
+  int level_start2;
+  int level_end0;
+  int level_end1;
+  int level_end2;
+  int level_mod0;
+  int level_mod1;
+  int level_mod2;
+  int level_index0;
+  int level_index1;
+  int level_index2;
+  char the_dir[160];
+EXEC SQL END DECLARE SECTION;
+
+#define UNAME_LEN 120
+#define PWD_LEN 16
+
+VARCHAR username[UNAME_LEN];
+VARCHAR password[PWD_LEN];
+
+
+#define SMALL_BUFF 200
+char IUser[SMALL_BUFF];
+char IPass[SMALL_BUFF];
+char IGecos[SMALL_BUFF];
+char IDir[SMALL_BUFF];
+char IShell[SMALL_BUFF];
+char IClearPass[SMALL_BUFF];
+
+void vcreate_dir_control(char *domain);
+void vcreate_vlog_table();
+
+#ifdef POP_AUTH_OPEN_RELAY
+void vcreate_relay_table();
+#endif
+
+#ifdef VALIAS
+void vcreate_valias_table();
+#endif
+
+#ifdef ENABLE_AUTH_LOGGING
+void vcreate_lastauth_table();
+#endif
+
+int vdel_limits( char *domain );
+void fix_name(char *name);
+
+void sql_error(msg)
+    char *msg;
+{
+/*
+    printf("\n%s", msg);
+    printf("\n%.*s\n",
+        sqlca.sqlerrm.sqlerrml, sqlca.sqlerrm.sqlerrmc);
+    printf("in \"%.*s...\"\n",
+        oraca.orastxt.orastxtl, oraca.orastxt.orastxtc);
+    printf("on line %d of %.*s.\n\n",
+        oraca.oraslnr, oraca.orasfnm.orasfnml,
+        oraca.orasfnm.orasfnmc);
+*/
+
+/* Disable ORACLE error checking to avoid an infinite loop
+ * should another error occur within this routine.
+ */
+    EXEC SQL WHENEVER SQLERROR CONTINUE;
+
+/* Roll back any pending changes and
+ * disconnect from Oracle.
+    EXEC SQL ROLLBACK RELEASE;
+    exit(EXIT_FAILURE);
+*/
+
+
+}
+
+
+/* 
+ * Open a connection to oracle for updates
+ */
+int vauth_open_update()
+{
+    if ( update_open != 0 ) return(0);
+    update_open = 1;
+
+    putenv(ORACLE_HOME);
+
+    sprintf((char *) username.arr, "%s@%s", ORACLE_USER, ORACLE_SERVICE);
+    username.len = (unsigned short)strlen((char *) username.arr);
+    strcpy((char *) password.arr, ORACLE_PASSWD);
+    password.len = (unsigned short) strlen((char *) password.arr);
+
+    EXEC SQL WHENEVER SQLERROR DO sql_error("Erro em ORACLE--\n");
+    EXEC SQL CONNECT :username IDENTIFIED by :password;
+
+    verrori = 0;
+    return(0);
+}
+
+
+int voracle_create_all()
+{
+ int err;
+
+  if ( (err=vauth_open_update()) != 0 ) return(err);
+
+  snprintf(SqlBufCreate, SQL_BUF_SIZE, "create table dir_control ( %s )",
+        DIR_CONTROL_TABLE_LAYOUT);
+  EXEC SQL PREPARE S FROM :SqlBufCreate;
+  EXEC SQL EXECUTE S;
+  EXEC SQL COMMIT;
+
+#ifdef POP_AUTH_OPEN_RELAY
+  vcreate_relay_table();
+#endif
+
+#ifdef ENABLE_AUTH_LOGGING
+  vcreate_lastauth_table();
+#endif
+
+#ifdef VALIAS
+  vcreate_valias_table(); 
+#endif
+
+#ifdef IP_ALIAS_DOMAINS
+  vcreate_ip_map_table();
+#endif
+
+  return(0);
+}
+
+int voracle_drop_all()
+{
+ int err;
+    
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    snprintf(SqlBufUpdate,SQL_BUF_SIZE, "drop table vpopmail");
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+    snprintf(SqlBufUpdate,SQL_BUF_SIZE, "drop table dir_control");
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+    snprintf(SqlBufUpdate,SQL_BUF_SIZE, "drop table relay");
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+    snprintf(SqlBufUpdate,SQL_BUF_SIZE, "drop table ip_alias_map");
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+    snprintf(SqlBufUpdate,SQL_BUF_SIZE, "drop table lastauth");
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+    snprintf(SqlBufUpdate,SQL_BUF_SIZE, "drop table valias");
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+  return(0);
+
+}
+
+int vauth_adddomain( char *domain )
+{
+ char *tmpstr = NULL;
+ int err;
+    
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    vset_default_domain( domain );
+#ifndef MANY_DOMAINS
+    tmpstr = vauth_munch_domain( domain );
+#else
+    tmpstr = ORACLE_DEFAULT_TABLE;
+#endif
+
+    snprintf(SqlBufUpdate,SQL_BUF_SIZE, 
+       "create table %s ( %s )",tmpstr,TABLE_LAYOUT);
+
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+    voracle_create_all();
+
+    sprintf(SqlBufUpdate, "insert into dir_control ( \
+domain, cur_users, \
+level_cur, level_max, \
+level_start0, level_start1, level_start2, \
+level_end0, level_end1, level_end2, \
+level_mod0, level_mod1, level_mod2, \
+level_index0, level_index1, level_index2, the_dir ) values ( \
+'%s', '0', \
+'0', %d, \
+'0', '0', '0', \
+'%d', '%d', '%d', \
+'0', '2', '4', \
+'0', '0', '0', \
+'')",
+        domain, MAX_DIR_LEVELS, MAX_DIR_LIST-1, MAX_DIR_LIST-1, MAX_DIR_LIST-1);
+
+    printf("dir control insert:  %s\n", SqlBufUpdate);
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+
+    return(0);
+}
+
+int vauth_adduser(char *user, char *domain, char *pass, char *gecos, 
+    char *dir, int apop )
+{
+ char *domstr;
+ char dom_dir[156];
+ uid_t uid; 
+ gid_t gid;
+ char dirbuf[200];
+ char quota[30];
+ char Crypted[100];
+ int err;
+    
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+    vset_default_domain( domain );
+
+    strncpy( quota, "NOQUOTA", 30 );
+
+#ifndef MANY_DOMAINS
+    domstr = vauth_munch_domain( domain );
+#else
+    domstr = ORACLE_DEFAULT_TABLE;
+#endif
+    if ( domain == NULL || domain[0] == 0 ) {
+        domstr = ORACLE_LARGE_USERS_TABLE;
+    }
+
+    if ( strlen(domain) <= 0 ) {
+        if ( strlen(dir) > 0 ) {
+            snprintf(dirbuf, SQL_BUF_SIZE, 
+                "%s/users/%s/%s", VPOPMAILDIR, dir, user);
+        } else {
+            snprintf(dirbuf, SQL_BUF_SIZE, "%s/users/%s", VPOPMAILDIR, user);
+        }
+    } else {
+        vget_assign(domain, dom_dir, 156, &uid, &gid );
+        if ( strlen(dir) > 0 ) {
+            snprintf(dirbuf,SQL_BUF_SIZE, "%s/%s/%s", dom_dir, dir, user);
+        } else {
+            snprintf(dirbuf, SQL_BUF_SIZE, "%s/%s", dom_dir, user);
+        }
+    }
+
+    if ( pass[0] != 0 ) {
+        mkpasswd3(pass,Crypted, 100);
+    } else {
+        Crypted[0] = 0;
+    }
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, INSERT, 
+      domstr, user, 
+#ifdef MANY_DOMAINS
+      domain,
+#endif
+      Crypted, apop, gecos, dirbuf, quota
+#ifdef CLEAR_PASS
+,pass
+#endif
+);
+
+printf("add user: %s\n", SqlBufUpdate);
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+    sprintf( SqlBufUpdate, 
+      "insert into lastauth ( pw_user, pw_domain, remote_ip, timestamp ) values \
+('%s', '%s', '0.0.0.0', 0 )", user, domain);
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+    return(0);
+
+}
+
+struct vqpasswd *vauth_getpw(char *user, char *domain)
+{
+ char *domstr;
+ static struct vqpasswd vpw;
+ static char in_domain[156];
+ int err;
+ uid_t myuid;
+ uid_t uid;
+ gid_t gid;
+ struct vlimits limits;
+
+    if ( vget_assign(domain,NULL,156,&uid,&gid) == NULL ) return(NULL);
+
+    myuid = geteuid();
+    if ( myuid != 0 && myuid != uid ) return(NULL);
+
+    verrori = 0;
+    if ( (err=vauth_open_update()) != 0 ) {
+        verrori = err;
+        return(NULL);
+    }
+
+    lowerit(user);
+    lowerit(domain);
+
+    memset(in_domain,0,156);
+    strncpy(in_domain, domain, 155);
+
+    vset_default_domain( in_domain );
+
+#ifndef MANY_DOMAINS
+    domstr = vauth_munch_domain( in_domain );
+#else
+    domstr = ORACLE_DEFAULT_TABLE; 
+#endif
+
+    if ( domstr == NULL || domstr[0] == 0 ) domstr = ORACLE_LARGE_USERS_TABLE;
+
+    qnprintf(SqlBufRead, SQL_BUF_SIZE, USER_SELECT, domstr, user
+#ifdef MANY_DOMAINS
+, in_domain
+#endif
+);
+/*printf("getpw: %s\n", SqlBufRead);*/
+    EXEC SQL PREPARE S FROM :SqlBufRead;
+    EXEC SQL DECLARE C CURSOR FOR S;
+    EXEC SQL OPEN C;
+
+    EXEC SQL FETCH C INTO :Vpw_name, :Vpw_passwd, :Vpw_uid,
+     :Vpw_gid, :Vpw_gecos, :Vpw_dir, :Vpw_shell, :Vpw_clear_passwd;
+
+/*printf("sqlcode = %d\n", sqlca.sqlcode);*/
+    if (sqlca.sqlcode == 1403 || 
+        sqlca.sqlcode == -1002 ) {
+      EXEC SQL CLOSE C;
+      EXEC SQL COMMIT;
+      return(NULL);
+    }
+/*printf("found it\n");*/
+
+    vpw.pw_name   = Vpw_name;
+    fix_name(vpw.pw_name);
+
+    vpw.pw_passwd = Vpw_passwd;
+    fix_name(vpw.pw_passwd);
+
+    vpw.pw_uid    = Vpw_uid;
+    vpw.pw_gid    = Vpw_gid;
+
+    vpw.pw_gecos  = Vpw_gecos;
+    fix_name(vpw.pw_gecos);
+
+    vpw.pw_dir    = Vpw_dir;
+    fix_name(vpw.pw_dir);
+
+    vpw.pw_shell  = Vpw_shell;
+    fix_name(vpw.pw_shell);
+
+#ifdef CLEAR_PASS
+    vpw.pw_clear_passwd  = Vpw_clear_passwd;
+    fix_name(vpw.pw_clear_passwd);
+#endif
+
+    EXEC SQL CLOSE C;
+    EXEC SQL COMMIT;
+
+    if ((! vpw.pw_gid && V_OVERRIDE)
+      && (vget_limits (in_domain, &limits) == 0)) {
+        vpw.pw_flags = vpw.pw_gid | vlimits_get_flag_mask (&limits);
+    } else vpw.pw_flags = vpw.pw_gid;
+
+    return(&vpw);
+
+}
+
+int vauth_deldomain( char *domain )
+{
+ char *tmpstr;
+ int err;
+    
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+    vset_default_domain( domain );
+
+#ifndef MANY_DOMAINS
+    tmpstr = vauth_munch_domain( domain );
+    snprintf( SqlBufUpdate, SQL_BUF_SIZE, "drop table %s", tmpstr);
+#else
+    tmpstr = ORACLE_DEFAULT_TABLE;
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, "delete from %s where pw_domain = '%s'",
+        tmpstr, domain );
+#endif 
+
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+#ifdef VALIAS 
+    valias_delete_domain( domain);
+#endif
+
+#ifdef ENABLE_AUTH_LOGGING
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, 
+        "delete from lastauth where pw_domain = '%s'", domain );
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+#endif
+
+    vdel_limits(domain);
+
+    return(0);
+}
+
+int vauth_deluser( char *user, char *domain )
+{
+ char *tmpstr;
+ int err = 0;
+    
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+    vset_default_domain( domain );
+
+#ifndef MANY_DOMAINS
+    if ( domain == NULL || domain[0] == 0 ) {
+        tmpstr = ORACLE_LARGE_USERS_TABLE;
+    } else {
+        tmpstr = vauth_munch_domain( domain );
+    }
+#else
+    tmpstr = ORACLE_DEFAULT_TABLE;
+#endif
+
+    qnprintf( SqlBufUpdate,  SQL_BUF_SIZE, DELETE_USER, tmpstr, user
+#ifdef MANY_DOMAINS
+, domain
+#endif
+ );
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+#ifdef ENABLE_AUTH_LOGGING
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, 
+        "delete from lastauth where pw_user = '%s' and pw_domain = '%s'", 
+        user, domain );
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+#endif
+    return(err);
+}
+
+int vauth_setquota( char *username, char *domain, char *quota)
+{
+ char *tmpstr;
+ int err;
+
+    if ( strlen(username) > MAX_PW_NAME ) return(VA_USER_NAME_TOO_LONG);
+#ifdef USERS_BIG_DIR
+    if ( strlen(username) == 1 ) return(VA_ILLEGAL_USERNAME);
+#endif
+    if ( strlen(domain) > MAX_PW_DOMAIN ) return(VA_DOMAIN_NAME_TOO_LONG);
+    if ( strlen(quota) > MAX_PW_QUOTA )    return(VA_QUOTA_TOO_LONG);
+    
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+    vset_default_domain( domain );
+
+#ifndef MANY_DOMAINS
+    tmpstr = vauth_munch_domain( domain );
+#else
+    tmpstr = ORACLE_DEFAULT_TABLE; 
+#endif
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, SETQUOTA, tmpstr, quota, username
+#ifdef MANY_DOMAINS
+, domain
+#endif
+);
+
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return(0);
+}
+
+struct vqpasswd *vauth_getall(char *domain, int first, int sortit)
+{
+ char *domstr = NULL;
+ static struct vqpasswd vpw;
+ static int more = 0;
+ int err;
+
+    vset_default_domain( domain );
+
+#ifdef MANY_DOMAINS
+    domstr = ORACLE_DEFAULT_TABLE; 
+#else
+    domstr = vauth_munch_domain( domain );
+#endif
+
+    if ( first == 1 ) {
+        if ( (err=vauth_open_update()) != 0 ) return(NULL);
+
+        qnprintf(SqlBufRead,  SQL_BUF_SIZE, GETALL, domstr
+#ifdef MANY_DOMAINS
+            ,domain
+#endif
+            );
+
+        if ( sortit == 1 ) {
+            strncat( SqlBufRead, " order by pw_name", SQL_BUF_SIZE);
+        }
+
+/*
+        if (res_read!=NULL) mysql_free_result(res_read_getall);
+        res_read = NULL;
+
+        if (mysql_query(&mysql_read_getall,SqlBufRead)) {
+            printf("vmysql: sql error[5]: %s\n", mysql_error(&mysql_update));
+            return(NULL);
+        }
+
+        if (!(res_read_getall=mysql_store_result(&mysql_read_getall))) {
+            printf("vsql_getpw: store result failed 2\n");
+            return(NULL);
+        }
+*/
+    } else if ( more == 0 ) {
+        return(NULL);
+    }
+
+    memset(IUser, 0, sizeof(IUser));
+    memset(IPass, 0, sizeof(IPass));
+    memset(IGecos, 0, sizeof(IGecos));
+    memset(IDir, 0, sizeof(IDir));
+    memset(IShell, 0, sizeof(IShell));
+    memset(IClearPass, 0, sizeof(IClearPass));
+
+    vpw.pw_name   = IUser;
+    vpw.pw_passwd = IPass;
+    vpw.pw_gecos  = IGecos;
+    vpw.pw_dir    = IDir;
+    vpw.pw_shell  = IShell;
+    vpw.pw_clear_passwd  = IClearPass;
+    
+/*
+    if ((row_getall = mysql_fetch_row(res_read_getall)) != NULL) {
+        strncpy(vpw.pw_name,row_getall[0],SMALL_BUFF);
+        if (row_getall[1]!=0) strncpy(vpw.pw_passwd,row_getall[1],SMALL_BUFF);
+        if (row_getall[2]!=0) vpw.pw_uid = atoi(row_getall[2]);
+        if (row_getall[3]!=0) vpw.pw_gid = atoi(row_getall[3]);
+        if (row_getall[4]!=0) strncpy(vpw.pw_gecos,row_getall[4],SMALL_BUFF);
+        if (row_getall[5]!=0) strncpy(vpw.pw_dir,row_getall[5],SMALL_BUFF);
+        if (row_getall[6]!=0) {
+            strncpy(vpw.pw_shell, row_getall[6],SMALL_BUFF);
+        }
+#ifdef CLEAR_PASS
+        if (row_getall[7]!=0) {
+            strncpy(vpw.pw_clear_passwd, row_getall[7],SMALL_BUFF);
+        }
+#endif
+        more = 1;
+        return(&vpw);
+    }
+    more = 0;
+    mysql_free_result(res_read_getall);
+    res_read_getall = NULL;
+*/
+    return(NULL);
+}
+
+void vauth_end_getall()
+{
+/*
+    if ( res_read_getall != NULL ) {
+        mysql_free_result(res_read_getall);
+    }
+    res_read_getall = NULL;
+*/
+
+}
+
+char *vauth_munch_domain( char *domain )
+{
+ int i;
+ static char tmpbuf[50];
+
+    if ( domain == NULL || domain[0] == 0 ) return(domain);
+
+    for(i=0;domain[i]!=0;++i){
+        tmpbuf[i] = domain[i];
+        if ( domain[i] == '.' || domain[i] == '-' ) {
+            tmpbuf[i] = ORACLE_DOT_CHAR;
+        }
+    }
+    tmpbuf[i] = 0; 
+    return(tmpbuf);
+}
+
+int vauth_setpw( struct vqpasswd *inpw, char *domain )
+{
+ char *tmpstr;
+ uid_t myuid;
+ uid_t uid;
+ gid_t gid;
+ int err;
+
+    err = vcheck_vqpw(inpw, domain);
+    if ( err != 0 ) return(err);
+
+    vget_assign(domain,NULL,156,&uid,&gid);
+    myuid = geteuid();
+    if ( myuid != 0 && myuid != uid ) {
+        return(VA_BAD_UID);
+    }
+
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+    vset_default_domain( domain );
+
+#ifndef MANY_DOMAINS
+    tmpstr = vauth_munch_domain( domain );
+#else
+    tmpstr = ORACLE_DEFAULT_TABLE; 
+#endif
+
+    qnprintf( SqlBufUpdate,SQL_BUF_SIZE,SETPW,
+            tmpstr, 
+            inpw->pw_passwd,
+            inpw->pw_uid,
+            inpw->pw_gid, 
+            inpw->pw_gecos,
+            inpw->pw_dir, 
+            inpw->pw_shell, 
+#ifdef CLEAR_PASS
+            inpw->pw_clear_passwd,
+#endif
+            inpw->pw_name
+#ifdef MANY_DOMAINS
+            ,domain
+#endif
+            );
+/*printf("add user: %s\n", SqlBufUpdate);*/
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+#ifdef SQWEBMAIL_PASS
+    vsqwebmail_pass( inpw->pw_dir, inpw->pw_passwd, uid, gid);
+#endif
+
+    return(0);
+}
+
+#ifdef POP_AUTH_OPEN_RELAY
+void vopen_smtp_relay()
+{
+ char *ipaddr;
+ time_t mytime;
+ int err;
+
+    mytime = time(NULL);
+    ipaddr = getenv("TCPREMOTEIP");
+    if ( ipaddr == NULL ) {
+        return;
+    }
+
+    if ( ipaddr != NULL &&  ipaddr[0] == ':') {
+        ipaddr +=2;
+        while(*ipaddr!=':') ++ipaddr;
+        ++ipaddr;
+    }
+
+    if ( (err=vauth_open_update()) != 0 ) return;
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
+"insert into relay ( ip_addr, timestamp ) values ( '%s', %d )",
+            ipaddr, (int)mytime);
+    /*fprintf(stderr, "relay: %s\n", SqlBufUpdate);*/
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return;
+}
+
+void vupdate_rules(int fdm)
+{
+    if (vauth_open_update() != 0) return;
+
+    sprintf(SqlBufUpdate, "select ip_addr from relay");
+    EXEC SQL PREPARE SF FROM :SqlBufUpdate;
+    EXEC SQL DECLARE CF CURSOR FOR SF;
+    EXEC SQL OPEN CF;
+
+    for(;;) {
+        EXEC SQL FETCH CF INTO :Vip_addr;
+        if (sqlca.sqlcode == 1403) break;
+
+        sprintf(SqlBufUpdate, "%s:allow,RELAYCLIENT=\"\"\n", Vip_addr);
+        write(fdm,SqlBufUpdate, strlen(SqlBufUpdate));
+    }
+}
+
+void vclear_open_smtp(time_t clear_minutes, time_t mytime)
+{
+ time_t delete_time;
+ int err;
+    
+    if ( (err=vauth_open_update()) != 0 ) return; 
+    delete_time = mytime - clear_minutes;
+
+    snprintf( SqlBufUpdate, SQL_BUF_SIZE, "delete from relay where timestamp <= %d", 
+        (int)delete_time);
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+}
+
+void vcreate_relay_table()
+{
+    if (vauth_open_update() != 0) return;
+
+    snprintf( SqlBufCreate, SQL_BUF_SIZE, "create table relay ( %s )",RELAY_TABLE_LAYOUT);
+    EXEC SQL PREPARE S FROM :SqlBufCreate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return;
+}
+#endif
+
+int vmkpasswd( char *domain )
+{
+    return(0);
+}
+
+void vclose()
+{
+    if (update_open == 1 ) {
+        update_open = 0;
+        EXEC SQL ROLLBACK RELEASE;
+    }
+}
+
+#ifdef IP_ALIAS_DOMAINS
+void vcreate_ip_map_table()
+{
+    if ( vauth_open_update() != 0 ) return;
+
+    snprintf(SqlBufCreate, SQL_BUF_SIZE, "create table ip_alias_map ( %s )", 
+      IP_ALIAS_TABLE_LAYOUT);
+    EXEC SQL PREPARE S FROM :SqlBufCreate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return;
+}
+
+int vget_ip_map( char *ip, char *domain, int domain_size)
+{
+ int ret = -1;
+
+    if ( ip == NULL || strlen(ip) <= 0 ) return(-1);
+    if ( domain == NULL ) return(-2);
+    if ( vauth_open_update() != 0 ) return(-3);
+
+    qnprintf(SqlBufRead, SQL_BUF_SIZE, "select domain from ip_alias_map where ip_addr = '%s'",
+        ip);
+    if (mysql_query(&mysql_read,SqlBufRead)) {
+        return(-1);
+    }
+
+/*
+    if (!(res_read = mysql_store_result(&mysql_read))) {
+        printf("vsql_getpw: store result failed 4\n");
+        return(-4);
+    }
+    while((row = mysql_fetch_row(res_read))) {
+        ret = 0;
+        strncpy(domain, row[0], domain_size);
+    }
+    mysql_free_result(res_read);
+    res_update = mysql_store_result(&mysql_read);
+*/
+    return(ret);
+}
+
+int vadd_ip_map( char *ip, char *domain) 
+{
+    if ( ip == NULL || strlen(ip) <= 0 ) return(-1);
+    if ( domain == NULL || strlen(domain) <= 0 ) return(-1);
+    if ( vauth_open_update() != 0 ) return(-1);
+
+    qnprintf(SqlBufUpdate,SQL_BUF_SIZE,  
+      "update ip_alias_map set ip_addr='%s', domain='%s' ",
+      ip, domain);
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return(0);
+}
+
+int vdel_ip_map( char *ip, char *domain) 
+{
+    if ( ip == NULL || strlen(ip) <= 0 ) return(-1);
+    if ( domain == NULL || strlen(domain) <= 0 ) return(-1);
+    if ( vauth_open_update() != 0 ) return(-1);
+
+    qnprintf( SqlBufUpdate,SQL_BUF_SIZE,  
+        "delete from ip_alias_map where ip_addr = '%s' and domain = '%s'",
+            ip, domain);
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return(0);
+}
+
+int vshow_ip_map( int first, char *ip, char *domain )
+{
+ static int more = 0;
+
+    if ( ip == NULL ) return(-1);
+    if ( domain == NULL ) return(-1);
+    if ( vauth_open_update() != 0 ) return(-1);
+
+    if ( first == 1 ) {
+
+        snprintf(SqlBufRead,SQL_BUF_SIZE, 
+            "select ip_addr, domain from ip_alias_map"); 
+
+/*
+        if (res_read!=NULL) mysql_free_result(res_read);
+        res_read = NULL;
+
+        if (mysql_query(&mysql_read,SqlBufRead)) {
+!error!!
+        }
+
+        if (!(res_read = mysql_store_result(&mysql_read))) {
+            printf("vsql_getpw: store result failed 5\n");
+            return(0);
+        }
+*/
+    } else if ( more == 0 ) {
+        return(0);
+    }
+
+/*
+    if ((row = mysql_fetch_row(res_read)) != NULL) {
+        strncpy(ip, row[0], 18); 
+        strncpy(domain, row[1], 156); 
+        more = 1;
+        return(1);
+    }
+    more = 0;
+    mysql_free_result(res_read);
+    res_read = NULL;
+*/
+    return(0);
+}
+#endif
+
+int vread_dir_control(vdir_type *vdir, char *domain, uid_t uid, gid_t gid)
+{
+ int found = 0;
+ int i;
+
+    if ( vauth_open_update() != 0 ) return(-1);
+    qnprintf(SqlBufRead, SQL_BUF_SIZE, 
+        "select %s from dir_control where domain = '%s'", 
+        DIR_CONTROL_SELECT, domain );
+    /*printf("read dir control: %s\n", SqlBufRead);*/
+    EXEC SQL PREPARE SE FROM :SqlBufRead;
+    EXEC SQL DECLARE CE CURSOR FOR SE;
+    EXEC SQL OPEN CE;
+
+    found = 0;
+    for(;;) {
+        EXEC SQL FETCH CE INTO :cur_users, :level_cur, :level_max,
+            :level_start0, :level_start1, :level_start2,
+            :level_end0, :level_end1, :level_end2,
+            :level_mod0, :level_mod1, :level_mod2,
+            :level_index0, :level_index1, :level_index2,
+            :the_dir;
+
+        if (sqlca.sqlcode == 1403) break;
+
+        found = 1;
+        vdir->cur_users = cur_users;
+        vdir->level_cur = level_cur;
+        vdir->level_max = level_max;
+
+        vdir->level_start[0] = level_start0;
+        vdir->level_start[1] = level_start1;
+        vdir->level_start[2] = level_start2;
+
+        vdir->level_end[0] = level_end0;
+        vdir->level_end[1] = level_end1;
+        vdir->level_end[2] = level_end2;
+
+        vdir->level_mod[0] = level_mod0;
+        vdir->level_mod[1] = level_mod1;
+        vdir->level_mod[2] = level_mod2;
+
+        vdir->level_index[0] = level_index0;
+        vdir->level_index[1] = level_index1;
+        vdir->level_index[2] = level_index2;
+
+	fix_name(the_dir);
+        strncpy(vdir->the_dir, the_dir, MAX_DIR_NAME);
+
+    }
+    EXEC SQL CLOSE CE;
+    EXEC SQL COMMIT;
+
+    if ( found == 0 ) {
+        vcreate_dir_control(domain);
+        vdir->cur_users = 0;
+        for(i=0;i<MAX_DIR_LEVELS;++i){
+            vdir->level_start[i] = 0;
+            vdir->level_end[i] = MAX_DIR_LIST-1;
+            vdir->level_index[i] = 0;
+        }
+        vdir->level_mod[0] = 0;
+        vdir->level_mod[1] = 2;
+        vdir->level_mod[2] = 4;
+        vdir->level_cur = 0;
+        vdir->level_max = MAX_DIR_LEVELS;
+        vdir->the_dir[0] = 0;
+    }
+
+    return(0);
+}
+
+int vwrite_dir_control(vdir_type *vdir, char *domain, uid_t uid, gid_t gid)
+{
+    if ( vauth_open_update() != 0 ) return(-1);
+
+        sprintf(SqlBufUpdate, "update dir_control \
+set cur_users = %ld, \
+level_cur = %d , level_max = %d , \
+level_start0 = %d , level_start1 = %d , level_start2 = %d , \
+level_end0 = %d , level_end1 = %d , level_end2 = %d , \
+level_mod0 = %d , level_mod1 = %d , level_mod2 = %d , \
+level_index0 = %d , level_index1 = %d , level_index2 = %d , \
+the_dir = '%s' where domain = '%s'\n",
+        vdir->cur_users, vdir->level_cur, vdir->level_max,
+        vdir->level_start[0], vdir->level_start[1], vdir->level_start[2],
+        vdir->level_end[0], vdir->level_end[1], vdir->level_end[2],
+        vdir->level_mod[0], vdir->level_mod[1], vdir->level_mod[2],
+        vdir->level_index[0], vdir->level_index[1], vdir->level_index[2],
+        vdir->the_dir, domain);
+
+/*printf("write dir control: %s\n", SqlBufUpdate);*/
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+    return(0);
+}
+
+void vcreate_dir_control(char *domain)
+{
+    if ( vauth_open_update() != 0 ) return;
+
+    snprintf(SqlBufCreate, SQL_BUF_SIZE, "create table dir_control ( %s )", 
+        DIR_CONTROL_TABLE_LAYOUT);
+    EXEC SQL PREPARE S FROM :SqlBufCreate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+
+    qnprintf(SqlBufUpdate, SQL_BUF_SIZE, "insert into dir_control ( \
+domain, cur_users, \
+level_cur, level_max, \
+level_start0, level_start1, level_start2, \
+level_end0, level_end1, level_end2, \
+level_mod0, level_mod1, level_mod2, \
+level_index0, level_index1, level_index2, the_dir ) values ( \
+'%s', 0, \
+0, %d, \
+0, 0, 0, \
+%d, %d, %d, \
+0, 2, 4, \
+0, 0, 0, \
+'')\n",
+    domain, MAX_DIR_LEVELS, MAX_DIR_LIST-1, MAX_DIR_LIST-1, MAX_DIR_LIST-1);
+
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+}
+
+int vdel_dir_control(char *domain)
+{
+ int err;
+
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    qnprintf(SqlBufUpdate, SQL_BUF_SIZE, 
+        "delete from dir_control where domain = '%s'", 
+        domain); 
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return(0);
+}
+
+#ifdef ENABLE_AUTH_LOGGING
+int vset_lastauth(char *user, char *domain, char *remoteip )
+{
+ int err;
+
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
+"update lastauth set pw_user='%s', pw_domain='%s', \
+remote_ip='%s', timestamp=%lu", user, domain, remoteip, time(NULL)); 
+
+fprintf(stderr, "auth log: %s\n", SqlBufUpdate);
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return(0);
+}
+
+time_t vget_lastauth(struct vqpasswd *pw, char *domain)
+{
+ int err;
+ time_t mytime;
+
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+
+    qnprintf( SqlBufUpdate,  SQL_BUF_SIZE,
+    "select timestamp from lastauth where pw_user='%s' and pw_domain='%s'", 
+        pw->pw_name, domain);
+    EXEC SQL PREPARE SD FROM :SqlBufUpdate;
+    EXEC SQL DECLARE CD CURSOR FOR SD;
+    EXEC SQL OPEN CD;
+
+    Vauthtime = 0;
+    EXEC SQL FETCH CD INTO :Vauthtime;
+    EXEC SQL CLOSE CD;
+    EXEC SQL COMMIT;
+    mytime = Vauthtime;
+    return(mytime);
+}
+
+char *vget_lastauthip(struct vqpasswd *pw, char *domain)
+{
+int err;
+
+    if ( (err=vauth_open_update()) != 0 ) return("");
+    memset(Vip_addr,0,sizeof(Vip_addr));
+
+    sprintf( SqlBufUpdate,
+        "select remote_ip from lastauth where pw_user='%s' and pw_domain='%s'",
+        pw->pw_name, domain);
+    EXEC SQL PREPARE SX FROM :SqlBufUpdate;
+    EXEC SQL DECLARE CX CURSOR FOR SX;
+    EXEC SQL OPEN CX;
+    EXEC SQL FETCH CX INTO :Vip_addr;
+    EXEC SQL CLOSE CX;
+    EXEC SQL COMMIT;
+    fix_name(Vip_addr);
+    return(Vip_addr);
+
+}
+
+void vcreate_lastauth_table()
+{
+
+    if ( vauth_open_update() != 0 ) return;
+
+    snprintf( SqlBufCreate, SQL_BUF_SIZE, "create table lastauth ( %s )", 
+        LASTAUTH_TABLE_LAYOUT);
+    EXEC SQL PREPARE S FROM :SqlBufCreate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return;
+}
+#endif /* ENABLE_AUTH_LOGGING */
+
+#ifdef VALIAS
+char *valias_select( char *alias, char *domain )
+{
+ int err;
+
+    /* if we can not connect, set the verrori value */
+    if ( (err=vauth_open_update()) != 0 ) {
+      return(NULL);
+    }
+
+    qnprintf( SqlBufRead, SQL_BUF_SIZE, "select valias_line from valias \
+where alias = '%s' and domain = '%s'", alias, domain );
+    EXEC SQL PREPARE SC FROM :SqlBufRead;
+    EXEC SQL DECLARE CC CURSOR FOR SC;
+    EXEC SQL OPEN CC;
+
+    return(valias_select_next());
+}
+
+char *valias_select_next()
+{
+    for(;;) {
+        EXEC SQL FETCH CC INTO :Vpw_alias_line;
+        if (sqlca.sqlcode != 0) break;
+        Vpw_alias_line.arr[Vpw_alias_line.len] = '\0';
+        return(Vpw_alias_line.arr);
+    }
+    EXEC SQL CLOSE CC;
+    EXEC SQL COMMIT;
+    return(NULL);
+
+}
+
+int valias_insert( char *alias, char *domain, char *alias_line)
+{
+ int err;
+
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+    while(*alias_line==' ' && *alias_line!=0) ++alias_line;
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, "insert into valias \
+( alias, domain, valias_line ) values ( '%s', '%s', '%s')",
+        alias, domain, alias_line );
+
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return(0);
+}
+
+int valias_remove( char *alias, char *domain, char *alias_line)
+{
+ int err;
+
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, 
+        "delete from valias where alias = '%s' \
+and valias_line = '%s' and domain = '%s'", alias, alias_line, domain );
+
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return(0);
+}
+
+int valias_delete( char *alias, char *domain)
+{
+ int err;
+
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, 
+        "delete from valias where alias = '%s' \
+and domain = '%s'", alias, domain );
+
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return(0);
+}
+
+int valias_delete_domain( char *domain)
+{
+ int err;
+
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, 
+        "delete from valias where domain = '%s'", 
+        domain );
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return(0);
+}
+
+void vcreate_valias_table()
+{
+    if ( vauth_open_update() != 0 ) return;
+
+    snprintf( SqlBufCreate, SQL_BUF_SIZE, "create table valias ( %s )", 
+        VALIAS_TABLE_LAYOUT );
+    EXEC SQL PREPARE S FROM :SqlBufCreate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return;
+}
+
+char *valias_select_all( char *alias, char *domain )
+{
+ int err;
+    if ( (err=vauth_open_update()) != 0 ) return(NULL);
+
+    sprintf( SqlBufUpdate,
+        "select alias, valias_line from valias where domain = '%s' order by alias",
+        domain );
+
+    EXEC SQL PREPARE SB FROM :SqlBufUpdate;
+    EXEC SQL DECLARE CB CURSOR FOR SB;
+    EXEC SQL OPEN CB;
+    return(valias_select_all_next(alias));
+
+}
+
+char *valias_select_all_next(char *alias)
+{
+    for(;;) {
+        EXEC SQL FETCH CB INTO :Vpw_alias, :Vpw_alias_line;
+        if (sqlca.sqlcode == 1403) break;
+
+        if (sqlca.sqlcode != 0 ) {
+          EXEC SQL CLOSE CB;
+          EXEC SQL COMMIT;
+          vcreate_valias_table();
+          return(NULL);
+        }
+        Vpw_alias_line.arr[Vpw_alias_line.len] = '\0';
+	fix_name(Vpw_alias);
+        strcpy(alias, Vpw_alias);
+        return(Vpw_alias_line.arr);
+    }
+    EXEC SQL CLOSE CB;
+    EXEC SQL COMMIT;
+    return(NULL);
+
+}
+#endif
+
+#ifdef ENABLE_SQL_LOGGING
+int logsql(int verror, char *TheUser, char *TheDomain, char *ThePass, 
+  char *TheName, char *IpAddr, char *LogLine) 
+{
+ int err;
+ time_t mytime;
+ 
+
+    mytime = time(NULL);
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
+        "INSERT INTO vlog set user='%s', passwd='%s', \
+        domain='%s', logon='%s', remoteip='%s', message='%s', \
+        error=%i, timestamp=%d", TheUser, ThePass, TheDomain,
+        TheName, IpAddr, LogLine, verror, (int)mytime);
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return(0);
+}
+
+
+void vcreate_vlog_table()
+{
+
+    if ( vauth_open_update() != 0 ) return;
+
+    snprintf( SqlBufCreate, SQL_BUF_SIZE, "CREATE TABLE vlog ( %s )",
+        VLOG_TABLE_LAYOUT);
+    EXEC SQL PREPARE S FROM :SqlBufCreate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return;
+}
+#endif
+
+#ifdef ENABLE_ORACLE_LIMITS
+void vcreate_limits_table()
+{
+    if ( vauth_open_update() != 0 ) return;
+
+    snprintf( SqlBufCreate, SQL_BUF_SIZE, "CREATE TABLE limits ( %s )",
+        LIMITS_TABLE_LAYOUT);
+    EXEC SQL PREPARE S FROM :SqlBufCreate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+}
+
+int vget_limits( char *domain, struct vlimits *limits )
+{
+    int err;
+
+    /* if we can not connect, set the verrori value */
+    if ( (err=vauth_open_update()) != 0 ) {
+      return(-1);
+    }
+
+    qnprintf( SqlBufRead, SQL_BUF_SIZE, "SELECT maxpopaccounts, maxaliases, "
+  "maxforwards, maxautoresponders, maxmailinglists, diskquota, "
+  "defaultquota, disablepop, disableimap, disabledialup, "
+  "disablepasswordchanging, disablewebmail, disablerelay \n"
+        "FROM limits \n"
+  "WHERE domain = '%s'", domain);
+/*
+
+    if (mysql_query(&mysql_read,SqlBufRead)) {
+        vcreate_limits_table();
+        if (mysql_query(&mysql_read,SqlBufRead)) {
+            fprintf(stderr, "vmysql: sql error[j]: %s\n", mysql_error(&mysql_read));
+            return(-1);
+        }
+    }
+    if (!(res_read = mysql_store_result(&mysql_read))) {
+  fprintf(stderr, "vmysql: store result failed\n");
+  return -1;
+    }
+
+    if (mysql_num_rows(res_read) == 0) {
+  fprintf(stderr, "vnysql: can't find limits for domain '%s'\n", domain);
+  return -1;
+    }
+
+    if ((row = mysql_fetch_row(res_read)) != NULL) {
+      limits->maxpopaccounts = atoi(row[0]);
+      limits->maxaliases = atoi(row[1]);
+      limits->maxforwards = atoi(row[2]);
+      limits->maxautoresponders = atoi(row[3]);
+      limits->maxmailinglists = atoi(row[4]);
+      limits->diskquota = atoi(row[5]);
+      limits->defaultquota = atoi(row[6]);
+      limits->disablepop = atoi(row[7]);
+      limits->disableimap = atoi(row[8]);
+      limits->disabledialup = atoi(row[9]);
+      limits->disablepasswordchanging = atoi(row[10]);
+      limits->disablewebmail = atoi(row[11]);
+      limits->disablerelay = atoi(row[12]);
+    }
+    mysql_free_result(res_read);
+*/
+
+    return 0;
+}
+
+int vdel_limits( char *domain )
+{
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, "DELETE FROM limits WHERE domain = '%s'",
+        domain);
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return 0;
+}
+
+int vset_limits( char *domain, struct vlimits *limits )
+{
+    int err;
+
+    /* if we can not connect, set the verrori value */
+    if ( (err=vauth_open_update()) != 0 ) {
+      return(-1);
+    }
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, "REPLACE INTO limits ( "
+  "domain, maxpopaccounts, maxaliases, "
+  "maxforwards, maxautoresponders, maxmailinglists, diskquota, "
+  "defaultquota, disablepop, disableimap, disabledialup, "
+  "disablepasswordchanging, disablewebmail, disablerelay ) \n"
+        "VALUES \n"
+  "('%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+  domain,
+        limits->maxpopaccounts,
+        limits->maxaliases,
+        limits->maxforwards,
+        limits->maxautoresponders,
+        limits->maxmailinglists,
+        limits->diskquota,
+        limits->defaultquota,
+        limits->disablepop,
+        limits->disableimap,
+        limits->disabledialup,
+        limits->disablepasswordchanging,
+        limits->disablewebmail,
+        limits->disablerelay);
+
+    EXEC SQL PREPARE S FROM :SqlBufUpdate;
+    EXEC SQL EXECUTE S;
+    EXEC SQL COMMIT;
+    return 0;
+}
+#endif
+
+void fix_name(char *name)
+{
+ int i;
+
+  for(i=0;name[i]!=0;++i) {
+    if ( name[i] == ' ' ) {
+      name[i] = 0; 
+    }
+  }
+}
+
+
+int vauth_crypt(char *user,char *domain,char *clear_pass,struct vqpasswd *vpw)
+{
+  if ( vpw == NULL ) return(-1);
+
+  return(strcmp(crypt(clear_pass,vpw->pw_passwd),vpw->pw_passwd));
+}
+
+

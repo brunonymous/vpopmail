@@ -1,0 +1,79 @@
+drop table dir_control;
+create table dir_control ( domain varchar(255) not null, cur_users int, 
+level_cur int, level_max int, 
+level_start0 int, level_start1 int, level_start2 int, 
+level_end0 int, level_end1 int, level_end2 int, 
+level_mod0 int, level_mod1 int, level_mod2 int, 
+level_index0 int , level_index1 int, level_index2 int, the_dir varchar(255), 
+primary key (domain) );
+
+/* For large site, change the domain_com to your domain */
+/* drop table domain_com;
+ * create table domain_com
+ * ( pw_name char(32) not null, 
+ * pw_passwd varchar(255) not null, 
+ * pw_uid int, 
+ * pw_gid int, 
+ * pw_gecos varchar(255), 
+ * pw_dir varchar(255), 
+ * pw_shell varchar(255), primary key(pw_name));
+ */
+
+/* For large site, with clear passwords, change domain_com to your domain */
+/* drop table domain_com;
+ * create table domain_com (
+ * pw_name char(32) not null, 
+ * pw_passwd varchar(255) not null, 
+ * pw_uid int, 
+ * pw_gid int, 
+ * pw_gecos varchar(255), 
+ * pw_dir varchar(255), \
+ * pw_clear_passwd varchar(255), \
+ * pw_shell varchar(255), primary key(pw_name));
+ */
+
+/* For small site (default ) */
+drop table vpopmail;
+create table vpopmail (
+pw_name char(32) not null, 
+pw_domain varchar(223) not null, 
+pw_passwd varchar(255) not null, 
+pw_uid int, 
+pw_gid int, 
+pw_gecos varchar(255), 
+pw_dir varchar(255), \
+pw_shell varchar(255), primary key(pw_name, pw_domain));
+
+/* for small site with clear passwords */
+/* drop table vpopmail;
+ * create table vpopmail (
+ * pw_name char(32) not null, 
+ * pw_domain varchar(223) not null, 
+ * pw_passwd varchar(255) not null, 
+ * pw_uid int, 
+ * pw_gid int, 
+ * pw_gecos varchar(255), 
+ * pw_dir varchar(255), \
+ * pw_clear_passwd varchar(255), \
+ * pw_shell varchar(255), primary key(pw_name));
+ */ 
+
+drop table relay;
+create table relay (
+ip_addr char(18) not null, 
+timestamp long, primary key(ip_addr));
+
+drop table ip_alias_map;
+create table ip_alias_map (
+ip_addr char(18) not null, 
+domain varchar(255),  
+primary key(ip_addr) );
+
+drop table last_auth;
+create table last_auth (
+pw_user char(32) NOT NULL, 
+pw_domain varchar(223) NOT NULL,
+remote_ip char(18) not null,
+timestamp long DEFAULT 0 NOT NULL,
+primary key (pw_user, pw_domain));
+

@@ -1,0 +1,517 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="StarOffice/5.1 (Linux)">
+	<META NAME="AUTHOR" CONTENT=" ">
+	<META NAME="CREATED" CONTENT="19991117;8432800">
+	<META NAME="CHANGEDBY" CONTENT=" ">
+	<META NAME="CHANGED" CONTENT="19991127;11073500">
+</HEAD>
+<BODY>
+<H2 ALIGN=CENTER>vpopmail Adminstration Guide</H2>
+<H3 ALIGN=CENTER>by Ken Jones</H3>
+<DL>
+	<DD STYLE="text-align: center">http://www.inter7.com/vpopmail</DD></DL>
+<P STYLE="margin-bottom: 0in">
+<BR>
+</P>
+<H3>Quick Install Guide</H3>
+<P>To quickly install vpopmail</P>
+<DL>
+	<DD>unpack vpopmail distribution</DD><DD>
+	add vchkpw group</DD><DD>
+	add vpopmail user with vchkpw group</DD><DD>
+	./configure</DD><DD>
+	make</DD><DD>
+	make install-strip</DD><DD STYLE="margin-bottom: 0.2in">
+	<BR><BR>
+	</DD></DL>
+<P>
+You are now ready to add virtual domains and virtual users. See
+vadddomain and vadduser. You also need to modify your pop server
+startup line to use the vchkpw program for authentication.</P>
+<H3>Setting up all email to be virtual</H3>
+<P>We recommend that all domains be setup as virtualdomains. 
+</P>
+<H3>Configuration options</H3>
+<H4>Most used options</H4>
+<H5>--enable-roaming-users=n|y Enable or disable open relay after pop
+authentication. Default is no</H5>
+<DL>
+	<DD>Setting this to yes means that the clients IP address is added
+	to the list of IP's that are allowed to relay through the smtp
+	server after they authenticate with pop. A cronjob program,
+	clearopensmtp, clears out any IP's that were authenticated over 3
+	hours ago. This option requires you run the smtp server with
+	tcpserver and the -x /etc/tcp.smtp.cdb option (or where ever you put
+	your tcp.smtp.cdb file).</DD></DL>
+<H5>
+--enable-hardquota=#|n Set and Enable hard quota or n for no quota</H5>
+<DL>
+	<DD>Set's the default hard quota limit for each pop account. The
+	default is 50 megs. Any incoming mail which would take the user over
+	their hard quota limit is bounced with a message. This message can
+	be customized. 
+	</DD><DD>
+	If you wish to turn off quotas set this option to NOQUOTA, i.e.
+	--enable-hardquota=NOQUOTA</DD></DL>
+<H5>
+--enable-default-domain=name Default domain name, default is null.</H5>
+<DL>
+	<DD>We recommend you run all your email as virtual domains. You can
+	pick one domain to be the default. If you have just one domain set
+	it with this option. The default domain name users can authenticate
+	with just their user name, and don't need to use
+	&lt;user&gt;%&lt;virtualdomain&gt;. 
+	</DD></DL>
+<H5>
+--enable-ip-alias-domains=y|n enable virutal domain lookup via
+reverse ip address lookup for virtual domains. 
+</H5>
+<DL>
+	<DD>By default, ever domain uses name based virtual domains. That
+	is: users must supply their domain name in their pop name. i.e.
+	&lt;user&gt;%&lt;virtualdomain&gt;. This can be overridden for one
+	domain using the --enable-default-domain option.</DD><DD>
+	<BR>
+	</DD><DD>
+	Vpopmail also supports IP based virtual domains. If this option is
+	turned on, and the user does not supply %&lt;virtualdomain&gt; then
+	a reverse IP lookup is done on the server IP address that the client
+	connected to. If the servers IP address resolves to a domain name,
+	then vpopmail uses that name as the domain. For example:</DD><DD>
+	<BR>
+	</DD><DD>
+	IP w.x.y.z resolves to test.com. User sets their pop server ip to
+	w.x.y.z and connects. Vpopmail gets the connection, checks the IP of
+	the SERVER side of the connection. Does a reverse IP lookup and
+	obtains test.com. User sends joe as their pop user name. Vpopmail
+	uses test.com as the domain. 
+	</DD><DD>
+	<BR>
+	</DD><DD>
+	You can mix and match name and ip based virtual domains.</DD></DL>
+<H5>
+--enable-relay-clear-minutes=360 expire time for roaming users after
+pop authentication.</H5>
+<DL>
+	<DD>If --enable-roamin-users=y  is set then this option sets how
+	long clearopensmtp should keep IP's in the list. The default is 3
+	hours.</DD></DL>
+<H4>
+Mysql options</H4>
+<H4>--enable-mysql=n|y use mysql, default is no</H4>
+<DL>
+	<DD>Enable using mysql authentication. 
+	</DD><DD>
+	<BR>
+	</DD><DD>
+	NOTE: be sure to edit vmysql.h and set the mysql server name/ip,
+	mysql user and mysql users password. This user must have the ability
+	to create a database vpopmail and create tables within that
+	database.</DD></DL>
+<H4>
+--enable-sqlincdir= Directory where sql include files are.</H4>
+<DL>
+	<DD>Set the directory where the mysql include files are. By default
+	it is set to /usr/local/mysql. 
+	</DD></DL>
+<H4>
+--enable-sqllibdir=/usr/lib/mysql Directory where sql libs are.</H4>
+<DL>
+	<DD>Set the directory where the mysql libmysqlclient.a file is. By
+	default it looks in /usr/lib/mysql</DD></DL>
+<H4>
+--enable-sqllibs=mysqlclient libraries for sql linking.</H4>
+<DL>
+	<DD>Set the library to link in. By default this is libmysqlclient.a.
+		</DD></DL>
+<H4>
+--enable-large-site=n|y Default is no, tune for large numbers of
+users per domain</H4>
+<DL>
+	<DD>By default vpopmail puts all domain information in one table -
+	vpopmail. This is the most efficent method for sites most sites. If
+	you are running one site with a very large number of users, you may
+	want to set this option to be yes. If set to yes, vpopmail will
+	create a table for each virtual domain. The main difference is that
+	the domain name is not stored in the database since the table
+	contains the domains name. For sites with 500,000+ users it can save
+	significant disk space. However, for sites with large numbers of
+	virtual domains it can decrease mysql system performance.</DD></DL>
+<H4>
+Vpasswd/cdb options</H4>
+<H5>--enable-ucspi-dir=dir Directory where the compiled ucspi package
+is.</H5>
+<DL>
+	<DD>Set the directory where the ucspi-tcp package is located. By
+	default this is set to ../ucspi-tcp-0.84. Vpopmail uses headers in
+	this directory and uses two .a files.</DD></DL>
+<H4>
+Logging options</H4>
+<H5>--enable-logging=e|y|n Turn on (y) or off (n) logging to syslog
+or (e) only log errors 
+</H5>
+<DL>
+	<DD>Set the level of logging. By default it only logs pop
+	authentication errors. You can turn off all logging by setting it to
+	no. And you can log all pop authentications by setting it to yes.</DD></DL>
+<H5>
+--enable-log-name=vpopmail set syslog name.</H5>
+<DL>
+	<DD>Over ride the default vpopmail syslog name.</DD></DL>
+<H4>
+User/group options</H4>
+<H5>--enable-vpopuser=vpopmail user vchkpw was installed as.</H5>
+<DL>
+	<DD>If for some reason you want to install this package under a
+	different user name, use this option.</DD></DL>
+<H5>
+--enable-vpopgroup=vchkpw group vchkpw was installed as.</H5>
+<DL>
+	<DD>If for some reason you want to install this package under a
+	different group name, use this option.</DD></DL>
+<H5>
+--enable-admin-email=email-address e-mail of system administrator.</H5>
+<DL>
+	<DD>Override the default email administrator address.</DD></DL>
+<H4>
+Directory and file location options</H4>
+<H5>--enable-tcpserver-file=/etc/tcp.smtp File where tcpserver -x
+relay information is stored.</H5>
+<DL>
+	<DD>Set the file name of your tcp.smtp file. By default the
+	configure program looks in /etc and then in /etc/tcprules.d
+	directories.</DD></DL>
+<H5>
+--enable-qmaildir=dir directory where qmail is installed.</H5>
+<DL>
+	<DD>If you installed qmail into a directory other than /var/qmail,
+	use this option.</DD></DL>
+<H5>
+--enable-tcprules-prog=/usr/local/bin/tcprules where is your tcprules
+program.</H5>
+<DL>
+	<DD>If you installed the tcprules program into a directory other
+	than /usr/local/bin, use this option.</DD></DL>
+<H5>
+--enable-apop-file=/etc/apop-secrets directory where apop secrerts
+are stored.</H5>
+<DL>
+	<DD>Over ride the default location of the apop-secrets file.</DD></DL>
+<H4>
+Other options</H4>
+<H5>--enable-apop=y|n Enable or disable apop authentication. 
+</H5>
+<DL>
+	<DD>Disable apop by setting this option to no. The default is yes
+	(pop and apop).</DD></DL>
+<H5>
+--enable-passwd=y|n Enable or disable /etc/passwd (or shadow)
+authentication. 
+</H5>
+<DL>
+	<DD>Over ride the automatic configuration. By default the
+	configuration program will automatically detect if you are using
+	passwd and shadow passwords. By setting this option to no, you will
+	disable all /etc/passwd authentication.</DD></DL>
+<H3>
+Qmail and Virtual domains</H3>
+<P>Qmail has an idea of email domains that are &quot;local&quot; and
+&quot;virtual&quot;. Local domains are ones which primarily match
+against /etc/passwd. Virtual domains match against domains listed in
+the qmail control file &quot;virtualdomains&quot;. Vpopmail makes use
+of the qmail users/assign file and virtualdomains file. The
+users/assign file gets compiled into a users/cdb file. It is a hashed
+database to speed searches for patterns. If a pattern is matched then
+qmail delivers the email to the directory defined in the file using
+the uid and gid which as also defined. Vpopmail makes use of this
+method to have qmail deliver all virtual domain email as the single
+uid/gid vpopmail/vchkpw. It also uses it to direct delivery to a
+vpopmail/domains/&lt;virtualdomain&gt; directory.</P>
+<P>Once qmail-local gets the information from the users/assign file
+it performs standard .qmail file processing in the directory. Normal
+.qmail-&lt;user&gt; files can be used for forwarding, aliases or
+invoking programs such as ezmlm. If no matches are found qmail-local
+looks for a .qmail-default file. This is the last stage in
+qmail-locals delivery mechansim. Vpopmail uses this file to invoke
+the vdelivermail program. This program takes two parameters, the
+first is not used (it is there for backward compatibility). The
+second parameter is the default delivery if a virtual domain user can
+not be found. Basicly, it can be a directory to deliver the email to,
+an email address to forward the email to, the string
+&quot;bounce-no-mailbox&quot; to bounce the mail back to the sender
+or the string &quot;delete&quot; to drop/delete the mail.</P>
+<P>Once vdelivermail is started up, it uses the core vpopmail api
+calls to check for a virtual domain user. If the user exists, the
+email is delivered into their directory. If vpopmail was configured
+for hard quotas (default is yes with 50Meg quota), then the size of
+the users current email files in their Maildir/new and Maildir/cur
+directories are counted. If the user is over quota the email is
+bounced back to the user with a bounce message that can be
+customized. If the message is 1Kbytes or smaller the email will
+always be delivered. This is so system administration programs can
+always get a message through to the user. 
+</P>
+<H3>Converting current user accounts</H3>
+<P>The vconvert program can convert email accounts from one format
+into another format. Conversion can be between /etc/passwd, vpasswd
+files, mysql (small version) and mysql (large version. 
+</P>
+<P>Most current vpopmail users would probably be interested in how to
+convert current domains into mysql domains. To make it simple to
+convert an entire machine to mysql, use the following command:
+vconvert -c -s  This will go through all the domains in
+~vpopmail/domains directory and read each vpasswd file and load the
+contents into the vpopmail.vpopmail mysql table. The vpasswd file is
+left untouched for safety. Vconvert can also be run against one or
+more domains at a time. This is done by running the command as so:
+vconvert \c \s domain1 domain2 ...</P>
+<P>To convert all users (except root and system accounts) into a
+mysql domain run the following command: vconvert -e -s domain. This
+reads all /etc/passwd accounts and creates mysql entries using their
+passwords. The passwords can be in either /etc/passwd or /etc/shadow.
+These passwords should work under vchkpw authentication program. 
+</P>
+<H3>Security and pop server under tcpserver</H3>
+<P>If all of your pop email accounts are under virtual domains, you
+can increase the security of your pop server by running it under the
+uid and gid of vpopmail/vchkpw using the tcpserver -u and -g options.</P>
+<H3>Commands</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Quota's</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Bouncing mail</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3><a name="directorystructure">Directory structure</a></H3>
+<H4>Overall vpopmail directory structure</H4>
+<P>Vpopmail gets it's own home directory. Under this directory there
+are the following:</P>
+<DL>
+	<DD>bin - contains all the binaries</DD><DD>
+	lib - contains the libvpopmail.a file</DD><DD>
+	include - contains the C header files</DD><DD>
+	users - for backward compatibility for people who mix /etc/passwd
+	users with vpopmail users in one domain</DD><DD>
+	domains - where all the virtual domains are kept.</DD></DL>
+<H4>
+Virtual domain user directory structure</H4>
+<P>Vpopmail uses an adaptive directory structure based on a state
+file &quot;.dir-control&quot; which is automatically managed by the
+core vpopmail api functions &quot;vadduser&quot; and &quot;vdeluser&quot;.
+For sites with 100 users or less, all user directories are stored in
+the virtual domain directory. For sites that go above 100 users the
+adaptive directory structure goes into effect. The basic idea is to
+break up the user Maildir directories across multple directories and
+sub directories so that there are never more than 100 user
+directories in a single directory.</P>
+<P>The default directory setup allows for 62 directories in 3 levels
+and 100 user directories per directory. The total number of user
+directories is equal to 100 + (62 * 100) + (62 * 62 * 100) + (62 * 62
+* 62 * 100) = over 24 million directories. This should be more than
+sufficent for any site and probably goes beyond the technology of
+directory structures. 
+</P>
+<P>If you are going to be storing large numbers of user directories,
+make sure you set your file system to have a higher than normal
+percentage of inodes. 
+</P>
+<P>Vpopmail will automatically create these directories and sub
+directories as needed and populate each directory with up to 100 user
+accounts. As soon as a directory reaches 100 users it will create the
+next directory or sub directory and store the new users directory
+there. 
+</P>
+<P>Look in the source code release directory contrib/ for a
+contributed directory reorganization program.
+</P>
+<H3>Internationalization</H3>
+<P>There is two messages that get inserted into emails. These are
+both for bounced messages. The first is for no such user and the
+second is for user over quota. Site administrators can customize
+these messages by creating a .over-quota.msg and .no-user.msg file in
+a virtual domain directory or in the main virtual domain directory.
+If a .over-quota.msg file or .no-user.msg file are not found in the
+virtual domain directory, then they are checked for in the main
+virtual domain directory. If they are not found there, then the
+default compiled message is included in the bounce message.</P>
+<H3>dot-qmail processing</H3>
+<P STYLE="margin-bottom: 0in">Every virtualdomain get's it's own
+directory under ~vpopmail/domains. Qmail's user/assign file gets an
+entry for each domain that</P>
+<P STYLE="margin-bottom: 0in">points qmail-local deliveries into this
+directory. Therefore, all normal .qmail file processing works in each
+virtual domain. .qmail files just need the user name extension to
+work, i.e. .qmail-joe for user joe. Ezmlm uses .qmail files for
+processing, so it will work under vpopmail.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P>If no user matches a .qmail file then the .qmail-default file is
+processed. This file contains the vdelivermail program. This program
+reads the authentication database (mysql or vpasswd.cdb) and
+deliveres the mail into the users directory. The last parameter of
+vdelivermail can be a maildir owned by vpopmail/vchkpw so that all
+default mail reception ends up there. Or it can have an email
+address, and all default mail is forwarded to this address. Last but
+not least, the last parameter to vdelivermail can be the text
+<FONT FACE="courier, monospace">bounce-no-mailbox.</FONT><FONT FACE="times, serif">
+This will bounce all non matching emails back to the sender.</FONT></P>
+<H3>qmailadmin</H3>
+<P STYLE="margin-bottom: 0in">Qmailadmin provides a web based
+interface for managing vpopmail domains. As of version 0.26, it uses
+the vpopmail api. Which means it can manage mysql or vpasswd.cdb
+authentication. It allows for adding pop users, managing
+forwards/aliases, ezmlm mailing lists and autoresponders.</P>
+<H3>sqwebmail</H3>
+<P STYLE="margin-bottom: 0in">Sqwebmail is a web based email client.
+It reads and writes directly to the users Maildirs. It can talk to
+vpopmail vpasswd files. We have a modified version of 0.24 on
+<A HREF="http://www.inter7.com/vpopmail">http://www.inter7.com/vpopmail</A>
+which uses vpopmail api. It also supports setting the users password
+and lets the user forward their mail. Hopefully these changes will be
+intergrated into the standard distribution :)</P>
+<H3>courier-imap</H3>
+<P STYLE="margin-bottom: 0in">Courier-imap is a IMAP server that
+supports Maildirs. It's current release supports vpopmail vpasswd
+files. We will be integrating the vpopmail api into the main
+distribution soon.</P>
+<H3>mysql authentication</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>cdb authentication</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3><A name="vpopmail-api">vpopmail API</a></H3>
+<P>As of version 3.4.10 vpopmail builds a library located in
+~vpopmail/lib/libvpopmail.a . Linking this library into your
+application will provide access to the following C functions. The
+associated header files are located in ~vpopmail/include.</P>
+<H4>int vadddomain( char *domain)</H4>
+<DL>
+	<DD>domain = the new virtual domain</DD><DD STYLE="margin-bottom: 0.2in">
+	<BR><BR>
+	</DD></DL>
+<H4>
+int vdeldomain( char *domain )</H4>
+<DL>
+	<DD STYLE="margin-bottom: 0.2in">domain = virtual domain to delete</DD></DL>
+<H4>
+int vadduser( char *user, char *domain, char *password, int apop)</H4>
+<DL>
+	<DD>user = new user name</DD><DD>
+	domain = virtual domain</DD><DD>
+	password = clear text password</DD><DD STYLE="margin-bottom: 0.2in">
+	apop = 0 for pop and 1 for apop</DD></DL>
+<H4>
+int vdeluser( char *user, char *domain)</H4>
+<DL>
+	<DD>user = user to delete</DD><DD STYLE="margin-bottom: 0.2in">
+	domain = virtual domain</DD></DL>
+<H4>
+int vpasswd( char *user, char *domain, char *password)</H4>
+<DL>
+	<DD>user = user to change password for</DD><DD>
+	domain = virtual domain</DD><DD STYLE="margin-bottom: 0.2in">
+	password = clear text password 
+	</DD></DL>
+<H4>
+int vsetuserquota( char *user, char *domain, char *quota)</H4>
+<DL>
+	<DD>user = user name to change quota for</DD><DD>
+	domain = virtual domain</DD><DD STYLE="margin-bottom: 0.2in">
+	char = quota in bytes. M/m and K/k abbrieviations apply. 5M 5m and
+	5000000 all equal 5 million bytes hard quota</DD></DL>
+<H3>
+vpopmail authentication API</H3>
+<H4>int vauth_addomain( char *domain)</H4>
+<DL>
+	<DD STYLE="margin-bottom: 0.2in">domain = domain name to add to
+	authentication system</DD></DL>
+<H4>
+int vauth_deldomain( char *domain)</H4>
+<DL>
+	<DD STYLE="margin-bottom: 0.2in">domain = domain name to delete from
+	authentication system</DD></DL>
+<H4>
+int vauth_adduser( char *user, char *domain, char *crypted_password,
+char *dir, int apop)</H4>
+<DL>
+	<DD>user = user to add from authentication system</DD><DD>
+	domain = domain name</DD><DD>
+	crypted_password = encrypted password</DD><DD>
+	dir = full path to directory where users Maildir is stored.</DD><DD STYLE="margin-bottom: 0.2in">
+	apop = 0 for POP and 1 for APOP</DD></DL>
+<H4>
+int vauth_deluser( char *user, char *domain)</H4>
+<DL>
+	<DD>user = user to delete from authentication system</DD><DD STYLE="margin-bottom: 0.2in">
+	domain = domain name</DD></DL>
+<H4>
+int vauth_password( char *user, char *domain, char *crypted_password)</H4>
+<DL>
+	<DD>user = user to change password in authentication system</DD><DD>
+	domain = domain name</DD><DD STYLE="margin-bottom: 0.2in">
+	crypted_password = the encrypted password</DD></DL>
+<H4>
+int vauth_setquota( char *user, char *domain, char *quota)</H4>
+<DL>
+	<DD>user = user to set quota for in authentication system</DD><DD>
+	domain = domain name</DD><DD STYLE="margin-bottom: 0.2in">
+	quota = quota in bytes or using M/m or K/k abbrieviations. 5M = 5m =
+	5000000 
+	</DD></DL>
+<H4>
+struct *passwd vauth_getpw( char *user, char *domain)</H4>
+<DL>
+	<DD>user = user name to retrieve password entry from authentication
+	system</DD><DD STYLE="margin-bottom: 0.2in">
+	domain = domain name</DD></DL>
+<H4>
+int vauth_setpw( struct *passwd, char *domain)</H4>
+<DL>
+	<DD>passwd = pointer to a passwd structure to store in
+	authentication system. 
+	</DD><DD STYLE="margin-bottom: 0.2in">
+	domain = domain name for this passwd structure</DD></DL>
+<H4>
+struct *vauth_user( char *user, char *domain, char *password, char
+*apop)</H4>
+<DL>
+	<DD>user = user name to authenticate</DD><DD>
+	domain = domain name</DD><DD>
+	password = clear text password</DD><DD STYLE="margin-bottom: 0.2in">
+	apop = not used in version 3.4.10</DD></DL>
+<H4>
+struct *vauth_getall( char *domain, int first, int sort_it )</H4>
+<DL>
+	<DD>domain = domain name to retrieve password structure from
+	authentication system</DD><DD>
+	first = 1 to get first record, 0 = get next record 
+	</DD><DD>
+	sort_it = 1 to have the user list sorted alphabetically. This has no
+	effect on vpasswd/cdb method, since all users are added
+	alphabetically. With mysql it adds an order by pw_name to the query.</DD></DL>
+<H4>
+int vget_limits( char *domain, struct vlimits *limits )</H4>
+<DL>
+	<DD>domain = domain name to get limits for</DD>
+	<DD>limits = name of limits structure</DD></DL>
+<H4>
+int vset_limits( char *domain, struct vlimits *limits )</H4>
+<DL>
+	<DD>domain = domain name to set limits for</DD>
+	<DD>limits = name of limits structure</DD></DL>
+<H4>
+int vdel_limits( char *domain )</H4>
+<DL>
+	<DD>domain = domain name to delete limits for</DD>
+	<DD>limits = name of limits structure</DD></DL>
+<P STYLE="margin-bottom: 0in">
+<BR>
+</P>
+</BODY>
+</HTML>

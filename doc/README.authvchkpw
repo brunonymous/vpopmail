@@ -1,0 +1,40 @@
+I have tweaked a bit authvchkpw module for vpopmail. It includes most of the function needed to authenticate.
+To install it you need to apply patch to vpopmail-5.4.26d. It modifies Makefile.am, configure.in, vpopmail.c,
+vpopmail.h and creates a new file authvchkpw.c. I have tested it on my laptop and found it to work. But I give
+no warranty.
+
+AUTHMODULES in courier-imap needs to have authvchkpw as one of the authentication modules
+The module does the following
+reads 5 lines from imaplogin or pop3login. Authenticates the user and if successful executes the imapd or pop3d
+executable. If the authentication is not successful, the data is passed to the next authmodule in chain.
+On successful authentication the module adds entry to lastauth and a entry in relay table.
+Instructions are in INSTALL section below. If you need more help let me know. If more modifications are needed
+let me know.
+
+	/*
+	 * Courier-IMAP authmodules Protocol
+	 * imap\n
+	 * login\n
+	 * postmaster@test.com\n
+	 * pass\n
+	 * newpass\n
+	 * argv[0]=/var/indimail/libexec/authlib/authvchkpw
+	 * argv[1]=/var/indimail/libexec/authlib/authpam
+	 * argv[2]=/var/indimail/bin/imapd
+	 * argv[3]=Maildir
+	*/
+
+INSTALLATION
+
+1. Extract vpopmail Development tar.gz file vpopmail-5.4.26d.tar.gz
+   wget http://downloads.sourceforge.net/vpopmail/vpopmail-5.4.26d.tar.gz
+   cd /home/local/src
+   gunzip -c vpopmail-5.4.26d.tar.gz |tar xf -
+
+2. patch -p0 authvchkpw-vpopmail-5.4.26d.patch
+
+3. cd vpopmail-5.4.26
+   su
+   ./configure # with the usual options
+   make
+   make install-strip

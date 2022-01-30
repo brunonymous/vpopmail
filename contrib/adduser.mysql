@@ -1,0 +1,9 @@
+#
+# sample sql code to add a user
+use vpopmail;
+insert into vpopmail ( pw_name, pw_domain ) values ( 'joe', 'test.com' );
+
+#
+# after the user is added, vpopmail will automatically create
+# the user if they authenticate with pop or email is delivered to them
+# kbo@inter7.com

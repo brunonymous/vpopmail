@@ -1,0 +1,19 @@
+#!/bin/bash
+# 12.14.00 SCN@HOMERNET.NET
+# Script to copy vpopmail user directorys from BACKUPDIR to the appropriate
+# domain/users/0,1,2 etc. Basically adapted my vpassgen script and used them
+# in conjunction to move my users from one failing mail machine to a fresh 
+# setup without cluttering directory structure. Make sure you run it as your 
+# vpopmail user so $HOME is correct and set BACKUPDIR and QUOTAFIELD obviously.
+
+QUOTAFIELD='NOQUOTA'
+BACKUPDIR='/backup/mail'
+for userdir in $HOME/domains/*/*/*
+do
+base=$(basename "${userdir}")
+dir=$(dirname "${userdir}")
+if [ -d "$userdir" -a $base != "Maildir" -a -d "$BACKUPDIR/$base" ]; then
+        cp -auf $BACKUPDIR/$base $userdir
+	echo $BACKUPDIR/$base '->' $userdir
+fi
+done

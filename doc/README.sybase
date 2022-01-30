@@ -1,0 +1,11 @@
+--------------------------------------------------------------------------
+
+Using vpopmail with Sybase is very rare.
+
+The Sybase modules are understood to be functional, but because it not
+as popular as using CDB or MySQL auth systems, you should be very wary
+of implementing the Sybase system on a production server. 
+
+--------------------------------------------------------------------------
+
+Edit vsybase.h and set the server, user, password and app information 

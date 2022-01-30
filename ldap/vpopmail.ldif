@@ -1,0 +1,80 @@
+
+# the very outset of all the things :)
+# ldapadd -f vpopmail.ldif -x -w kingdompass -D 'cn=root,dc=kingdom,dc=lan'
+
+dn: dc=kingdom,dc=lan
+objectclass: dcObject
+objectclass: organization
+o: Kingdom Inc.
+dc: kingdom
+
+dn: cn=root,dc=kingdom,dc=lan
+cn: root
+objectclass: organizationalRole
+
+dn: ou=UNIX,dc=zone3000,dc=lan
+ou: UNIX
+objectClass: top
+objectClass: organizationalUnit
+
+# group, kingdom.lan
+dn: ou=etc,ou=UNIX,dc=kingdom,dc=lan
+ou: etc
+objectClass: top
+objectClass: organizationalUnit
+
+# group, kingdom.lan
+dn: ou=group,ou=etc,ou=UNIX,dc=kingdom,dc=lan
+ou: group
+objectClass: top
+objectClass: organizationalUnit
+
+# passwd, kingdom.lan
+dn: ou=passwd,ou=etc,ou=UNIX,dc=kingdom,dc=lan
+ou: passwd
+objectClass: top
+objectClass: organizationalUnit
+
+# vpopmail system user (anyway you can create it in /etc/files)
+dn: cn=vchkpw,ou=group,ou=etc,ou=UNIX,dc=kingdom,dc=lan
+cn: vchkpw
+gidNumber: 34
+objectClass: top
+objectClass: posixGroup
+
+dn: uid=vpopmail,ou=passwd,ou=etc,ou=UNIX,dc=kingdom,dc=lan
+uid: vpopmail
+givenName: vpopmail
+sn: vpopmail
+cn: MTA Client Side
+userPassword:: Md==
+loginShell: /sbin/nologin
+uidNumber: 39
+gidNumber: 34
+homeDirectory: /usr/home/vpopmail
+shadowMin: -1
+shadowMax: 999999
+shadowWarning: 7
+shadowInactive: -1
+shadowExpire: -1
+shadowFlag: 0
+objectClass: top
+objectClass: person
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: inetOrgPerson
+
+
+# vpopmail configuration (where virtual domains will be created)
+dn: o=vpopmail,ou=UNIX,dc=kingdom,dc=lan
+o: vpopmail
+objectClass: organization
+
+dn: cn=vpopmail,o=vpopmail,ou=UNIX,dc=kingdom,dc=lan
+cn: vpopmail
+description: Vpopmail DB Manager
+postalAddress: abuse@devhost.kingdom.lan$postmaster@devhost.kingdom.lan
+objectClass: top
+objectClass: organizationalRole
+
+

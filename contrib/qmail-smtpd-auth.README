@@ -1,0 +1,9 @@
+Installing Erwin Hoffmann's SMTP AUTH patch to qmail-smtpd:
+
+Change into your qmail/netqmail source directory.
+Untar the qmail-smtpd-auth archive.
+call `./install_auth.sh`
+run `make`
+run `make setup`
+
+Latest version can be found at:  http://www.fehcom.de/qmail/smtpauth.html

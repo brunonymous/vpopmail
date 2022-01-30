@@ -1,0 +1,36 @@
+4/28/2007
+
+* Maildrop Support in vdelivermail
+
+Vdelivermail can call maildrop during local delivery to a Maildir.  To enable
+this, simply compile vpopmail with --enable-maildrop=y.  Configure will
+look for the maildrop program in /usr/bin and /usr/local/bin.  If it is not 
+found, you will need to specify the location with the additional 
+--enable-maildrop-prog='/path/to/maildrop' option.
+
+If you want to disable maildrop processing for a user or all users in a domain, 
+you may do so with the vmoduser program:
+
+vmoduser -m user@domain.com
+or
+vmoduser -m domain.com
+
+When compiled with maildrop support, maildrop processing defaults to on for 
+users.  If you want to override this default on a system or per domain basis, 
+these can be set as well with the following entries to vlimits.default, or 
+.qmailadmin-limits, respectively:
+
+disable_maildrop
+
+maildrop is called with no arguments, allowing for the default maildroprc 
+location (/etc/maildroprc on Linux, /usr/local/etc/maildroprc on FreeBSD).
+You can find two sample maildroprc files in the maildrop subdirectory.  The
+file maildroprc.v1 is for maildrop versions below 2.0, and maildroprc.v2 is 
+for maildrop versions 2.0 or higher.  (Some expression syntax change at 2.0).
+
+If you want to automatically run spamc before calling maildrop, see 
+README.spamassassin
+
+
+Bill Shupp
+hostmaster@shupp.org

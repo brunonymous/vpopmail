@@ -1,0 +1,211 @@
+REMINDER:
+
+When recompiling vpopmail, you need to recompile all binaries that link 
+into the vpopmail libraries.  These include QmailAdmin, qmail-smtpd (if 
+you have the chkuser patch applied), Courier-IMAP etc.
+
+Upgrading to vpopmail-5.4.33
+----------------------------
+If you are storing limits in MySQL, the following schema changes must be made:
+
+ALTER TABLE `limits` ADD `disable_maildrop` TINYINT(1) DEFAULT '0' NOT NULL AFTER `disable_spamassassin`;
+ALTER TABLE `limits` MODIFY `diskquota` BIGINT UNSIGNED NOT NULL DEFAULT 0;
+ALTER TABLE `limits` MODIFY `maxmsgcount` BIGINT UNSIGNED NOT NULL DEFAULT 0;
+ALTER TABLE `limits` MODIFY `defaultquota` BIGINT UNSIGNED NOT NULL DEFAULT 0;
+ALTER TABLE `limits` MODIFY `defaultmaxmsgcount` BIGINT UNSIGNED NOT NULL DEFAULT 0;
+
+Upgrading to vpopmail-5.4.18
+----------------------------
+
+For all SQL back ends you must change the length of the domain or 
+pw_domain field from 64 to 96 characters to reflect the maximum size 
+allowed in vpopmail.
+
+If you are storing limits in mysql you must add the following items to 
+the limits table:
+
+  disable_spamassassasin  tinyint(1) NOT NULL DEFAULT 0
+  delete_spam             tinyint(1) NOT NULL DEFAULT 0
+
+
+
+The following assumes --enable-many-domains (the default) is used.  If you
+use --disable-many-domains then you need to replace the alter command for
+the 'vpopmail' table with one for each of your domain tables.  Also, the
+ip_alias_map, vlog and limits tables only exist if various configuration
+options are enabled, so they may or may not be relevant on your system.
+
+ALTER TABLE `dir_control` CHANGE `domain` `domain` CHAR(96) NOT NULL;
+ALTER TABLE `ip_alias_map` CHANGE domain domain CHAR(96) NOT NULL;
+ALTER TABLE `lastauth` CHANGE domain domain CHAR(96) NOT NULL;
+ALTER TABLE `valias` CHANGE domain domain CHAR(96) NOT NULL;
+ALTER TABLE `vlog` CHANGE domain domain CHAR(96) NOT NULL;
+ALTER TABLE `vpopmail` CHANGE pw_domain pw_domain CHAR(96) NOT NULL;
+
+ALTER TABLE `limits` CHANGE domain domain CHAR(96) NOT NULL,
+      ADD `disable_spamassassin` TINYINT(1) DEFAULT '0' NOT NULL AFTER `disable_smtp`,
+      ADD `delete_spam` TINYINT(1) DEFAULT '0' NOT NULL AFTER `disable_spamassassin`;
+
+Upgrading to vpopmail-5.4
+-------------------------
+
+Upgrading to 5.4 from 5.3.x or 5.2.x is straight forward.
+
+It should really be a case of following these basic steps
+
+  tar xzf vpopmail-5.4.0.tar.gz
+  cd vpopmail-5.4.0
+
+  ./configure --help    
+  # (review the available options)
+
+  ./configure [plus your options go here]
+  # (make sure that you enable the same auth module that you
+  #  have been previously using.. eg --enable-auth-module=mysql)                 
+
+  make
+  make install-strip
+
+This will overwrite your existing vpopmail files with the 5.4 versions.
+No adjustment to your various qmail run scripts etc should be required.
+
+There are only a couple of issues to be aware of :
+
+IF USING SMTP AUTH PATCH TO QMAIL-SMTPD
+
+  * This release of vpopmail includes fixes for vchkpw that may break
+    certain SMTP AUTH implementations.  If SMTP AUTH fails after 
+    installing vpopmail 5.4.x, you may need to use the 
+    qmail-smtpd-auth-0.4.2 patch included in the contrib directory.
+
+  * If you do switch to the 0.4.2 SMTP AUTH patch, you may need to update
+    your qmail-smtpd run file (the first parameter to qmail-smtpd should
+    now be the path to vchkpw and not the hostname).
+
+FOR ALL AUTHENICATION MODULES
+
+  * Some of the configure settings have changed names. Please
+    review them using ./configure --help
+
+  * Rather than using the --enable-default-domain configure switch,
+    the default domain now needs to be stored in the file :
+      ~vpopmail/etc/defaultdomain
+
+  * A new limits system has been designed. Once you install vpopmail-5.4,
+    a file containing the default limits will be created :  
+      ~vpopmail/etc/vlimits.default
+    You should review the contents of this file to ensure it contains
+    appropriate values for your site.
+
+    Instead of using --enable-defaultquota when configuring vpopmail,
+    set the default_quota and default_maxmsgcount values in your
+    ~vpopmail/etc/vlimits.default file.
+
+    More information on the limits system is available in README.vlimits
+
+
+MYSQL SPECIFIC
+
+  * Rather than storing the database connection settings in in vmysql.h,
+    they now need to be stored in 
+      ~vpopmail/etc/vpopmail.mysql
+    This file will be created apon installation of vpopmail-5.4,
+    so if you are using MySQL you will need to edit the file so it
+    contains the correct settings for your database.
+    
+
+
+Upgrading to vpopmail-5.2
+-------------------------
+Everything should be backwardly compatible with
+the following exceptions:
+
+1. Changes have been made to the way aliased domains
+   are managed. We have tested backwards compatibility
+   and can find no problems. 
+
+2. Changes have been made to the mysql table formats.
+   Everything now uses fixed sized columns instead of
+   varchars for efficency. Your current setup should
+   work fine.
+
+3. Clear text passwords are now enabled by default.
+   If you are running mysql and you want to use 
+   clear text passwords. basically you will need
+   to update the table definition. This can be done
+   on a running system, for example:
+ALTER TABLE vpopmail ADD COLUMN pw_clear_passwd char(16);
+
+
+Upgrading to vpopmail-5.0 or above
+----------------------------------
+
+Reports from site administrators indicate that
+vpopmail can be upgraded cleanly with no problems.
+They were able to upgrade to vpopmail-5.0 while
+the system remained in production. No need to
+reboot or restart email. 
+
+As is always recommended, you should back up the
+files that will be over written. You only need
+to backup the ~vpopmail/bin directory. No other
+files are over written. 
+
+The last thing the development community (me included)
+is to end up answering alot of emails about problems
+upgrading to 5.0 from older versions. So, we tried
+to make it as easy as possible.
+
+The configure options that work for most sites is:
+
+./configure ; make ; make install-strip
+
+If you are running a mysql, ldap or anything besides
+the default vpasswd(cdb) module follow the normal
+directions in the INSTALL file.
+
+Clear text passwords are now enabled by default.
+If you are running mysql and you want to use
+clear text passwords. basically you will need
+to update the table definition. This can be done
+on a running system, for example:
+ALTER TABLE vpopmail ADD COLUMN pw_clear_passwd char(16);
+
+If you are using pop authentication before relay,
+otherwise known as roaming-users add the
+
+--enable-roaming-users=y option
+
+If you are running mysql add:
+
+--enable-mysql=y option
+
+If you think email for jack-test@domain.com should go
+should be delivered to jack@domain.com mailbox add:
+
+--enable-qmail-ext=y option
+
+
+If you are running a site which has many users (more than 10,000)
+AND you plan on *never* having more than 10 domains on your machine
+AND you are running mysql/or sql database THEN you may want to consider
+using --enable-many-domains=n 
+This option optimizes SQL table normalization. 
+The default --enable-many-domains=y is what most sites need.
+
+
+If you are moving an old mail system over to a new vpopmail 5.0
+system then might want to use
+
+
+Upgrading to vpopmail-4.9.8 with mysql module:
+
+If you were running vpopmail before 4.9.8 and are
+upgrading to 4.9.8 or newer you might want to
+run the vcdir program that is in the contrib
+directory. See the contrib/vcdir.README file 
+for more details.
+
+
+Quotas
+Please read README.quotas for information about the new softquota mechanism.

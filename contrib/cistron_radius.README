@@ -1,0 +1,7 @@
+The cistron_radius.tar.gz has patches that
+make the Cistron Radius server authenticate against
+vpopmail libraries.
+
+Please unpack the file and read the contents for more information.
+
+Author: "Abdul Rehman Gani" <abdulg@eastcoast.co.za>

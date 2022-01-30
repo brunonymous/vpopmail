@@ -1,0 +1,19 @@
+** vqmaillocal has not been actively maintained and should not be used. **
+
+vqmaillocal is a developmental replacement for
+qmail-local. It will currently deliver email to
+vpopmail existing vpopmail users. 
+
+Todo:
+1) process .qmail-"user" files and .qmail-default file
+ 
+
+How to install:
+
+1) mv /var/qmail/bin/qmail-local /var/qmail/bin/qmail-local.orig
+
+2) cp vqmaillocal /var/qmail/bin/qmail-local
+
+done
+
+

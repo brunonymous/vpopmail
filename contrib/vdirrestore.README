@@ -1,0 +1,12 @@
+So it's basically just the converse of vpassgen, 
+with an added directory checking test and another line to echo the
+output to stdout or a file so you can go back through and check that 
+everything got put in the right places. It might be a good idea to 
+comment out the actual cp line and do a trial run before you use this 
+on a working system since its not a very 'sophisticated' script and i 
+just wrote it to work with my setup. But if it saves someone the
+few minutes it takes to figure it out, i guess its worth it :)
+
+Cheers,
+Sailin 
+HomerNet

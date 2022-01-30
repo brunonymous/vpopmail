@@ -1,0 +1,30 @@
+Version 4.9.7 Release Notes
+
+FILE I/O and LOCKING CODE
+------------------------------------------------------------------
+The file i/o locking code has been audited. All code was changed to
+update files by opening the orignal file in read only mode, unless
+it is the first time, then create it. Then open a temp file with
+a .pid extension. Make all the changes to the temp file. Then use
+the rename(2) function call to automically move the new file over
+the old file. This is similar to how some qmail file modification
+is done.
+
+No read locks are requested for read only i/o.
+
+Write locks are requested for modify i/o.
+
+To reduce the locking load on the file system, a lock is
+not requested for the .dir-control file. If we miss counting
+a user during a simulatious user addition, it's not the
+end of the world. The number of user entry in that file
+is not meant to be exact. It is more of a guide line on
+how to spread out user directories across the vpopmail 
+3 level user directory tree.
+
+This should reduce the over all file i/o synchronicity 
+requirements. And hence reduce the possiblity of lost
+file data (like loosing a complete vpasswd user file!!!)
+
+At least we are using the more reliable rename(2) function.
+

@@ -1,0 +1,122 @@
+<HTML> 
+<HEAD> 
+<TITLE>vpopbull - post a message to virtual domain users 
+</TITLE> 
+</HEAD>
+
+<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSYS">SYNOPSYS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#OPTIONS">OPTIONS</A>
+	<LI><A HREF="#RETURN_VALUE">RETURN VALUE</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<h4><A NAME="NAME">NAME</A></h4>
+vpopbull -  post a message to virtual domain users
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SYNOPSYS">SYNOPSYS</A></h4>
+<STRONG>vpopbull</STRONG>
+
+<STRONG>[-f filename ] [-e exclude email addresses file]</STRONG>
+<STRONG>[-v] [-n] [-c] [-h] [-s] [virtual domain ...]</STRONG>
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="DESCRIPTION">DESCRIPTION</A></h4>
+Post a message to virtual domain users
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="OPTIONS">OPTIONS</A></h4>
+<DL>
+<DT><STRONG>[-f filename]</STRONG><DD>
+File containing the email message to be posted.
+<P>
+<DT><STRONG>[-e exclude email addresses file]</STRONG><DD>
+File containing a list of email addresses to exclude from posting.
+<P>
+<DT><STRONG>[-v]</STRONG><DD>
+Verbose mode. Prints out each email address it is sending to.
+<P>
+<DT><STRONG>[-n]</STRONG><DD>
+Don't actuall mail it. using -v and -n can be used to list out all
+virtual domain email accounts.
+<P>
+<DT><STRONG>[-c]</STRONG><DD>
+Default, copy message to users directory.
+<P>
+<DT><STRONG>[-h]</STRONG><DD>
+Make a hard link from email file to virtual users directory. Email file
+must be on the same physical device as the virtual users directories. 
+This will save disk space.
+<P>
+<DT><STRONG>[-s]</STRONG><DD>
+Make a soft link from the email file to the virutal users directory. This
+will save on disk space but will not remove the file when all users read it.
+If the original file is deleted, users will not be able to read the message.
+<P>
+<DT><STRONG>[virtual domain ... ]</STRONG><DD>
+List of domains to send the message to. If this is not supplied then the
+message is sent to all virtual domains.
+<P>
+
+
+<P>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<h4><A NAME="RETURN_VALUE">RETURN VALUE</A></h4>
+0 if all steps were successful, non-zero otherwise. If any of the steps
+fail, a diagnostic message is printed.
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SEE_ALSO">SEE ALSO</A></h4>
+<CODE><a href="index.html">vpopmail</a></CODE><BR>
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="NOTES">NOTES</A></h4>
+Must be run as root or vpopmail user. 
+
+
+<P>
+<P>
+<HR>
+<h4><A NAME="AUTHOR">AUTHOR</A></h4>
+<a href=http://www.inter7.com/vpopmail/AUTHORS>AUTHORS</a>
+
+<P>
+</DL>
+</BODY>
+</HTML>

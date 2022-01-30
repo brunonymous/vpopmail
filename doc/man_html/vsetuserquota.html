@@ -1,0 +1,105 @@
+<HTML> 
+<HEAD> 
+<TITLE>vsetuserquota - set a users hard quota limit 
+</TITLE> 
+</HEAD>
+
+<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSYS">SYNOPSYS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#OPTIONS">OPTIONS</A>
+	<LI><A HREF="#RETURN_VALUE">RETURN VALUE</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<h4><A NAME="NAME">NAME</A></h4>
+vsetuserquota - set a users hard quota limit 
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SYNOPSYS">SYNOPSYS</A></h4>
+<STRONG>vsetuserquota</STRONG>
+
+<STRONG>[email address] [quota in bytes]</STRONG>
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="DESCRIPTION">DESCRIPTION</A></h4>
+Change a users hard quota limit. --enable-hardquota=y must be set during
+vpopmail configuration for this to have any effect. Default configuration
+sets hard quota on.
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="OPTIONS">OPTIONS</A></h4>
+<DL>
+<DT><STRONG>[email address]</STRONG><DD>
+The email address of the user.
+<P>
+<DT><STRONG>[quota in bytes]</STRONG><DD>
+The hard quota limit in bytes. Abbrivations can be used for kilobytes
+and mega bytes. For example vsetuserquota user@domain 5m will set the
+quota to 5 mega bytes. Or vsetuserquota user@domain 2k will set the
+quota to 2k. <P>
+vsetuserquota user@domain NOQUOTA will turn off all quota checking
+for that user.
+<P>
+
+
+<P>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<h4><A NAME="RETURN_VALUE">RETURN VALUE</A></h4>
+0 if all steps were successful, non-zero otherwise. If any of the steps
+fail, a diagnostic message is printed.
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SEE_ALSO">SEE ALSO</A></h4>
+<CODE><a href="vadduser.html">vadduser</a></CODE><BR>
+<CODE><a href="index.html">vpopmail</a></CODE><BR>
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="NOTES">NOTES</A></h4>
+Must be run as root or vpopmail user.
+
+
+<P>
+<P>
+<HR>
+<h4><A NAME="AUTHOR">AUTHOR</A></h4>
+<a href=http://www.inter7.com/vpopmail/AUTHORS>AUTHORS</a>
+
+<P>
+</DL>
+</BODY>
+</HTML>

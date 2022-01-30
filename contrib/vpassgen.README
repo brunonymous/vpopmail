@@ -1,0 +1,30 @@
+Subject: 
+        Shell script to regenerate vpasswd file
+   Date: 
+        Wed, 13 Dec 2000 14:56:49 -0800
+   From: 
+        "Sailin Nelson" <scn@homernet.net>
+    To: 
+        <vchkpw@inter7.com>
+
+
+
+
+Just in case any of you find yourself in the frustrating situation I was 
+in a few weeks ago where your vpasswd file gets narfled and for one 
+reason another you dont have a current backup or your backup is corrupt, 
+I'm attaching a really basic script (the first real shell script I've 
+ever written, so excuse any glaring flaws) that walks through the directory 
+structure and makes vpasswd entrys. You will of course need to change the 
+users passwords as they call and complain :) Also, if anyones interested 
+I wrote another script that will the backup directory generated 
+by this script and restore it to the appropriate user directorys and 
+subdirectorys (0,1,2 etc) which is nice if your setting up a new 
+vpopmail setup and dont want to bring over your existing cluttered 
+directory structure. I will post that if anyone requests it. Hope this 
+helps someone out.
+ 
+Cheers,
+Sailin Nelson
+HomerNet
+ 

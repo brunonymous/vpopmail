@@ -1,0 +1,112 @@
+<HTML> 
+<HEAD> 
+<TITLE>vdelivermail - .qmail-default file to deliver email to virtual users 
+</TITLE> 
+</HEAD>
+
+<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSYS">SYNOPSYS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#OPTIONS">OPTIONS</A>
+	<LI><A HREF="#RETURN_VALUE">RETURN VALUE</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<h4><A NAME="NAME">NAME</A></h4>
+vdelivermail - deliver mail to a virtual user
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SYNOPSYS">SYNOPSYS</A></h4>
+<STRONG>vdelivermail</STRONG>
+
+<STRONG>[""] [default account]</STRONG>
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="DESCRIPTION">DESCRIPTION</A></h4>
+Called from the virtual domains .qmail-default file to deliver email to
+a virtual user.
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="OPTIONS">OPTIONS</A></h4>
+<DL>
+<DT><STRONG>[""]</STRONG><DD>
+Blank double quote for backward compatibility
+<P>
+<DT><STRONG>[default account for delivery]</STRONG><DD>
+If the email does match any .qmail-user file and also does not match
+any virtual domain user, this is the default delivery instructions.
+There are three values this may contain.
+<UL>
+<li>Full path to a vpopmail user directory</li>
+<li>email address to forward email too</li>
+<li>the string <strong>bounce-no-mailbox</strong> to bounce the email
+back to the sender.</li>
+<li>the string <strong>delete</strong> to delete the email.</li>
+</ul>
+Default is the postmaster account
+
+<P>
+
+
+<P>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<h4><A NAME="RETURN_VALUE">RETURN VALUE</A></h4>
+0 if all steps were successful. 100 if user is over quota or 
+<strong>bounce-no-mailbox</strong> is set and no matching user is found.
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SEE_ALSO">SEE ALSO</A></h4>
+<CODE><a href="vadduser.html">vadduser</a></CODE><BR>
+<CODE><a href="vadddomain.html">vadddomain</a></CODE><BR>
+<CODE><a href="vchkpw.html">vchkpw</a></CODE><BR>
+<CODE><a href="index.html">vpopmail</a></CODE><BR>
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="NOTES">NOTES</A></h4>
+Invoked by qmail-local and run as vpopmail user.
+
+
+<P>
+<P>
+<HR>
+<h4><A NAME="AUTHOR">AUTHOR</A></h4>
+<a href=http://www.inter7.com/vpopmail/AUTHORS>AUTHORS</a>
+
+<P>
+</DL>
+</BODY>
+</HTML>

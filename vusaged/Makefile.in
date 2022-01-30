@@ -1,0 +1,51 @@
+CC=@PTHREAD_CC@
+CFLAGS=@CPPFLAGS@ 
+DEFS=$(CFLAGS) @PTHREAD_CFLAGS@
+LIBS=@LDFLAGS@ @PTHREAD_CFLAGS@ @PTHREAD_LIBS@ @LIBS@
+DEPS=Makefile
+BINS=vusaged
+
+all: $(BINS)
+
+vusaged: vusaged.o socket.o grow.o signal.o packet.o query.o cache.o user.o directory.o userstore.o list.o domain.o queue.o shutdown.o
+	$(CC) -o vusaged vusaged.o socket.o grow.o signal.o packet.o query.o cache.o user.o directory.o userstore.o list.o domain.o queue.o shutdown.o $(LIBS)
+
+vusaged.o: $(DEPS) vusaged.c socket.h signal.h cache.h directory.h queue.h shutdown.h userstore.h
+	$(CC) $(DEFS) -o vusaged.o -c vusaged.c
+
+socket.o: $(DEPS) socket.c socket.h packet.h grow.h
+	$(CC) $(DEFS) -o socket.o -c socket.c
+grow.o: $(DEPS) grow.c grow.h
+	$(CC) $(DEFS) -o grow.o -c grow.c
+signal.o: $(DEPS) signal.c signal.h queue.h shutdown.h
+	$(CC) $(DEFS) -o signal.o -c signal.c
+packet.o: $(DEPS) packet.c packet.h query.h socket.h
+	$(CC) $(DEFS) -o packet.o -c packet.c
+query.o: $(DEPS) query.c query.h user.h packet.h queue.h
+	$(CC) $(DEFS) -o query.o -c query.c
+cache.o: $(DEPS) cache.c cache.h uthash.h
+	$(CC) $(DEFS) -o cache.o -c cache.c
+user.o: $(DEPS) user.c user.h cache.h ../storage.h userstore.h path.h domain.h queue.h
+	$(CC) $(DEFS) -o user.o -c user.c
+directory.o: $(DEPS) directory.c directory.h ../storage.h  path.h
+	$(CC) $(DEFS) -o directory.o -c directory.c
+userstore.o: $(DEPS) userstore.c userstore.h ../storage.h directory.h list.h path.h 
+	$(CC) $(DEFS) -o userstore.o -c userstore.c
+list.o: $(DEPS) list.c list.h
+	$(CC) $(DEFS) -o list.o -c list.c
+domain.o: $(DEPS) domain.c domain.h cache.h
+	$(CC) $(DEFS) -o domain.o -c domain.c
+queue.o: $(DEPS) queue.c queue.h  user.h domain.h userstore.h shutdown.h
+	$(CC) $(DEFS) -o queue.o -c queue.c
+shutdown.o: $(DEPS) shutdown.c shutdown.h queue.h
+	$(CC) $(DEFS) -o shutdown.o -c shutdown.c
+
+clean:
+	rm -f *.o *.core core $(BINS)
+
+distclean: clean
+	rm -rf config.log config.status Makefile autom4te.cache
+
+#install: $(BINS)
+#	cp -f $(BINS) $(VPOPMAIL_HOME)/bin
+#	cp -f etc/vusaged.conf etc/vusagec.conf $(VPOPMAIL_HOME)/etc

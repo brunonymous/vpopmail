@@ -1,0 +1,90 @@
+#!/bin/sh
+#
+# vusaged		Starts and stops the vpopmail usage daemon
+#
+# chkconfig: 345 80 30
+# description: Daemon responsible for monitoring disk usage of vpopmail
+#			   users and domain
+#
+
+PIDFILE=/var/run/vusaged.pid
+VUSAGED=/home/vpopmail/bin/vusaged
+
+case "$1" in
+   start)
+	  echo -n "Starting vusaged: "
+
+	  if [ -e $PIDFILE ]; then
+		 echo "already running or stale pidfile $PIDFILE"
+		 exit 0
+	  fi
+
+	  $VUSAGED > /dev/null 2> /dev/null &
+
+	  #
+	  # Check to make sure it started
+	  #
+
+	  sleep 1
+	  kill -0 $! > /dev/null 2> /dev/null
+
+	  if [ $? -eq 1 ]; then
+		 echo "failed"
+		 exit 1
+	  fi
+	  
+	  echo "started"
+
+	  #
+	  # Record pid
+	  #
+
+	  echo $! > $PIDFILE
+	  ;;
+   stop)
+	  echo -n "Stopping vusaged: "
+
+	  if [ ! -e $PIDFILE ]; then
+		 echo "not running"
+		 exit 1
+	  fi
+
+	  #
+	  # Get pid
+	  #
+
+	  PID=`head -n 1 $PIDFILE 2> /dev/null` 
+
+	  #
+	  # Send shutdown signal
+	  #
+
+	  kill -TERM $PID > /dev/null 2> /dev/null
+
+	  #
+	  # Wait for vusaged to stop
+	  #
+
+	  while true; do
+		 kill -0 $PID > /dev/null 2> /dev/null
+
+		 if [ $? -eq 1 ]; then
+			break
+		 fi
+
+		 sleep 1
+	  done
+
+	  echo "stopped"
+	  rm -f $PIDFILE
+	  ;;
+   restart)
+	  $0 stop
+	  $0 start
+	  ;;
+   *)
+	  echo "Usage: vusaged {start|stop|restart}"
+	  exit 1
+esac
+
+exit 0

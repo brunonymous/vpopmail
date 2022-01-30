@@ -1,0 +1,257 @@
+For more information see the README files
+ README	     
+ README.mysql   
+ README.pgsql
+ README.ldap  
+ README.sybase
+ README.oracle  
+ README.vlimits
+ README.quotas
+ README.roamingusers
+
+For information on upgrading please see the UPGRADE files
+ UPGRADE  
+
+If you are having problems with your mail system, it is probably best to
+start with the lists vchkpw@inter7.com, or vpoppmail-devel@lists.sourceforge.net
+rather than annoying the qmail list with vpopmail problems.  (Unless you are SURE
+it is a problem with qmail.)
+
+
+Note: If you are using any of the BSD distro's you should probably use gmake
+      and not make.
+
+VPopMail Upgrade Instructions are in the UPGRADE File.
+Hints on converting an old system to a new vpopmail system
+are also in the UPGRADE file.
+
+1. check for diskspace
+	# df
+	  or
+	# df -k 
+
+	Determine which disk partition you want to place the pop email.
+
+2. add groups and users and home directory (if they don't already exist)
+	# groupadd -g 89 vchkpw
+	# useradd -g vchkpw -u 89 vpopmail
+
+We recommend you use the user and group id's of 89. The FreeBSD folks
+have reserved 89 for the group and 89 for the user for vpopmail.  Feel
+free to have the OS assign the group/user id (for example, Solaris won't 
+allow gid 89).
+
+If you want to place the vpopmail home dir in a different disk partition
+than the default home dir location try:
+
+	# useradd -g vchkpw -u 89 -d /path/to/where/you/want vpopmail
+
+	RedHat and other linux systems place useradd and groupadd in
+	the /usr/sbin directory.
+
+NOTE: the home directory of vpopmail must exist before you continue with
+the installation.
+
+3.  FAST default install
+    $ su
+    # ./configure
+    # make
+    # make install-strip 
+
+If you are making vpopmail for roaming users to be able to relay
+through your smtp server after the authenticate with pop do: 
+
+    $ su
+    # ./configure --enable-roaming-users
+    # make
+    # make install-strip
+
+NOTE: To get a complete list of configure options type: ./configure --help
+
+3.a configure option recommendations for New Sites
+
+If you are installing a brand new email server please make
+use of the new vpopmail-5.0 features. We recommend adding
+the following options to your ./configure line:
+
+--enable-clear-passwd ( store a clear text copy of users password )
+
+This option helps sysadmins and help desk people. They find it
+helpful to be able to see the pasword the user should be using.
+
+--enable-valias (Turn on vpopmail alias processing)
+
+This is for the mysql module. It allows aliases/forwards to
+be stored in the mysql database. It also turns on the valias
+command line program to maintain alias/forwards
+
+--enable-mysql-replication ( requires advanced sys admin skills )
+
+If you have a running mysql replicated site, multiple machines with
+a central update mysql server and a farm of machines running read-only
+mysql servers, THEN, you can make use of this feature. It allows
+vpopmail to do read-only queries to a local mysql server, and send
+all update transactions (add user, change password, delete domain)
+to a central mysql database. A must use for clustered sites 
+vpopmail to lo
+
+4. Check your ~vpopmail/etc/tcp.smtp file 
+
+    This file should list all the static IP's of your machines
+    you want to allow to relay out to the internet.
+	
+    For example: If you have a whole C class named 10.1.1.X
+    either edit /etc/tcp.smtp file, or use the following to appened:
+
+	# echo "10.1.1.:allow,RELAYCLIENT=\"\"" >> ~vpopmail/etc/tcp.smtp
+
+	you can add other ip's later, when ever you want.
+
+
+5. Setup crontab for --enable-roaming-users (default is disabled)
+	Add a line to roots crontab
+	$ su
+	# crontab -e
+
+	add a line like the following:
+
+    	40 * * * * /home-dir-of-vpopmail/bin/clearopensmtp 2>&1 > /dev/null
+
+	replace "home-dir-of-vpopmail" with the home directory of vpopmail user. 
+	To find the home dir of vpopmail:
+		grep vpopmail /etc/passwd
+        pick out the entry for the home dir
+
+vpopmail:x:502:502::/home/vpopmail:/bin/bash
+                    ^^^^^^^^^^^^^^
+
+Done!
+
+You can go on to add a virtual domain and users if you wish
+
+6. Add a virtual domain
+
+	For this example, we will add a domain "test.com"
+
+	# cd /home-dir-of-vpopmail/bin
+
+	# ./vadddomain test.com
+		or
+	# ./vadddomain test.com password-for-postmaster
+
+	vadddomain will modify the following qmail files 
+		(default locations used)
+	/var/qmail/control/locals
+	/var/qmail/control/rcpthosts
+	/var/qmail/control/morercpthosts (if rcpthosts > than 50 lines)
+	/var/qmail/control/virtualdomains
+	/var/qmail/users/assign
+	/var/qmail/users/cdb
+
+	It will also create a domains directory 
+		~vpopmail/domains/test.com
+		~vpopmail/domains/test.com/postmaster/Maildir ...
+		~vpopmail/domains/test.com/vpasswd
+		~vpopmail/domains/test.com/vpasswd.cdb
+
+	If you do not specify a password on the command line, it
+	will prompt for a password for the postmaster.
+
+	Then it will send a kill -HUP signal to qmail-send telling it
+	to re-read the control files.
+
+	Note: setting up DNS MX records for the virtual domain is not
+	covered in this INSTALL file.
+
+7. Add a new pop user.
+
+	You can install qmailadmin and administer your new pop mail
+	system via a web interface. Or you can use the command line
+	interface.
+
+	# cd /home-dir-of-vpopmail/bin
+	# ./vadduser newuser@test.com
+		or
+	# ./vadduser newuser@test.com <password-for-newuser>
+
+	In the case where the domain is specified (user@domain.com), 
+	the user is added to the ~vpopmail/domains/domain.com directory.
+	If you don't enter a password on the command line, it will
+	prompt for a password.
+
+8. Delete a pop user
+
+	# cd /home-dir-of-vpopmail/bin
+	# ./vdeluser newuser@test.com (for the test.com virtualdomain example)
+
+9. Delete a virtual domain
+
+	# cd /home-dir-of-vpopmail/bin
+	# ./vdeldomain test.com
+
+10. Changing a pop users password (new in 3.4.3)
+	# cd /home-dir-of-vpopmail/bin
+	# ./vpasswd user@domain.com
+			or
+	# ./vpasswd user@domain.com <password-for-user@domain.com>
+
+11. Information details hiding 
+	Alot of the underlying qmail details are not covered in this
+	file. This is on purpose. If you want to find out the internal
+	workings of vchkpw and qmail look into /var/qmail/control files
+	and /var/qmail/users/assign file. 
+
+12. How to use vchkpw with qmail-pop3d server
+
+	Here is a sample startup line for qmail-pop3d and vchkpw
+
+	env - PATH="/var/qmail/bin:/usr/local/bin" \
+	tcpserver -H -R 0 pop-3 \
+	/var/qmail/bin/qmail-popup your.domain.com \
+	/home-dir-of-vpopmail/bin/vchkpw /var/qmail/bin/qmail-pop3d Maildir &
+
+	If you want to authenticate against /etc/passwd do not use the -u -g
+	options, since it would need to run as root.
+ 
+	Notice where the vchkpw program goes. 
+	Some sites use pop3 instead of pop-3. /etc/services has the
+        master list. grep pop /etc/services to find out.
+
+	If you want to use inetd style startup use this:
+		pop3 stream tcp nowait root \
+  		/var/qmail/bin/qmail-popup \
+  		qmail-popup mail.stilen.com \
+  		/home/vpopmail/bin/vchkpw \
+  		/var/qmail/bin/qmail-pop3d \
+  		Maildir
+
+	If you want to use xinetd style use this:
+service pop3
+{
+    disable              = no
+    socket_type       = stream
+    protocol             = tcp
+    wait                   = no
+    user                  = root
+    server                = /var/qmail/bin/qmail-popup
+    server_args        = foo.bar.com /home/vpopmail/bin/vchkpw /var/qmail/bin/qmail-pop3d Maildir
+    log_type             = FILE /var/log/xinetd.log
+    log_on_success  = HOST
+    log_on_failure      = HOST RECORD
+}
+
+13. For sites using the mysql module and --enable-roaming-users it
+    is highly suggested to use Matt Simersons tcpserver-mysql patch.
+    This removes the need for vpopmail to compile a tcp.smtp.cdb file
+    for each pop authentication. Instead, tcpserver looks directly
+    into the vpopmail mysql table of IP's.
+
+14. Good luck
+
+For further information and support, please visit the SourceForge project 
+page: http://sourceforge.net/projects/vpopmail/
+
+Please report any bugs to the Bug Tracker on SourceForge.
+
+Join the vpopmail users mailing list vchkpw@inter7.com by sending an email 
+to vchkpw-subscribe@inter7.com

@@ -1,0 +1,104 @@
+<HTML> 
+<HEAD> 
+<TITLE>clearopensmtp - add a virtual user
+</TITLE> 
+</HEAD>
+
+<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSYS">SYNOPSYS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#OPTIONS">OPTIONS</A>
+	<LI><A HREF="#RETURN_VALUE">RETURN VALUE</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<h4><A NAME="NAME">NAME</A></h4>
+clearopensmtp - remove old IP's added after pop authentication 
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SYNOPSYS">SYNOPSYS</A></h4>
+<STRONG>clearopensmtp</STRONG>
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="DESCRIPTION">DESCRIPTION</A></h4>
+vpopmail can be configured to allow pop users IP's to be added to the
+list of IP's which are allowed to relay through the smtp server. This
+is done with the --enable-roaming-users=y option. With this option,
+users IP's who authenitcate via pop are added to the list of IP's which
+can relay through the smtp server. The smtp server must be run with 
+tcpserver -x filename option.
+<P>
+Each authenticated pop users IP is added with a time stamp. Every time
+clearopensmtp is run, this list is checked for time stamps which are
+older than the --enable-relay-clear-minutes option. The default is
+360 minutes or 3 hours. Any IP with a time stamp older than this number
+are removed from the list.
+<P>
+clearopenstmp rebuilds the tcp.smtp.cdb file with the list of static
+IP's stored in tcp.smtp and the list of IP's in open-smtp.
+
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="OPTIONS">OPTIONS</A></h4>
+None
+
+<P>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<h4><A NAME="RETURN_VALUE">RETURN VALUE</A></h4>
+0 if all steps were successful, non-zero otherwise. 
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SEE_ALSO">SEE ALSO</A></h4>
+<CODE><a href="index.html">vpopmail</a></CODE><BR>
+<CODE><a href="vchkpw.html">vchkpw</a></CODE><BR>
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="NOTES">NOTES</A></h4>
+This program is only required when vpopmail is configured with 
+--enable-roaming-users=y. It should be run from roots crontab ever hour.
+
+
+<P>
+<P>
+<HR>
+<h4><A NAME="AUTHOR">AUTHOR</A></h4>
+<a href=http://www.inter7.com/vpopmail/AUTHORS>AUTHORS</a>
+
+<P>
+</DL>
+</BODY>
+</HTML>

@@ -1,0 +1,125 @@
+If you are considering roaming users, you should seriously consider smtp-auth.
+Linux users can follow Bill Shupp's toaster, and I believe Matt Simerson's toaster
+supports smtp-auth for BSD.
+
+Rick Widmer  20070502
+
+
+========================================================================================
+
+November 2003 : Michael Bowe <mbowe@pipeline.com.au>
+
+VPOPMAIL ROAMING USERS
+~~~~~~~~~~~~~~~~~~~~~~
+Latest version available from :
+http://www.bowe.id.au/michael/isp/webmail-server.htm
+
+
+With qmail, the typical way to control mail relaying is to put a list of 
+rules into a file called tcp.smtp. The tcprules program is then used to 
+compile this file into cdb database format with the output being stored 
+in a file called tcp.smtp.cdb. The tcpserver program is configured (using 
+the -x parameter) to read this file and thus know which SMTP clients are 
+permitted to relay mail.
+
+This type of configuration works well if there is a known range of IP 
+addresses that are permitted to relay mail. eg the IP's on the qmail 
+server's local LAN. However if the qmail server needs to provide outbound 
+SMTP services for clients who may be connecting from any IP, you are going 
+to run into problems. What is needed is some way to automate the process 
+of granting users the ability to relay mail, without opening up access 
+to all and sundry on the Internet.
+
+vpopmail includes a solution for this problem. The solution is known as 
+"roaming users" and is typically implemented with a technique known as 
+"POP-before-SMTP". Once a client has successfully authenticated via POP3, 
+vpopmail will add the client's IP to a list. vpopmail then merges this 
+list with the contents of the tcp.smtp file and runs the tcprules 
+program to compile a new version of the tcp.smtp.cdb file. Thus the client 
+can now relay mail. 
+
+In addition to storing the client's IP address, vpopmail will also store 
+the time of authentication. The postmaster uses a cronjob on the qmail 
+server to periodically (eg once per hour) run the clearopensmtp program. 
+This program scans through the list of roaming clients and removes any 
+entries that exceed the nominated age (eg 3 hours). This ensures that 
+the list of IPs does not grow out of bounds, and that the roaming IPs 
+are closed within a reasonable timeframe after being opened.
+
+configure options for vpopmail that relate to roaming users :
+
+  ./configure \
+  --enable-roaming-users \              <- enable roaming users functionality
+  --enable-tcprules-prog=path \         <- defaults to /usr/local/bin/tcprules
+  --enable-tcpserver-file=path \        <- defaults to /home/vpopmail/etc/tcp.smtp
+  --enable-relay-clear-minutes=minutes  <- defaults to 180
+
+Example /var/qmail/supervise/qmail-smtpd/run file for POP-before-SMTP :
+
+  #!/bin/sh
+  QMAILDUID=`id -u qmaild`
+  NOFILESGID=`id -g qmaild`
+  exec /usr/local/bin/softlimit -m 2000000 \
+    /usr/local/bin/tcpserver -v -x /home/vpopmail/etc/tcp.smtp.cdb -c 40 -R \
+    -u "$QMAILDUID" -g "$NOFILESGID" 0 smtp \
+    /usr/local/bin/rblsmtpd -b -C -r list.dsbl.org \
+    -t 5 \
+    /var/qmail/bin/qmail-smtpd 2>&1
+
+
+Notes :
+
+qmail servers are typically built with the tcp.smtp files being located in 
+the /etc directory. This is not usually suitable for vpopmail roaming 
+users, since the /etc directory will (should) not have write permissions 
+for the vpopmail user. Therefore it is not going to be possible for vpopmail 
+to write out updated versions of the tcp.smtp.cdb file. For use with roaming 
+users, it is recommended that the tcp.smtp files are stored in ~vpopmail/etc
+
+If a user auths, and their IP already exists in the roaming IP list, 
+the timestamp for the entry is updated, but the tcprules program is not run. 
+There is no need to rebuild the tcp.smtp.cdb file as the IP address is 
+already permitted to relay. Rebuilding the file will only waste disk and CPU 
+time.
+
+If the vpopmail server is using the default cdb authentication backend,
+then the list of roaming IPs will be stored in a file called 
+~vpopmail/etc/open-smtp. If the vpopmail server is using the MySQL backend, 
+the roaming IPs will be stored in a database table called relay. The SQL 
+backend will give better performance on a busy server. Either way though, 
+you should be cautious about enabling roaming user functionality on a very 
+busy server, as a large amount of disk and CPU will be used with the continual 
+rebuilding of the tcp.smtp.cdb file. If the server is busy enough you could 
+run into nasty file locking issues which will cause vpopmail password 
+authentication to intermittently fail. If you absolutely must have 
+POP-before-SMTP functionality on your busy server, then there are only two 
+possible solutions that I can think of  : 1) you could try putting the 
+tcp.smtp files onto a RAM disk, or 2) use vpopmail's MySQL auth backend 
+plus use Matt Simerson's tcpserver patch that allows all of the tcp.smtp 
+files to be stored in MySQL 
+http://matt.simerson.net/computing/mail/qmail/ucspi-tcp-0.88-mysql.patch
+
+For POP-before-SMTP to work, the POP3 daemon will need to run under the
+tcpserver program. This is because vpopmail uses tcpserver's TCPREMOTEIP
+environment variable to work out what IP address the POP3 user is 
+connecting from.
+
+Over time POP-before-SMTP is becoming a less favored way of allowing roaming 
+users to relay mail. SMTP-Auth appears to becoming the more preferred option, 
+as it scales much more easily on a busy server. However for a small to medium 
+sized server, POP-before-SMTP is still quite a workable option. If you would 
+like investigate the use of SMTP-Auth, take a look at this patch 
+http://www.fehcom.de/qmail/smtpauth.html#PATCHES  
+
+IMAP-before-SMTP is possible when using Courier-IMAP v3.x. However it only 
+works when configured "--with-authvchkpw --without-authdaemon". When running 
+--without-authdaemon, Courier-IMAP's authvchkpw code is able to make use of 
+vpopmail's roaming user functions to allow IMAP-before-SMTP functionality. 
+IMAP-before-SMTP is not possible when Courier-IMAP has been complied 
+--with-authdaemon, because in this mode the user's IP address is not made 
+available to the authvchkpw code (the TCPREMOTEIP env var is not set). Also, 
+in Courier-IMAP v4.x and later, --without-authdaemon functionality is no
+longer available this preventing IMAP-before-SMTP from working.
+
+----------------------------------------------------------------------------
+

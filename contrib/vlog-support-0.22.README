@@ -1,0 +1,19 @@
+Sequential Logic
+VLOG Support Webpages
+Compiled by: Richard A. Secor (rsecor@seqlogic.com)
+2001-12-13 (Updated: 2002-01-15)
+---------------------------------------------------
+
+This is small group of PHP Scripts you can use to view the information.
+(If anyone has any ideas for more features let me know.)
+
+global.php
+index.php
+lastauth.php
+license.php
+pop3.php
+smtp-relay.php
+
+Just edit global.php and enter the correct database information.
+You may want to password protect the directory containing these scripts.
+

@@ -1,0 +1,117 @@
+<HTML> 
+<HEAD> 
+<TITLE>vadduser - add a virtual user
+</TITLE> 
+</HEAD>
+
+<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSYS">SYNOPSYS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#OPTIONS">OPTIONS</A>
+	<LI><A HREF="#RETURN_VALUE">RETURN VALUE</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<h4><A NAME="NAME">NAME</A></h4>
+vadduser - add a virtual user to a domain
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SYNOPSYS">SYNOPSYS</A></h4>
+<STRONG>vadduser</STRONG>
+
+<STRONG>[email address] [password] [-a] [-q hard quota in bytes]</STRONG>
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="DESCRIPTION">DESCRIPTION</A></h4>
+Adds a new user to a virtual domain. No additional modifications to the
+system are required. The account becomes active immediately.
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="OPTIONS">OPTIONS</A></h4>
+<DL>
+<DT><STRONG>[email address]</STRONG><DD>
+The new email address of the user. Requires the domain name as well as
+the user name. For example: user@domain.com. If the domain name is not
+specified the user is added to the default domain.
+<P>
+<DT><STRONG>[password]</STRONG><DD>
+Set the password for the user. If the password is not supplied on the 
+command line then vadduser will prompt standard in for the password.
+The password must be typed in twice.
+<P>
+<DT><STRONG>[-a]</STRONG><DD>
+Set the account to use APOP instead of the default POP.
+<P>
+<DT><STRONG>[-q quota in bytes]</STRONG><DD>
+Set the hard quota limit for the user. If not supplied then the default
+system hard quota limit is set. The default limit is either 50M or
+what ever is set via --enable-hardquota. If set to NOQUOTA then the
+user will have no quota limit.
+<P>
+
+
+<P>
+
+<P>
+
+</DL>
+<P>
+<HR>
+<h4><A NAME="RETURN_VALUE">RETURN VALUE</A></h4>
+0 if all steps were successful, non-zero otherwise. If any of the steps
+fail, a diagnostic message is printed.
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="SEE_ALSO">SEE ALSO</A></h4>
+<CODE><a href="vdeluser.html">vdeluser</a></CODE><BR>
+<CODE><a href="vpasswd.html">vpasswd</a></CODE><BR>
+<CODE><a href="vsetuserquota.html">vsetuserquota</a></CODE><BR>
+<CODE><a href="index.html">vpopmail</a></CODE><BR>
+
+
+<P>
+
+<P>
+<HR>
+<h4><A NAME="NOTES">NOTES</A></h4>
+User account becomes active immediately.
+<P>
+Must be run as root or vpopmail user. If no domain is specified
+then must be run as root.
+
+
+<P>
+<P>
+<HR>
+<h4><A NAME="AUTHOR">AUTHOR</A></h4>
+<a href=http://www.inter7.com/vpopmail/AUTHORS>AUTHORS</a>
+
+<P>
+</DL>
+</BODY>
+</HTML>

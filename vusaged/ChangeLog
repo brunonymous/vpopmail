@@ -1,0 +1,64 @@
+1.0.0 03/10/09 <matt@inter7.com>
+   Tagged 1.0.0
+
+1.0.0-rc2 03/09/09 <matt@inter7.com>
+   Updated to use autotools for build support
+   Added count support to directory and userstore systems for future support of Maildir++ count quotas
+   Added creation of shared object library for client API
+   Renamed config.c/config.h to conf.c/conf.h to avoid possible conflicts with vpopmail
+
+1.0.0-rc1 03/05/09 <matt@inter7.com>
+   Added ASSERT_DEBUG debugging to cache.c
+   Added new function userstore_free_directory which deallocates user directories and sets usage to 0
+   Updated userstore_poll to call userstore_free_directory if stat on user Maildir fails
+   Updated queue_controller only to call user_verify if no userstore directories are present
+   Added config_begin which looks for a configuration file in several locations
+   Updated vusaged main to use config_begin
+   Added vusagec.conf
+   Added ippp.c which does IP:PORT pair handling
+   Updated socket.c to use ippp_parse
+   Updated client API to use a pointer to a client handle rather than an integer handle
+   Updated client API to read vusagec.conf for server communication settings
+   Updated client API to support networked socket connections
+   Added support for newuser learning queue
+   Added queue_check_newuser to add to newuser learning queue
+
+0.0.6 03/04/09 <matt@inter7.com>
+   Added support for listening on an IP and port for connections
+   Fixed bug in socket_read that would call socket_write with free'd ptr
+   Fixed bug in user_verify that called userstore_usage with NULL ptr
+   Added support for Socket::Allow configuration
+   Added rejection of source IPs not explicitly allowed
+   Added user_get_usage to solve non-thread-safe vpopmail issue
+   Added domain_get_usage to solve non-thread-safe vpopmail issue
+   Updated query_parse to use user_get_usage and domain_get_usage
+   Updated query_parse to convert values to network byte order
+   Updated client_query to convert values to local byte order
+   Fixed bug in socket_read which evaluated a free'd ptr after socket_write
+   Updated socket_write not to complain about EPIPE write error
+   Updated directory_filesize not to return an error when ENOENT
+   Upgraded uthash from 1.4 to 1.5
+   Removed ENOENT stat failure reporting from userstore_poll
+   Set directory_filesize inline
+   Updated directory_filesize to use strtoll on original string instead of atoll on a copied buffer
+
+0.0.5 03/02/09 <matt@inter7.com>
+   Added discovery of removed users
+   Added warning if polling time is too small
+   Discovery of lost users now also updates domain usage records
+   Discovery of new folders under user Maildir
+   Discovery of deleted or renamed folders under user Maildir
+   Added userstore aging
+
+0.0.4 02/18/09 <matt@inter7.com>
+   Fixed bug in user_poll which would call userstore_poll with a NULL
+   value if userstore_load failed
+
+   Changed userstore_find_directories not to output error if opendir()
+   fails on non-directory path
+
+   Changed directory_filesize not to output error if stat() fails on
+   non-existent path
+
+0.0.3 02/13/09 <matt@inter7.com>
+   First public release candidate packaged

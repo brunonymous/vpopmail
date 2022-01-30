@@ -1,0 +1,39 @@
+0.) Install libev
+  # wget http://dist.schmorp.de/libev/libev-3.53.tar.gz
+  # tar -zxf libev-3.53.tar.gz
+  # cd libev-3.53
+  # ./configure && make && make install
+
+1.) Compile
+
+  # cd vusaged
+  # ./configure
+  # make
+
+2.) Copy to vpopmail location
+
+  # cp -f vusaged /home/vpopmail/bin
+  # cp -f etc/vusaged.conf /home/vpopmail/etc
+
+3.) Edit vusaged.conf and vusagec.conf
+
+  # vi /home/vpopmail/etc/vusaged.conf
+  # vi /home/vpopmail/etc/vusagec.conf
+
+4.) Create startup (CentOS example)
+
+  # cp contrib/rc.vusaged /etc/init.d/vusaged
+
+  Edit paths
+  # vi /etc/init.d/vusaged
+
+  # /sbin/chkconfig --add vusaged
+  # /sbin/chkconfig vusaged on
+
+5.) Start it up (CentOS example)
+
+  # /sbin/service vusaged start
+
+6.) Test
+
+  # /home/vpopmail/bin/vusagec user@domain

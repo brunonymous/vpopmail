@@ -1,0 +1,41 @@
+attributetype ( 1.3.6.1.4.1.8868.3.1.2 NAME 'qmailGID'
+        DESC 'qmail group id'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{100}
+        SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.8868.3.1.3 NAME 'qmailUID'
+        DESC 'qmail userid'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{100}
+        SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.8868.3.1.4 NAME 'qmaildomain'
+        DESC 'qmail Domain'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{100}
+        SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.8868.3.1.6 NAME 'mailQuota'
+        DESC 'qmail quota'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{100}
+        SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.8868.3.1.7 NAME 'mailMessageStore'
+        DESC 'qmail Store'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{100}
+        SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.8868.3.1.8 NAME 'clearPassword'
+        DESC 'qmail Clear Password for APOP'
+        EQUALITY octetStringMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{128}
+        SINGLE-VALUE )
+
+objectclass ( 1.3.6.1.4.1.8868.3.1 NAME 'qmailUser'
+        DESC 'qmail local mail recipient'
+        SUP ( top $ person $ organizationalPerson )
+        MAY ( sn $ cn $ qmailGID $ qmailUID $ qmaildomain $ mailQuota $ mailMessageStore $ clearPassword $ uid $ name ))
+

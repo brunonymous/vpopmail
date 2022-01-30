@@ -1,0 +1,23 @@
+--------------------------------------------------------------------------
+
+Using vpopmail with Oracle is very rare.
+
+The Oracle modules are understood to be functional, but because it not
+as popular as using CDB or MySQL auth systems, you should be very wary
+of implementing the Oracle system on a production server. 
+
+--------------------------------------------------------------------------
+
+Edit voracle.h and set the service, user and password information.
+
+Then run: proc voracle.pc
+
+proc or Pro-C is oracle's precompiler.
+See your oracle documetation for more
+information. 
+
+You might also need to create the tables by hand
+
+relay table
+
+

@@ -1,0 +1,27 @@
+vcdir converts a .dir_control file into a mysql dir_control table. 
+
+Compile line example for gnu/linux:
+
+Compile:
+gcc -I.. -I/usr/include/mysql -g -O2 -Wall -c vcdir.c
+
+Link:
+gcc -g -O2 -Wall -o vcdir vcdir.o ../libvpopmail.a -L/usr/lib/mysql -lmysqlclient -lz -lnsl -lcrypt -lm
+
+
+Example on how to use it:
+
+./vcdir domainname.com
+
+In the above example vcdir converted a domain named "domainname.com"
+
+
+To check if it worked, use the mysql command line interface.
+
+mysql -uroot -p
+<enter your root password>
+use vpopmail;
+select * from dir_control where domain = "domainname.com";
+
+It should show data. The second column is the current number
+of users on your system.

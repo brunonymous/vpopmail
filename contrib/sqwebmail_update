@@ -1,0 +1,25 @@
+> Then i've updated the sqwebmail authlib/preauthvchkpw.c code to use
+> this new code. Here is my code sample from that file:
+>
+>         vget_assign(s,NULL,0,&uid, &gid);
+>         pw=vauth_getpw(usercopy, s);
+>         if ( pw!=NULL ) {
+>                 if (pw->pw_dir == NULL || strlen(pw->pw_dir) == 0 ) {
+>                         make_user_dir(usercopy, s, uid, gid);
+>                         pw=vauth_getpw(usercopy, s);
+>                 }
+>                 vlogauth(pw, s, service);
+>         }
+>         free(usercopy);
+>         vclose();
+>
+> You'll notice it does the check for a null or zero length directory
+> and calls make_user_dir to make it.
+>
+> It also calls the new vlogauth function to updated the lastlog table
+> so you'll know if they authenticated with sqwebmail. By default this
+> code is disabled. if you want it to log that you'll need to add
+> --enable-auth-log=y
+
+Ken Jones
+March 12, 2001

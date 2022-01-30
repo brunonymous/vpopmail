@@ -1,0 +1,652 @@
+--------------------------------------------------------------------------
+
+Using vpopmail with LDAP is not very common.
+The LDAP modules are functional, but because it not as popular as using 
+CDB or MySQL auth systems, you should be wary of implementing the LDAP 
+system on a production server.
+
+--------------------------------------------------------------------------
+
+So far this file is just a collection of everything that has ever been 
+written about ldap.  It would be nice for someone who is actually using
+it, or even better someone who has to figure it out for the first time,
+to go through this file and clean it up.  If you do, please send a copy
+to the vpopmail-devel@lists.sourceforge.net so it can be included in
+the next release...
+
+--------------------------------------------------------------------------
+
+README file from ldap patch [1609348]
+
+
+
+OS: FreeBSD devhost.kingdom.lan 6.0-RELEASE FreeBSD 6.0-RELEASE #0: Fri Nov 24 14:49:25 EET 2006
+    life@devhost.kingdom.lan:/usr/src/sys/i386/compile/DEVHOST  i386
+
+##########
+
+gcc:	Using built-in specs.
+	Configured with: FreeBSD/i386 system compiler
+	Thread model: posix
+	gcc version 3.4.4 [FreeBSD] 20050518
+
+##########
+
+LDAP: openldap-2.3.20
+
+##########
+
+OpenLdap Built:
+    LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib/sasl2:/usr/local/BerkeleyDB.4.3/lib"
+    LDFLAGS="-L/usr/local/lib -L/usr/local/lib/sasl2 -L/usr/local/BerkeleyDB.4.3/lib \
+             -R/usr/local/lib -R/usr/local/lib/sasl2 -R/usr/local/BerkeleyDB.4.3/lib" \
+    CPPFLAGS="-I/usr/local/include -I/usr/local/BerkeleyDB.4.3/include"
+ ./configure --prefix=/usr/local/ldap --enable-syslog --enable-local \
+ --with-threads --with-tls --with-multiple-precision --with-kerberos \
+ --enable-slapd=yes --enable-slurpd=yes --enable-cleartext=no --enable-crypt=yes \
+ --enable-lmpasswd=yes --enable-spasswd=yes --enable-rewrite=yes --enable-rlookups=yes \
+ --enable-wrappers=yes --enable-dnssrv=yes --enable-modules=yes \
+ --enable-ldap=yes --enable-ldbm=yes --enable-meta=yes --enable-monitor=yes \
+ --enable-null=yes --enable-passwd=yes --enable-perl=yes --enable-relay=yes \
+ --enable-shell=no --enable-sql=no --enable-overlays=yes --enable-dynamic=yes \
+ --with-dyngroup=yes --with-proxycache=yes \
+ --with-cyrus-sasl=yes --enable-spasswd=yes \
+ --enable-bdb=yes --enable-hdb=yes &&
+  make depend &&
+  make &&
+  make install &&
+
+##########
+
+vpopmail-5.4.17
+
+##########
+
+1. configure and configure.in
+    "-lresolv" is not used, thus replaced.
+    path to lib has been changed to "-L/usr/local/ldap/lib"
+    path to includes has been changed to "-I/usr/local/ldap/include"
+
+
+2. qmailUser.schema
+    the "qmailUser" objectClas is derived from "person" objectClass
+    so there MUST be both "cn" and "sn" objectClass'es.
+
+
+3. vauth.h
+    two struct members have been added to "struct vqpasswd"
+    for "cn" and "sn" objectClass'es
+	char *pw_cn;                  /* LDAP's "cn" demanded by "objectClass: qmailUser" */
+	char *pw_sn;                  /* LDAP's "sn" demanded by "objectClass: qmailUser" */
+
+
+4. vldap.h
+    two objectClass'es have been added to char *vldap_attrs[]
+    "cn",               /* LDAP's "cn" demanded by "objectClass: qmailUser" */
+    "sn",               /* LDAP's "cn" demanded by "objectClass: qmailUser" */
+
+
+5. vldap.c
+    NUM_LDAP_FIELDS constant has been given new values
+    char *ldap_fields[] has been added objectClass'es "cn" and "sn"
+	"cn",	/* 7 LDAP's "cn" demanded by "objectClass: qmailUser" */
+	"sn",	/* 8 LDAP's "cn" demanded by "objectClass: qmailUser" */
+
+    "cn" and "sn" objectClass'es have been added to char *ldap_fields[]
+	"cn",	/* 7 LDAP's "cn" demanded by "objectClass: qmailUser"           */
+	"sn",	/* 8 LDAP's "cn" demanded by "objectClass: qmailUser"           */
+
+    in function vauth_getpw() according to the above mentioned changes:
+	vals = ldap_get_values(ld, msg, "cn");
+	    ...
+	vals = ldap_get_values(ld, msg, "sn");
+	    ...
+    have been added
+
+    in function vauth_adduser() "cn" and "sn" values are processed
+        snprintf(common_name, sizeof(common_name), "%s@%s", user, domain);
+        lm[7]->mod_values[0] = safe_strdup(common_name); for "cn"
+        lm[8]->mod_values[0] = safe_strdup(gecos); for "sn"
+	
+
+    in function vauth_setpw() the same "cn" and "sn" values are processed
+	lm[7]->mod_values[0] = safe_strdup(inpw->pw_cn);            /* coonardoo@gmail.com */
+	lm[8]->mod_values[0] = safe_strdup(inpw->pw_sn);            /* coonardoo@gmail.com */
+
+
+    comments have been added for funtion safe_free() as for the warning:
+    "dereferencing type-punned pointer will break strict-aliasing rules"
+    that pops up during compilation. this warning doen't occur with gcc-2.91.* && gcc-4.0.2
+
+
+a shortened variant of slapd configuration of mine is given in the subdirectory ldap here.	
+
+###
+#EOF
+###
+
+
+
+--------------------------------------------------------------------------
+
+2006/Jun/30 : Pavel Vinogradov <blaze.cs@gmail.com>
+
+    Now LDAP connection info is stored in ~vpopmail/etc/vpopmail.ldap.  
+The format of the file is as follows:
+   
+   ldap server|ldap port|ldap user|ldap password|ldap basedn
+   
+Comments (lines starting with '#') are allowed. 
+Port should be the actual port.
+   
+For example:
+   
+# This is the LDAP configuration file for vpopmail.
+localhost|389|cn=vpopmailuser, o=vpopmail|vpoppasswd|o=vpopmail
+
+
+2003/Dec/29 : Michael Bowe <mbowe@pipeline.com.au>
+
+A QUICK GUIDE TO VPOPMAIL WITH LDAP
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Latest version of this guide is available from
+http://www.bowe.id.au/michael/isp/vpopmail-ldap.htm
+
+Note that I am not an LDAP expert, so some of the terminology used within
+this guide may not be 100% correct. I wrote this guide because many people
+on the vchkpw mailing list had questions about how to get vpopmail/ldap
+running. The docs we had so far (below) were a little difficult to understand
+and follow for an LDAP beginner, so I decided to put together this doc
+in the hope of presenting an easy-to-follow installation guide.
+
+
+
+OpenLDAP can operate with a number of database filesystems. For this example
+we are going to use the bdb database system.
+
+Download/compile BDB
+
+  cd /usr/local/src
+  wget http://www.sleepycat.com/update/snapshot/db-4.2.52.tar.gz
+  tar xzf db-4.2.52.tar.gz
+  cd db-4.2.52
+  cd build_unix
+  ../dist/configure
+  make
+  make install
+  cd ..
+
+Download/compile OpenLDAP
+
+  http://www.openldap.org/software/download/
+  wget http://www.planetmirror.com/pub/openldap/openldap-release/openldap-2.1.23.tgz
+  tar xzf openldap-2.1.23.tgz 
+  cd openldap-2.1.23
+
+  env CPPFLAGS=-I/usr/local/BerkeleyDB.4.2/include \
+    LDFLAGS=-L/usr/local/BerkeleyDB.4.2/lib \
+    ./configure
+
+  make depend
+  make
+  make install
+  cd..
+
+Download/configure/compile vpopmail
+
+  Make the user accounts
+
+    # If you are using RH8.0, you will probably need to run this following command,
+    # because RH8.0 comes preconfigured with UID/GID 89 allocated to postfix
+    #
+    # userdel postfix
+
+    groupadd -g 89 vchkpw
+    useradd -g vchkpw -u 89 vpopmail
+
+    # We recommend you use the user and group id's of 89. The FreeBSD folks
+    # have reserved 89 for the group and 89 for the user for vpopmail.  Feel
+    # free to have the OS assign the group/user id (for example, Solaris won't 
+    # allow gid 89).
+
+  Download and unpack the source
+
+    cd /usr/local/src
+    wget http://telia.dl.sourceforge.net/sourceforge/vpopmail/vpopmail-5.4.4.tar.gz
+    tar xzf vpopmail-5.4.4.tar.gz
+    chown -R root.root vpopmail-5.4.4
+    cd vpopmail-5.4.4
+
+  Setup the LDAP support in the vpopmail sources
+
+    echo "localhost|389|cn=vpopmailuser, o=vpopmail|vpoppasswd|o=vpopmail" > ~vpopmail/etc/vpopmail.ldap
+    chown vpopmail.vchkpw ~vpopmail/etc/vpopmail.ldap
+    chmod 640 ~vpopmail/etc/vpopmail.ldap
+
+  Compile vpopmail with options like this
+
+    ./configure --enable-auth-module=ldap
+    make
+    make install-strip
+ 
+Configure/start the OpenLDAP server
+
+  Copy the vpopmail ldap schema into the OpenLDAP schema directory
+
+    cd ldap
+    cp qmailUser.schema /usr/local/etc/openldap/schema
+
+  Configure OpenLDAP to host the vpopmail database
+  
+    cp slapd.conf /usr/local/etc/openldap
+    chmod 600 /usr/local/etc/openldap/slapd.conf
+    chown root.root /usr/local/etc/openldap/slapd.conf
+  
+  Start the OpenLDP server
+
+    /usr/local/libexec/slapd
+   
+  If all goes well, 'ps axf' should give something like this :
+
+    18415 ?        S      0:00 /usr/local/libexec/slapd
+    18416 ?        S      0:00  \_ /usr/local/libexec/slapd
+    18417 ?        S      0:00      \_ /usr/local/libexec/slapd
+  
+  Now create the vpopmail database in the LDAP system
+
+    ldapadd -f vpopmail.ldif -x -w vpoppasswd -D'cn=vpopmailuser,o=vpopmail'
+
+  If all goes well you will see something like :
+
+    adding new entry "o=vpopmail"
+
+  Get the ldap server to confirm that the vpopmail database exists 
+
+    ldapsearch -x -b 'o=vpopmail'
+
+Now you should be right to go!
+
+As you start adding domains and users, the ldap directory tree will eventually look like this :
+
+  vpopmail (o)
+    somedomain1.com (ou)
+      someuser1 
+      someuser2 
+      someuser3 
+   somedomain2.com (ou)
+      someuser1
+      someuser2
+      someuser3
+
+
+Other useful references I found on the net :
+
+  http://marc.theaimsgroup.com/?l=vchkpw&m=105781736114278&w=2
+  http://www.tiski.de/linux/patches/vpopmail/LDAP-VPOPMAIL.html
+
+
+
+
+**************************************************************************
+
+PREVIOUS VPOPMAIL/LDAP DOCUMENTATION :
+
+See the ldap directory for the
+qmailUser.schema and slapd.conf files
+
+!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Only for 2.07+ (Not only but tested on it)
+I used OpenLDAP from SuSe 7.2 version OpenLDAP 2.0.7-Release 21 July 2000 7
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Start:
+
+first install one of ldap sources (rpm is fine :) )
+then create base ldif file thats looks like this ( or similar)
+
+second set up ldap (ok these are basic steps not a real ldap setup howto...)
+first create slapd.conf (or use default created by instalation)
+put into it next lines (on begining of file)
+------------------
+include     /etc/openldap/schema/qmailUser.schema
+schemacheck off
+------------------
+(file definitions qmailUser.schema could be found at the end of this file)
+
+What that above means? 
+That is include of qmailUser.schema definiton of qmail (vpopmail) specific
+attributes and is needed.
+then put these lines for database defitinion
+---------------------------------------------
+#######################################################################
+# ldbm database definitions
+#######################################################################
+
+database ldbm
+suffix      "o=vpop"
+rootdn      "cn=Manager, o=vpop"
+rootpw      proba
+directory   /var/lib/ldap
+index   objectClass             pres,eq
+index   cn,sn,uid               eq
+index   qmailUID,qmailGID   eq
+access to *
+        by self write
+        by dn="cn=manager,o=vpop" write
+        by * write
+
+------------------------------------------------
+ 
+
+-------------------------------
+# vpop
+dn: o=vpop
+objectClass: Organization
+o: vpop
+-------------------------------
+name it first.ldif or whatever
+
+then if all step above works  do next:
+
+-------- command to execute ----------
+ldapadd -x -w proba -D'cn=manager,o=vpop' < first.ldif
+-------- -----------------------------
+
+
+and that should reply to you something like
+
+adding new entry "o=vpop"
+
+
+Next thing you should check is does it realy works ;)
+
+check it simply typing command
+
+-----------command --------
+ldapsearch -x -b 'o=vpop'
+---------------------------
+output is shown below (something like propably not same) 
+
+---out---
+version: 2
+
+#
+# filter: (objectclass=*)
+# requesting: ALL
+#
+
+# vpop
+dn: o=vpop
+objectClass: Organization
+o: vpop
+
+---out---
+
+Ok if all that passed ok ( I'll return to qmailUser.schema later)
+you have ldap server up and running (this will not make you ldap guru :)
+even I do not know ldap that much to call myself "good ldaper or like" :) )
+
+
+Next you should compile vpopmail source 
+you could use next steps for it 
+edit vldap.h and change next lines to yuore settings( // lines are my
+comments you will not find them in vldap.h :) ) 
+--------
+#define VLDAP_SERVER "localhost" // change this line to point 
+                                 // to your ldap server
+
+#define VLDAP_PORT LDAP_PORT // no need to change if you didn't 
+                             //change anything)
+
+#define VLDAP_USER "cn=Manager, o=vpop" // MUST change to reflect youre
+                                        //settings from 
+#define VLDAP_PASSWORD "proba"  // MUST change to reflect youre
+                                // setting from /etc/openldap/slapd.conf
+
+#define VLDAP_BASEDN "ou=%s, o=vpop" // MUST change to reflect youre
+                                     // setting from /etc/openldap/slapd.conf
+--------
+then type 
+"./configure --enable-auth-module=ldap " and that "should" setup ldap in vpopmail 
+without hasle :) 
+"make" "make install" and that should get you to running version of vpopmail
+in ~vpopmail/bin dir 
+try adding new domain with ~vpopmail/bin/vadddomain terere.com dddddasfa
+if there is no any stupid error
+"Error: Unable to chdir to vpopmail/users directory"
+
+that's it :)
+again you can check does it work with 
+ldapsearch -x -b'o=vpop' if there is terere.com in output
+
+
+Resources non known except www.openldap.org and www.inter7.com 
+
+
+-------------------qmailUser.schema---------------------------
+
+attributetype ( 1.3.6.1.4.1.8868.3.1.2
+        NAME 'qmailGID'
+        DESC 'qmail group id'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{100}
+        SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.8868.3.1.3
+        NAME 'qmailUID'
+        DESC 'qmail userid'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{100}
+        SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.8868.3.1.4
+        NAME 'qmaildomain'
+        DESC 'qmail Domain'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{100}
+        SINGLE-VALUE )
+attributetype ( 1.3.6.1.4.1.8868.3.1.6
+        NAME 'mailQuota'
+        DESC 'qmail quota'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{100}
+        SINGLE-VALUE )
+attributetype ( 1.3.6.1.4.1.8868.3.1.7
+        NAME 'mailMessageStore'
+        DESC 'qmail Store'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{100}
+        SINGLE-VALUE )
+
+objectclass ( 1.3.6.1.4.1.8868.3.1
+        NAME 'qmailUser'
+        DESC 'qmail local mail recipient'
+        SUP ( top $ person $ organizationalPerson )
+        MAY ( qmailGID $ qmailUID $ qmaildomain $
+                mailQuota $ mailMessageStore $ name $ sn $ cn $ userPassword) )
+
+
+LDAP FAQ
+
+
+2. After installing vpopmail successfully, running vadddomain gives a core
+   dump error. What's wrong?
+
+You probably configured --with-hardquota=xxxxx. This is a known bug. Hopefully
+it will be fixed soon =)
+
+3. After installing vpopmail successfully, running vadddomain gives an error:
+
+Error: Unable to chdir to vpopmail/users directory
+
+I don't know :(
+From looking at the permissions in /home/vpopmail, everything looks fine.
+If you found a solution to this problem, please let me know (and share
+with other vpopmailers on the mailing list :)
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+All errors are fixed for ldap module :)
+This only works on OpenLDAP 2.0.7-Release     21 July 2000 
+( I don't use openldap ver 1)
+
+error No. 2 from README.ldap
+
+Fixed ... (snprintf error %s instead %i was in vldap.c on line 463)
+
+error No. 3 from README.ldap
+
+Fixed ... ( everything changed is in vpopmail.patch)
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Explanation:
+
+
+2 error (stupid typo error :] )
+3. error(s) were not that stupid :(
+	and need more explaining
+
+Ok here it is ;)
+
+Fist there is a big diference in openldap ver 1 and openldap ver 2
+
+first ther is more strict schema checking 
+uid attribute cann't be used with this patch 
+need for PosixAccount objectClass ...
+
+third error was or it is not who knows 
+
+  memset((char *)crypted, 0x0, 100);
+  if ( password[0] != 0 ) {
+    mkpasswd3(password, crypted, 100);
+//    crypted[0] = 0;
+  } else {
+    mkpasswd3(password, crypted, 100);
+  }
+
+that check simply do not work I know it should but solution is simple ;) 
+
+and I think these are all errors 
+
+
+This was for all folks trying to make it working with openldap  V2
+
+
+---------- OLD LDAP README ----------------------
+From: vol [mailto:vol]On Behalf Of vol@inter7.com
+Sent: Wednesday, December 05, 2001 1:15 PM
+To: vchkpw@inter7.com
+Subject: vpopmail, the LDAP module, and OpenLDAP
+
+
+Alright.  I've responded to about 15 messages on this list
+about the use of the OpenLDAP module.  I'm going to do my best
+to explain everything that has ever been asked.  In case you
+aren't aware, I'm the author of the LDAP module.  A little background
+on the project, we needed to convert a large LDAP solution over
+to a vpopmail-based LDAP solution as per the client's request.
+I knew nothing of LDAP before I began work on the project, and believe
+you me, I had a hell of a time figuring out exactly how LDAP functioned.
+
+First of all, there is absolutely NO RELATIONSHIP between
+vpopmail's LDAP module, and qmail-ldap.  qmail-ldap is an
+LDAP-enabled qmail-based MTA.  The vpopmail LDAP module reads
+user authentication information out of an LDAP database.
+
+Second, the LDAP module DOES work, however, it is not actively
+maintained because here at Inter7, we dislike LDAP, and anything
+using it with a passion.  LDAP is the most terribly conceived idea
+ever to hit the database industry, and to top it off, it is widely
+used with bulky commercial mail solutions.  I wish I knew why.
+Just to quelch any flaming I might get for my opinions in this area;
+I've been over the code, I've worked with the big solutions, and I've
+seen many benchmarks.
+
+Here are common problems that will arise when trying to use the vpopmail
+LDAP module:
+
+
+
+  1) Unable to add new information to the database (domains, users, etc)
+     and/or unable to authenticate out of the database
+
+     Various misconfigurations can occur here:
+        A) Bad authentication information (see vldap.h)
+        B) Bad BASEDN information (see vldap.h)
+        C) Mismatched schema (see vldap.h, and your ldap configurations)
+
+     This will be the main problem people run into.  This is a
+     misconfiguration on your end.  Not the module.  As far as I know,
+     there have been no major re-writes of the OpenLDAP API that would
+     cause the base functions to work differently causing database
+     information retrieval to fail or act differently.
+
+  2) Things are not properly removed from the database
+
+     This worked in the original code.  Someone reported an error
+     where something was not properly removed from the database.
+     I have not worked with the LDAP module since early 4.x versions.
+     As you know, 5.0 is a big re-write of a lot of the base vpopmail
+     code.  I cannot verify if this is a true bug or not.
+
+Instructions for installing the vpopmail LDAP module:
+
+  Okay, folks.  I need to say right up front.  If you don't know
+  enough about LDAP to construct a database from scratch without
+  reading for hours on end, you're not going to have great success
+  with this installation.  If you're not already an LDAP guru,
+  please just decide upon another database.  You will be a lot
+  happier in the long run.
+
+  First of all, you need to configure your LDAP server.  For our
+  purposes, this will be slapd.  You'll need to edit your slapd.conf
+  and your slapd.oc.conf (I think its called that still).  Add
+  the new schema information.  You can find all this in vldap.c/vldap.h
+  source files (or you used to be able to).  Again, if you don't know
+  what a 'schema' is, you really shouldnt be mucking with LDAP.  Do
+  NOT attempt to modify the structure.  It will BREAK.  Follow the
+  schema from vldap.h/vldap.c.
+
+  Modify vldap.h for the authentication information.
+
+  Now, in the old version I worked with, you had to create the basedn
+  to start.  If this is no longer needed, ignore this step.  Create
+  a little LDIF (you'll probably want to save this in case of problems)
+  and pipe it into the database.
+
+  If you followed these instructions, and understood everything you
+  were doing more or less, your vpopmail LDAP configuration should be
+  working smoothly.
+
+Last words:
+
+  As I said above, the LDAP module has not been verified as extremely
+  functional since early 4.x versions.  We'd prefer, if you must use
+  backend database, that you go with MySQL.  I'd really suggest you
+  look at the benchmarking on the MySQL site.  MySQL cant hold 2
+terabytes
+  of authentication information, but it's three times faster than
+Oracle.
+  On the flip side, Oracle CAN hold 2 terabytes of authentication
+  information, but unless you're a fortune 500 company, you probably
+  will not need to bother with that type of database storage.
+
+  Any further questions about LDAP, we will not be able to help you with
+  unless you want to fund some sort of documentation, update project.
+  We always welcome funding for any project, of course. :)
+
+I hope this has helped those of you who absolutely cannot live without
+LDAP authentication.
+
+Good luck!
+-- 
+vol@inter7.com
+Inter7 Internet Technologies, Inc.
+www.inter7.com - 847-492-0470
+Prices at http://www.inter7.com/prices

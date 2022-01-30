@@ -1,0 +1,29 @@
+VPOPMAIL'S "IP ALIAS" DOMAINS
+-----------------------------
+
+When performing an auth in vpopmail, you would generally use the full email
+address as the username
+
+If many of your users are from a single domain, then you can optionally put
+that domain into the ~vpopmail/etc/defaultdomain file. Then if a user doesnt
+include a domain when they auth, the auth will be automatically performed 
+against the domain nominated in the defaultdomain file.
+
+This system works well as most mail servers only need to have one domain
+nominated as a default. However what would happen if you later inherit
+another large domain full of users who have their email clients setup
+to login with just a username only? A vpopmail server can have only one
+default domain. It is going to be a lot of work to have to go to each email 
+client and change it over to login with full email address.
+
+vpopmail provides a solution for this scenario : IP Alias Domains.
+
+To use IP Alias Domains, you need to bind some more IP addresses to your
+mail server. Then use the vipmap program to associate a particular domain 
+to a particular IP address. 
+
+Then when the auth request arrives, if it does not contain a domain,
+vpopmail will attach the matching domain from the IP alias table.
+
+---
+Contributed by Michael Bowe 7th Dec 2003

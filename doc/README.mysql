@@ -1,0 +1,395 @@
+--------------------------------------------------------------------------
+
+Using vpopmail with MySQL is becoming increasingly popular. 
+The code is well tested and can be considered to be just
+as stable as the default CDB authentication system.
+
+--------------------------------------------------------------------------
+
+2003/Dec/29 : Michael Bowe <mbowe@pipeline.com.au>
+(Document originally contributed on this date, but has had some
+minor tweaks done since that time)
+
+
+A QUICK GUIDE TO VPOPMAIL WITH MYSQL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Full doc available from :
+http://www.bowe.id.au/michael/isp/vpopmail-mysql.htm
+
+
+MYSQL :
+
+Setup an account for the MySQL server to run under : 
+
+	groupadd mysql
+	useradd -g mysql mysql
+
+Go to their website and download the latest binaries to /usr/local/src.
+In this example I have used the file: mysql-max-3.23.57-pc-linux-i686.tar.gz
+(Note, MySQL v4 has recently been released as "stable", however I am yet 
+to do any testing under this new version. I would recommend that you stay with 
+v3.23 until the v4 series is more mature)
+
+Unzip / configure the binaries so they get installed to /usr/local/mysql
+
+	cd /usr/local
+	tar xzf /usr/local/src/mysql-max-3.23.57-pc-linux-i686.tar.gz
+	ln -s mysql-max-3.23.57-pc-linux-i686 mysql
+
+Run the installation script that creates/verifies all the various system-use tables etc
+
+	cd mysql
+	scripts/mysql_install_db
+	cd ..
+
+Setup permissions on the MySQL dirs
+
+	chown -R root.mysql mysql-max-3.23.57-pc-linux-i686
+	chmod -R 640 mysql
+	chmod -R u+X,g+X mysql
+	chmod -R ug+x mysql/bin
+	chmod -R g+w mysql/data
+	chmod -R u+x mysql/scripts
+
+Let the MySQL server know what amount of resources it is allowed to use
+
+	# choose an appropriate config file from the samples provided
+	cp /usr/local/mysql/support-files/my-medium.cnf /usr/local/mysql/data/my.cnf
+	# adjust the permissions on the file so that mysql daemon can read the contents
+	chgrp mysql /usr/local/mysql/data/my.cnf  
+
+Fire up the server
+
+	cd /usr/local/mysql
+	bin/safe_mysqld --user=mysql &
+
+At this point the mysql daemons should be running. A good way to verify this is to use this command :
+
+	ps axf
+
+If all is well, you should be able to see something like this : 
+
+	1073 ? S 0:00 /bin/sh ./bin/safe_mysqld --datadir=/usr/local/mysql/data --pid-file=/usr/local/mysql/data/.pid
+	1117 ? S 0:00  \_ /usr/local/mysql/bin/mysqld --defaults-extra-file=/usr/local/mysql/data/my.cnf --basedir=/usr/local/m
+	1125 ? S 0:00      \_ /usr/local/mysql/bin/mysqld --defaults-extra-file=/usr/local/mysql/data/my.cnf --basedir=/usr/loc
+	1126 ? S 0:00          \_ /usr/local/mysql/bin/mysqld --defaults-extra-file=/usr/local/mysql/data/my.cnf --basedir=/usr
+	1143 ? S 0:00          \_ /usr/local/mysql/bin/mysqld --defaults-extra-file=/usr/local/mysql/data/my.cnf --basedir=/usr
+	1419 ? S 0:00          \_ /usr/local/mysql/bin/mysqld --defaults-extra-file=/usr/local/mysql/data/my.cnf --basedir=/usr
+	1449 ? S 0:00          \_ /usr/local/mysql/bin/mysqld --defaults-extra-file=/usr/local/mysql/data/my.cnf --basedir=/usr
+	1471 ? S 0:00          \_ /usr/local/mysql/bin/mysqld --defaults-extra-file=/usr/local/mysql/data/my.cnf --basedir=/usr
+
+(If you received errors, look in the file /usr/local/mysql/data/hostname.err for debugging info)
+
+Next setup a password for the MySQL root user
+
+	/usr/local/mysql/bin/mysqladmin -u root password 'mysql-root-pwd'
+
+Configure MySQL so it is running all the time from bootup onwards
+
+	cp /usr/local/mysql/support-files/mysql.server /etc/rc.d/init.d/mysql
+	chmod 744 /etc/rc.d/init.d/mysql
+	chkconfig --add mysql
+
+Then I like to use the ntsysv program to double-check that mysql is set to launch at boot time
+
+
+VPOPMAIL
+
+Make the user accounts
+
+	# If you are using RH8.0, you will probably need to run this following command,
+	# because RH8.0 comes preconfigured with UID/GID 89 allocated to postfix
+	#
+	# userdel postfix
+
+	groupadd -g 89 vchkpw
+	useradd -g vchkpw -u 89 vpopmail
+
+	# We recommend you use the user and group id's of 89. The FreeBSD folks
+	# have reserved 89 for the group and 89 for the user for vpopmail.  Feel
+	# free to have the OS assign the group/user id (for example, Solaris won't 
+	# allow gid 89).
+
+Download and unpack the source
+
+	cd /usr/local/src
+	wget http://telia.dl.sourceforge.net/sourceforge/vpopmail/vpopmail-5.4.7.tar.gz
+	tar xzf vpopmail-5.4.7.tar.gz
+	chown -R root.root vpopmail-5.4.7
+	cd vpopmail-5.4.7
+
+Setup the MySQL support in the vpopmail sources
+
+	# Create the configuration file that vpopmail will use
+	# to setup the connection to the mysql database
+	#
+	# This example will tell vpopmail :
+	#   * Log into the server running on localhost
+	#   * Use the default mysql port 
+	#       (In fact if the server is localhost, and you don't specify a port number, then 
+	#        I believe the that communications are done via unix sockets rather than TCP/IP)
+	#   * Login with username vpopmailuser
+	#   * Login with password vpoppasswd
+	#   * Use the database called vpopmail
+	#
+
+	echo "localhost|0|vpopmailuser|vpoppasswd|vpopmail" > ~vpopmail/etc/vpopmail.mysql
+	chown vpopmail.vchkpw ~vpopmail/etc/vpopmail.mysql
+	chmod 640 ~vpopmail/etc/vpopmail.mysql
+
+	# log into MySQL as the MySQL root user
+	# and then create the database for vpopmail to use
+	# and then setup the appropriate permissions on this database
+	/usr/local/mysql/bin/mysql --password="mysql-root-pwd"
+
+		CREATE DATABASE vpopmail;
+		GRANT select,insert,update,delete,create,drop ON vpopmail.*
+		TO vpopmailuser@localhost IDENTIFIED BY 'vpoppasswd';
+		quit
+
+Now, build the program with options something like this : 
+
+	./configure \
+	  --disable-roaming-users \
+	  --enable-logging=p \
+	  --disable-passwd \
+	  --enable-clear-passwd \
+	  --disable-domain-quotas \
+	  --enable-auth-module=mysql \
+	  --enable-auth-logging \
+	  --enable-sql-logging \
+	  --enable-valias \
+	  --disable-mysql-limits 
+   
+	make
+	make install-strip
+
+Notes : 
+	I used to recommend the --disable-many-domains switch - which 
+	tells vpopmail to create one MySQL table per email domain. When 
+	I first started building vpopmail servers, I found this to be the 
+	most logical way, having each domain in its own table. However there 
+	has been some discussion about this config option on the vpopmail 
+	mailing lists, and it sound like this option may be removed at some 
+	point in the future.  If you have a lot of domains on your server, 
+	having each domain in its own table can hurt performance. I now agree 
+	that --enable-many-domains is probably the better choice
+
+Review the contents of the file is used to set the default limits for any
+domains / mailboxes in the vpopmail system. Make sure it contains reasonable 
+defaults for your system. 
+
+	vi ~vpopmail/etc/vlimits.default
+
+Optionally, nominate a "default domain". Users in this domain can login to 
+POP3 etc using just their username. Users from all other domains need to use 
+their full email address as their login name.
+
+	echo "yourdomain.com" > /home/vpopmail/etc/defaultdomain
+
+
+--------------------------------------------------------------------------
+
+A HANDY TRICK :
+
+----- Original Message ----- 
+From: "Ken Jones" <kbo@inter7.com>
+To: <vchkpw@inter7.com>
+Sent: Thursday, September 09, 2004 3:48 AM
+Subject: Re: [vchkpw] vpopmail + billing server integration
+> On Wednesday 08 September 2004 12:25 pm, Chris Ess wrote:
+> > On Wed, 8 Sep 2004, Ken Jones wrote:
+> > > Hi,
+> > >
+> > > Here is something we built into vpopmail for sites like yours.
+> > >
+> > > Use mysql on the email server. Have the billing system
+> > > insert an entry in the vpopmail table, leaving the directory
+> > > field blank. vpopmail will automatically create the users
+> > > directory and update the database when any program
+> > > tries to deliver mail to the user, or authenticate as the user.
+> >
+> > That's really neat!  I didn't realize you could do this.  (Now someone
+> > will tell me that it's in the documentation that I seem to've not read
+> > recently.)
+> 
+> It is probably in the mailing list archives. I'm not sure if anyone has
+> updated the documentation.
+> 
+> >
+> > (I know this is getting offtopic...) So I could use an INSERT statement in
+> > SQL instead of vadduser?  Or am I not understanding this correctly?
+>
+> That is the idea. A while back some folks wanted to hook up their billing
+> systems to vpopmail. Basicly they would insert into the vpopmail sql table.
+> The only thing they couldn't do easily was create the hashed directory path.
+> So we put in vpopmail code to check if the path is blank and automatically
+> create the new path and update the database.
+> 
+> You will also need to set the encrypted password using mysql's CRYPT function. 
+> Mysql's standard encryption functions are not compatible with unix/linux.
+> 
+> Ken
+> 
+
+
+----- Original Message ----- 
+From: "Michael Bowe" <mbowe@pipeline.com.au>
+To: <vchkpw@inter7.com>
+Sent: Thursday, September 09, 2004 7:32 AM
+Subject: Re: [vchkpw] vpopmail + billing server integration
+> 
+> ----- Original Message ----- 
+> From: "Chris Ess" <inter7@cae.tokimi.net>
+> 
+> > On Wed, 8 Sep 2004, Ken Jones wrote:
+> 
+> > > Use mysql on the email server. Have the billing system
+> > > insert an entry in the vpopmail table, leaving the directory
+> > > field blank. vpopmail will automatically create the users
+> > > directory and update the database when any program
+> > > tries to deliver mail to the user, or authenticate as the user.
+> >
+> > That's really neat!  I didn't realize you could do this.  (Now someone
+> > will tell me that it's in the documentation that I seem to've not read
+> > recently.)
+> >
+> > (I know this is getting offtopic...) So I could use an INSERT statement in
+> > SQL instead of vadduser?  Or am I not understanding this correctly?
+> 
+> Yes that feature has been around for a while
+> 
+> It has definitely been discussed in the archives of this list, but I would
+> agree that I don't remember seeing it mentioned in the docs.
+> 
+> I use this feature to allow an IIS webserver to create mailboxes on my
+> vpopmail server. This is achieved by using an ASP script that creates an
+> appropriate record and inserts it into the vpopmail MySQL. Of course the
+> same sort of thing could be achieved using Apache/PHP.
+> 
+> I have some more information and some example code here :
+> http://www.pipeline.com.au/staff/mbowe/isp/webmail-server.htm#Example_scripts
+> 
+> ps. one catch with inserting users directly... The mailbox on the disk isnt
+> created until the 1st POP/IMAP login is done, or the 1st mailbox message is
+> received. This can cause a glitch with qmailadmin, because if the user tries
+> to login to qmailadmin before their mailbox on the disk exists, qmailadmin
+> will barf because it cant write a lockfile to the user's dir. So when I
+> insert users directly, the same script also sends the user a "welcome"
+> message to ensure that the mailbox is created immediately.
+> 
+> Michael.
+
+
+--------------------------------------------------------------------------
+
+PREVIOUS VPOPMAIL / MYSQL DOCUMENTATION... :
+
+vpopmail now supports mysql. Here is a brief outline on how to
+get it running.
+
+NOTE: make sure you are running the latest stable release of mysql.
+If you have 3.22 installed, you will need to upgrade. The dir_control
+table in vpopmail uses a "unique index (domain)" syntax which isn't
+supported in the 3.22 releases. Thanks to Chris Scheller for
+tracking this down.
+
+There are some things you need to edit by hand to get it to work.
+
+1) Create a ~vpopmail/etc/vpopmail.mysql file and put these fields in 
+the file (replacing them with the actual information):
+
+read_server|read port or socket path|read_user|read_password|database_name
+update_server|update port or socket path|update_user|update_password|database_name
+
+For example:
+
+# This is the MySQL configuration file for vpopmail.
+localhost|0|readonly|somepass|vpopmail
+localhost|0|root|secret|vpopmail
+
+You can make changes to this file at any time without needing to
+recompile vpopmail.
+
+If you are NOT using mysql replication then set both of
+these sets to be your primary mysql server information.
+
+If you ARE using mysql replication then set the UPDATE
+set to be your master mysql server and set the READ
+set to be your local mysql server.
+
+After changing the file, make sure it has the correct permissions:
+
+chown vpopmail.vchkpw vpopmail.mysql
+chmod 0640 vpopmail.mysql
+
+2) configure options for mysql support.
+
+--enable-auth-module=mysql
+
+First thing. This turns on mysql code and authentication module.
+
+Now if you aren't lucky and your mysql include and libraries aren't
+in the "default" locations, you will need to use these options.
+
+If your include files are not in /usr/include/mysql or 
+/usr/local/include/mysql, add the following configuration option:
+
+--enable-incdir=/path-to-your-include-dir
+
+If your library files are not in /usr/lib/mysql or in 
+/usr/local/lib/myqsl , add the following configuration option:
+
+--enable-libdir=/path-to-your-lib-dir
+
+On my machine I do:
+$ ./configure --enable-auth-module=mysql
+
+3) make the software 
+
+$ make
+
+4) install as root
+
+$ su
+# make install-strip
+
+
+## CONVERSION FROM CDB TO MYSQL: ##
+
+If you have domains that are already setup as cdb modules and
+you want to convert them to sql:
+
+1) Convert your current virtual domains to sql.
+
+use the vconvert program. You can convert one domain at a time,
+or convert them all.
+
+# ./vconvert -c -m
+this will convert them all from the vpasswd.cdb format to the default
+single table database
+
+# ./vconvert -c -m virtualdomain1 virtualdomain2 ...
+will convert the list of virtual domains from vpasswd.cdb layout to
+single table database
+
+What does the conversion program do? First it creates a table with the name
+of the domain. domain names with "-" or "." are converted to "_". Mysql
+doesn't like "-" or "." in table names.  For example: test-dom.com domain 
+gets a table named test_dom_com
+
+Next, the conversion program reads the contents of the vpasswd file and
+adds those records to the mysql database.
+
+
+## OPTIONAL TABLE CUSTOMISATION: ##
+
+1) Customizing the fields in the sql tables.
+
+It is possible to add additional fields to the database table layout.
+vpopmail won't touch these additional fields, but they would be available
+for any other programs to access and use.
+
+Edit vmysql.h and add fields to either SMALL_TABLE_LAYOUT or LARGE_TABLE_LAYOUT 
+be sure not to delete any of the fields. Each field in the default layout
+is required for vpopmail. 

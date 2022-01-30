@@ -1,0 +1,37 @@
+4/28/2007
+
+* SpamAssassin Support in vdelivermail
+
+Vdelivermail can call spamc during local delivery to a Maildir.  To enable
+this, simply compile vpopmail with --enable-spamassassin=y.  Configure will
+look for the spamc program in /usr/bin and /usr/local/bin.  If it not found,
+you will need to specify the location with the additional 
+--enable-spamc-prog='/path/to/spamc' option.
+
+If you want to disable spamc processing for a user or domain, you may do so
+with the vmoduser program:
+
+vmoduser -f user@domain.com
+or
+vmoduser -f domain.com
+
+You may also have vdelivermail discard a message found to be spam.  This also 
+can be done with vmoduser:
+
+vmoduser -F user@domain.com
+or
+vmoduser -F domain.com
+
+When compiled with SpamAssassin support, spamc processing defaults to "on" for 
+users.  Deleting spam defaults to "off".  If you want to override these 
+defaults on a system or per domain basis, these can be set as well with the 
+following entries to vlimits.default, or .qmailadmin-limits, respectively:
+
+disable_spamassassin
+delete_spam
+
+If you want to automatically filter mail, see README.maildrop
+
+
+Bill Shupp
+hostmaster@shupp.org

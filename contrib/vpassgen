@@ -1,0 +1,19 @@
+#!/bin/bash
+# 12/5/00 by SCN@HOMERNET.NET
+# Quick and dirty script to rebuild a vpasswd file from a user directory
+# structure, minus their password. Also, it can be used as part of a three
+# script operation to move users over to another system and store their
+# homedirectories in the right places. Set your quota and backupdir.
+
+QUOTAFIELD='NOQUOTA'
+BACKUPDIR='/backup/mail'
+for userdir in $HOME/domains/*/*/*
+do
+base=$(basename "${userdir}")
+dir=$(dirname "${userdir}")
+if [ -d "$userdir" -a $base != "Maildir" ]; then
+	entry="${base}:password:1:0:${base}:${userdir}:${QUOTAFIELD}"
+	echo $entry >> newpass
+	cp -auf $userdir $BACKUPDIR
+fi	
+done

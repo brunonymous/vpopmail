@@ -1,0 +1,67 @@
+Vdelivermail is the key to the proper operation of your vpopmail installation.
+When qmail attempts to deliver a message to a vpopmail domain the first thing
+it does is look for a .qmail file that matches the incoming address within the
+top level directory for the domain.  If no such .qmail-* file is found, qmail-local
+executes the .qmail-default file for the domain.  This is the point where vpopmail
+takes over the the delivery process.  Vdelivermail searches the user database for
+the domain, and either delivers the message to one of its existing accounts, or
+looks to its second parameter for instructions on what to do with messages to 
+accounts that do not exist.
+
+For vpopmail to operate properly, the .qmail-default file in the domain directory must
+be setup properly.  There should only be one line in the file, and it must look like this:
+
+   | /path/to/vdelivermail '' delivery-instruction
+
+
+   | - The initial pipe tells qmail-local to execute a program.
+
+   /path/to/vdelivermail - This is the program that must be executed.
+
+   ''  This unused, empty parameter is required for historical reasons.
+
+   delivery-instruction must be one of:
+
+      someone@anotherexample.com   - an email address anywhere in the world.
+
+      /path/to/some/Maildir        - a Maildir on the local server that the 
+                                     vpopmail user has write access to.   
+
+      delete                       - Delete all mail to non-existant users
+
+      bounce-no-mailbox            - Bounce all mail to non-existant users
+
+
+Bounce-no-mailbox is no longer recommended, as it allows your mail server to be used
+in Joe-Jobs.  It now seems better to delete all mail to invalid addresses rather than
+spamming the random senders used by spam-bots.
+
+
+When creating a domain you can use one of the following:
+
+   vadddomain -b someone@anotherexample.com example.com [password]
+
+   vadddomain -b /path/to/some/Maildir example.com [password]
+   
+   vadddomain -b delete example.com [password]
+
+   vadddomain -b bounce-no-mailbox example.com [password]
+
+
+
+In summary...  the .qmail-default of every virtual domain MUST contain ONLY a single 
+line that executes vdelivermail.  The ONLY place you should EVER call vdelivermail
+is from the .qmail-default file of a vpopmail based virtual domain.  There are
+four possible delivery options for non-existant mailboxes that must be the second
+parameter to vdelivermail.  The empty first parameter is required.
+
+If you are not sure what you are doing writing .qmail files, and mucking around
+the internals of vpopmail, I strongly suggest you leave this file to the programs.
+Qmailadmin is probably the easiset way to manage the .qmail-default file once the
+domain has been created.  
+
+Due to the requirement that Maildirs accessed by vpopmail must be owned by vpopmail
+I suggest that if you are going to use vpopmail at all that you place all of your
+domains under vpopmail.  While it is possible to continue to have system users, and
+other styles of qmail virtual domains on a vpopmail system, you really have to be a
+qmail guru to make it all work.
