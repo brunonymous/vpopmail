@@ -661,7 +661,7 @@ int vauth_adddomain( char *domain ) {
         }
     }
 
-    lm = (LDAPMod **)safe_malloc(sizeof(LDAPMod *) * 2);
+    lm = (LDAPMod **)safe_malloc(sizeof(LDAPMod *) * 3);
 
     lm[0] = (LDAPMod *)safe_malloc(sizeof(LDAPMod));
 
