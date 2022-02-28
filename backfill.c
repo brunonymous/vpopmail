@@ -57,7 +57,7 @@ remove_line(char *template, char *filename, mode_t mode, int once_only)
 		return(-1);
 #endif
 	/*- format a new string */
-	snprintf(bak_file, MAX_BUFF, "%s.bak", filename);
+	snprintf(bak_file, sizeof(bak_file), "%s.bak", filename);
 	if (rename(filename, bak_file))
 	{
 		fprintf(stderr, "rename %s->%s: %s\n", filename, bak_file, strerror(errno));
@@ -156,7 +156,7 @@ backfill(char *username, char *domain, char *path, int operation)
 		fprintf(stderr, "%s: No such domain\n", domain);
 		return((char *) 0);
 	}
-	snprintf(filename, MAX_BUFF, "%s/.dir_control_free", ptr);
+	snprintf(filename, sizeof(filename), "%s/.dir_control_free", ptr);
 	if (operation == 1) /*- Delete */
 	{
 		if (!(fp = fopen(filename, "r")))
@@ -194,7 +194,7 @@ backfill(char *username, char *domain, char *path, int operation)
 	} else
 	if (operation == 2) /*- add */
 	{
-		(void) strncpy(tmpbuf, path, MAX_BUFF);
+		snprintf(tmpbuf, sizeof(tmpbuf), "%s", path);
 		if ((ptr = strstr(tmpbuf, username)))
 		{
 			if (ptr != tmpbuf)
