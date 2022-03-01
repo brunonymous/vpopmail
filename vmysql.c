@@ -599,6 +599,7 @@ int vauth_deldomain( char *domain )
 #endif
 
 #ifdef ENABLE_SQL_LOGGING
+#ifdef ENABLE_SQL_REMOVE_DELETED
     qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
        "delete from vlog where domain = '%s'", domain );
     if (mysql_query(&mysql_update,SqlBufUpdate)) {
@@ -606,6 +607,7 @@ int vauth_deldomain( char *domain )
 	   if (err != ER_NO_SUCH_TABLE)
 		  fprintf(stderr, "vauth_deldomain: warning: mysql_query(%s) failed: %s\n", SqlBufUpdate, mysql_error(&mysql_update));
     }
+#endif
 #endif
 
     vdel_limits(domain);
@@ -656,6 +658,7 @@ int vauth_deluser( char *user, char *domain )
 #endif
 
 #ifdef ENABLE_SQL_LOGGING
+#ifdef ENABLE_SQL_REMOVE_DELETED
     qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
         "delete from vlog where domain = '%s' and user = '%s'", 
        domain, user );
@@ -666,6 +669,7 @@ int vauth_deluser( char *user, char *domain )
 	   else
 		  err = 0;
     }
+#endif
 #endif
     return(err);
 }
@@ -1593,7 +1597,7 @@ char *valias_select_all_next(char *alias)
  *  valias_select_names
  */
 
-char *valias_select_names( char *alias, char *domain )
+char *valias_select_names( char *domain )
 {
  struct linklist *temp_entry = NULL;
 
@@ -1622,16 +1626,13 @@ char *valias_select_names( char *alias, char *domain )
     }
 
     while ((row = mysql_fetch_row(res_read))) {
-        temp_entry = linklist_add (temp_entry, row[1], row[0]);
+        temp_entry = linklist_add (temp_entry, row[0], "");
         if (valias_current == NULL) valias_current = temp_entry;
     }
     mysql_free_result (res_read);
  
     if (valias_current == NULL) return NULL; /* no results */
-    else {
-        strcpy (alias, valias_current->d2);
-        return(valias_current->data);
-    }
+    else return(valias_current->data);
 }
 
 /************************************************************************
@@ -1639,16 +1640,13 @@ char *valias_select_names( char *alias, char *domain )
  *  valias_select_names_next
  */
 
-char *valias_select_names_next(char *alias)
+char *valias_select_names_next()
 {
     if (valias_current == NULL) return NULL;
     valias_current = linklist_del (valias_current);
  
     if (valias_current == NULL) return NULL; /* no results */
-    else {
-        strcpy (alias, valias_current->d2);
-        return(valias_current->data);
-    }
+    else return(valias_current->data);
 }
 
 
