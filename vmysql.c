@@ -96,6 +96,20 @@ void vcreate_valias_table();
 void vcreate_lastauth_table();
 #endif
 
+char *MYSQL_READ_SERVER;
+int MYSQL_READ_PORT;
+char *MYSQL_READ_SOCKET;
+char *MYSQL_READ_USER;
+char *MYSQL_READ_PASSWD;
+char *MYSQL_READ_DATABASE;
+
+char *MYSQL_UPDATE_SERVER;
+int MYSQL_UPDATE_PORT;
+char *MYSQL_UPDATE_SOCKET;
+char *MYSQL_UPDATE_USER;
+char *MYSQL_UPDATE_PASSWD;
+int MYSQL_UPDATE_VPORT;
+char *MYSQL_UPDATE_DATABASE;
 
 /************************************************************************/
 /* 
@@ -356,13 +370,19 @@ int vauth_create_table (char *table, char *layout, int showerror)
 int vauth_adddomain( char *domain )
 {
 #ifndef MANY_DOMAINS
+#ifdef SQL_ALIASDOMAINS
+  vcreate_pwd_query_proc();
+#endif
   vset_default_domain( domain );
   return (vauth_create_table (vauth_munch_domain( domain ), TABLE_LAYOUT, 1));
 #else
   /* if creation fails, don't show an error */
   vauth_create_table (MYSQL_DEFAULT_TABLE, TABLE_LAYOUT, 0);
-  return (0);
 #endif
+#ifdef SQL_ALIASDOMAINS
+  vcreate_aliasdomains_table();
+#endif
+  return (0);
 }
 
 
@@ -1864,3 +1884,79 @@ int vauth_crypt(char *user,char *domain,char *clear_pass,struct vqpasswd *vpw)
 
   return(strcmp(crypt(clear_pass,vpw->pw_passwd),vpw->pw_passwd));
 }
+
+
+/************************************************************************/
+int vcreate_pwd_query_proc()
+{
+  char sql_file[256], command[256];
+  FILE *sql;
+
+  /* retrieve the file with the sql stuff */
+  snprintf(sql_file, sizeof(sql_file), "%s/etc/pwd-query_disable-many-domains.sql",VPOPMAILDIR);
+  sql = fopen(sql_file, "r");
+  if( sql == NULL )
+  {
+     printf("\nERROR: Missing %s/etc/pwd-query_disable-many-domains.sql file.\n",VPOPMAILDIR);
+     exit(EXIT_FAILURE);
+  }
+
+  /* build the shell command which runs the query */
+  snprintf(command, sizeof command, "%s -h %s -P %d -D %s -u %s -p%s < %s",
+	 MYSQLBIN, MYSQL_UPDATE_SERVER, MYSQL_UPDATE_PORT, MYSQL_UPDATE_DATABASE,
+         MYSQL_UPDATE_USER, MYSQL_UPDATE_PASSWD, sql_file);
+  system(command);
+
+  fclose(sql);
+}
+
+
+/************************************************************************/
+void vcreate_aliasdomains_table()
+{
+  /* if creation fails do not throw an error */
+  vauth_create_table ("aliasdomains", ALIASDOMAINS_TABLE_LAYOUT, 0);
+  return;
+}
+
+
+/************************************************************************/
+int vcreate_sql_aliasdomain(char *domain,  char *alias)
+{
+ int err;
+
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
+        "INSERT IGNORE INTO aliasdomains (domain,alias) VALUES ('%s','%s')",
+        domain,
+	alias );
+
+    vcreate_aliasdomains_table();
+    if (mysql_query(&mysql_update,SqlBufUpdate)) {
+        fprintf(stderr, "vmysql: sql error[m]: %s\n", mysql_error(&mysql_update));
+        return(-1);
+    }
+    return(0);
+}
+
+
+/************************************************************************/
+int vdelete_sql_aliasdomain(char *alias)
+{
+ int err;
+
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
+        "DELETE FROM aliasdomains WHERE alias='%s'",
+        alias );
+
+    vcreate_aliasdomains_table();
+    if (mysql_query(&mysql_update,SqlBufUpdate)) {
+        fprintf(stderr, "vmysql: sql error[m]: %s\n", mysql_error(&mysql_update));
+        return(-1);
+    }
+    return(0);
+}
+

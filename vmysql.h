@@ -41,21 +41,6 @@
    
  */
 
-char *MYSQL_READ_SERVER;
-int MYSQL_READ_PORT;
-char *MYSQL_READ_SOCKET;
-char *MYSQL_READ_USER;
-char *MYSQL_READ_PASSWD;
-char *MYSQL_READ_DATABASE;
-
-char *MYSQL_UPDATE_SERVER;
-int MYSQL_UPDATE_PORT;
-char *MYSQL_UPDATE_SOCKET;
-char *MYSQL_UPDATE_USER;
-char *MYSQL_UPDATE_PASSWD;
-int MYSQL_UPDATE_VPORT;
-char *MYSQL_UPDATE_DATABASE;
-
 /* defaults - no need to change */
 #define MYSQL_DEFAULT_TABLE "vpopmail"
 #define MYSQL_DOT_CHAR '_'
@@ -306,3 +291,12 @@ valias_line text not null, index (alias, domain)"
       perm_defaultquota        TINYINT(2) NOT NULL DEFAULT 0"
 #endif
 
+void vcreate_aliasdomains_table();
+int vdelete_sql_aliasdomain(char *alias);
+int vcreate_sql_aliasdomain(char *domain, char *alias);
+
+#define ALIASDOMAINS_TABLE_LAYOUT "alias varchar(100) NOT NULL, \
+      domain varchar(100) NOT NULL, \
+      PRIMARY KEY (alias)"
+
+int vcreate_pwd_query_proc();

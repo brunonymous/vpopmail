@@ -372,3 +372,6 @@ int call_onchange();
 #ifdef USERS_BIG_DIR
 char *backfill(char *, char *, char *, int);
 #endif
+
+int vcreate_sql_aliasdomain(char *domain, char *alias);
+int vdelete_sql_aliasdomain(char *alias);

@@ -392,17 +392,17 @@ AC_CHECK_LIB(vpopmail, client_query_quick)
 
 if test x"$ac_cv_lib_vpopmail_vauth_getpw" = xno
 then
-   AC_MSG_ERROR([No vauth_getpw in libvpopmail])
+   AC_MSG_RESULT([No vauth_getpw in libvpopmail])
 fi
 
 if test x"$ac_cv_lib_vpopmail_vauth_getall" = xno
 then
-   AC_MSG_ERROR([No vauth_getall in libvpopmail])
+   AC_MSG_RESULT([No vauth_getall in libvpopmail])
 fi
 
 if test x"$ac_cv_lib_vpopmail_get_domain_entries" = xno
 then
-   AC_MSG_ERROR([No get_domain_entires in libvpopmail])
+   AC_MSG_RESULT([No get_domain_entires in libvpopmail])
 fi
 
 if test x"$ac_cv_lib_vpopmail_client_query_quick" = xno

@@ -19,6 +19,7 @@ INSTALL_STRIP_PROGRAM=${INSTALL_PROGRAM} -s
 MYSQLCONF=$(DESTDIR)@vpopmaildir@/etc/vpopmail.mysql
 VLIMITS=$(DESTDIR)@vpopmaildir@/etc/vlimits.default
 VUSAGECCONF=$(DESTDIR)@vpopmaildir@/etc/vusagec.conf
+DOVECOT_SQL=$(DESTDIR)@vpopmaildir@/etc/pwd-query_disable-many-domains.sql
 
 noinst_LIBRARIES=libvpopmail.a
 
@@ -31,7 +32,7 @@ vpopmailbin_PROGRAMS = vchkpw vdelivermail clearopensmtp vadddomain \
  vdeldomain vpasswd vadduser vdeluser vaddaliasdomain vsetuserquota \
  vpopbull vdeloldusers vmoduser valias vuserinfo vmkpasswd vipmap \
  vdominfo vconvert vkill vmoddomlimits vchangepw dotqmail2valias \
- vpopmaild vlist authvchkpw vusagec
+ vpopmaild vlist authvchkpw vusagec vsavealiasdomains vrcptcheck
 
 vusagec_SOURCES = vusagec.c client.c conf.c ippp.c
 vusagec_LDADD = libvpopmail.a @auth_libs@
@@ -114,6 +115,12 @@ vipmap_LDADD = libvpopmail.a  @auth_libs@
 vmoddomlimits_SOURCES = vmoddomlimits.c
 vmoddomlimits_LDADD = libvpopmail.a  @auth_libs@
 
+vsavealiasdomains_SOURCES = vsavealiasdomains.c
+vsavealiasdomains_LDADD = libvpopmail.a  @auth_libs@
+
+vrcptcheck_SOURCES = vrcptcheck.c
+vrcptcheck_LDADD = libvpopmail.a @auth_libs@
+
 DEFS=-I. @auth_inc@ 
 
 install: install-recursive vusage-msg
@@ -148,6 +155,13 @@ install-data-local:
 	 $(DESTDIR)@vpopmaildir@/etc/inc_deps
 	echo "-L@vpopmaildir@/lib -lvpopmail @auth_libs@ @LIBS@" > \
 	 $(DESTDIR)@vpopmaildir@/etc/lib_deps
+
+	if test @MANY_DOMAINS@ = 0; then \
+		if test ! -r $(DOVECOT_SQL); then \
+			$(INSTALL) -o root -m 0644 \
+			dovecot/pwd-query_disable-many-domains.sql $(DOVECOT_SQL); \
+		fi \
+	fi
 
 	if test ! -r $(VUSAGECCONF); then \
 		$(INSTALL) -o @vpopuser@ -m 0644 -g @vpopgroup@ \

@@ -1454,6 +1454,29 @@ case $VALIAS in
         ;;
 esac
 
+
+#----------------------------------------------------------------------
+
+AC_MSG_CHECKING(whether defaultdelivery is enabled)
+AC_ARG_ENABLE(defaultdelivery,
+        [  --enable-defaultdelivery   Copy the content of control/defaultdelivery to .qmail-default on domain creation.],
+        DEFAULT_DELIVERY=$enableval,
+                [
+                        DEFAULT_DELIVERY=n
+                ]
+)
+
+case $DEFAULT_DELIVERY in
+  1*|y*|Y*)
+        AC_MSG_RESULT(yes)
+        DEFAULT_DELIVERY=1
+        AC_DEFINE_UNQUOTED(DEFAULT_DELIVERY,$DEFAULT_DELIVERY,"")
+        ;;
+  *)
+        AC_MSG_RESULT(no)
+        ;;
+esac
+
 #----------------------------------------------------------------------
 
 AC_MSG_CHECKING(whether many-domains is enabled)
@@ -1481,6 +1504,92 @@ case $MANY_DOMAINS in
                 MANY_DOMAINS=0
         ;;
 esac
+
+#----------------------------------------------------------------------
+
+AC_MSG_CHECKING(whether sql-aliasdomains is enabled)
+AC_ARG_ENABLE(sql-aliasdomains,
+        [  --enable-sql-aliasdomains  Saves the domain aliases to database. Only valid for MySQL auth module.],
+        SQL_ALIASDOMAINS=$enableval,
+                [
+	                if [[ "$AUTH_MODULE" != "mysql" ]];
+		        then
+	                        SQL_ALIASDOMAINS=n
+	                else
+				SQL_ALIASDOMAINS=y
+				AC_DEFINE_UNQUOTED(SQL_ALIASDOMAINS,$SQL_ALIASDOMAINS,"")
+	                fi
+                ]
+)
+
+case $SQL_ALIASDOMAINS in
+  1*|y*|Y*)
+                AC_MSG_RESULT(yes)
+		if [[ "$AUTH_MODULE" != "mysql" ]];
+                then
+			AC_MSG_ERROR(sql-aliasdomains is only supported in the MySQL authentication module.)
+                else
+			SQL_ALIASDOMAINS=1
+			AC_DEFINE_UNQUOTED(SQL_ALIASDOMAINS,$SQL_ALIASDOMAINS,"")
+                fi
+        ;;
+  *)
+                AC_MSG_RESULT(no)
+                SQL_ALIASDOMAINS=0
+        ;;
+esac
+
+#----------------------------------------------------------------------
+
+# MySQL binary is needed because we have to create the procedure calling an sql file via command line
+# This is only with --disable-many-domains
+AC_SUBST(MANY_DOMAINS)
+
+if test $MANY_DOMAINS = 0 && test $SQL_ALIASDOMAINS = 1
+then
+
+  AC_MSG_CHECKING(whether we can locate the MySQL binary)
+  # default MySQL binary
+  mysqlbin=""
+  for f in /usr/bin/mysql /usr/local/mysql/bin/mysql /usr/local/bin/mysql
+  do
+      if test -x $f
+      then
+          mysqlbin=$f
+      fi
+  done
+
+  # AC_ARG_ENABLE (feature, help-string, [action-if-given], [action-if-not-given])
+  AC_ARG_ENABLE(mysql-bin,
+      [  --enable-mysql-bin=PATH      Full path to your MySQL binary. Only with --disable-many-domains.],
+      binmysql=$enableval,
+      [
+          if test "$mysqlbin" = ""
+          then
+              AC_MSG_RESULT(no)
+              AC_MSG_ERROR([Unable to find your MySQL binary, specify --enable-mysql-bin=PATH.])
+          fi
+      ]
+  )
+
+  if test ! $binmysql = "yes"
+  then
+      if test ! -x $binmysql
+      then
+         AC_MSG_RESULT(no)
+         AC_MSG_ERROR([Unable to find your MySQL binary, specify --enable-mysql-bin=PATH.])
+      else
+         mysqlbin=$binmysql
+      fi
+  fi
+
+  AC_MSG_RESULT(yes)
+  AC_DEFINE_UNQUOTED(MYSQLBIN,"$mysqlbin","")
+
+else
+  AC_DEFINE_UNQUOTED(MYSQLBIN,"","")
+
+fi
 
 #----------------------------------------------------------------------
 
@@ -1838,6 +1947,16 @@ case $ENABLE_AUTH_LOGGING in
 esac
 
 
+case $DEFAULT_DELIVERY in
+  1*|y*|Y*)
+    echo "   defaultdelivery = ON  --enable-defaultdelivery"
+    ;;
+  *)
+    echo "   defaultdelivery = OFF --disable-defaultdelivery (default)"
+    ;;
+esac
+
+
 if test "$USE_SQL" = 1
 then
   if test "$MANY_DOMAINS" = 1
@@ -1845,6 +1964,16 @@ then
     echo "all domains in one SQL table = --enable-many-domains (default)"
   else
     echo "one domain per SQL table     = --disable-many-domains"
+  fi
+fi
+
+if [[ "$AUTH_MODULE" == "mysql" ]];
+then
+  if test "$SQL_ALIASDOMAINS" = 1
+  then
+    echo "SQL domain aliases = ON  domain aliases saved to MySQL        --enable-sql-aliasdomains (default)"
+  else
+    echo "SQL domain aliases = OFF domain aliases NOT saved to MySQL    --disable-sql-aliasdomains"
   fi
 fi
 

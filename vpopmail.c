@@ -147,7 +147,16 @@ int vadddomain( char *domain, char *dir, uid_t uid, gid_t gid )
  char Dir[MAX_BUFF];
  int call_dir;
  string_list aliases;
- 
+ char ch, defaultdelivery_file[MAX_BUFF];
+ FILE *defaultdelivery;
+ int default_delivery_option;
+
+#ifdef DEFAULT_DELIVERY
+ default_delivery_option = 1;
+#else
+ default_delivery_option = 0;
+#endif
+
 #ifdef ONCHANGE_SCRIPT
   /*  Don't execute any implied onchange in called functions  */
   allow_onchange = 0;
@@ -269,10 +278,27 @@ int vadddomain( char *domain, char *dir, uid_t uid, gid_t gid )
     dec_dir_control(dir_control_for_uid, uid, gid);
     fchdir(call_dir); close(call_dir);
     return(VA_COULD_NOT_OPEN_QMAIL_DEFAULT);
+  } else if ( default_delivery_option == 1 ) {
+
+    /* Copy the content of control/defaultdelivery into .qmail-default */
+
+      snprintf(defaultdelivery_file, sizeof(defaultdelivery_file), "%s/control/defaultdelivery", QMAILDIR);
+      defaultdelivery = fopen(defaultdelivery_file, "r");
+      if( defaultdelivery == NULL )
+      {
+	printf("\nERROR: Missing %s/control/defaultdelivery file.\n", QMAILDIR);
+	printf("To create a %s/control/defaultdelivery file type:\n", QMAILDIR);
+	printf("echo \"| %s/bin/vdelivermail '' delete\" > %s/control/defaultdelivery\n\n", VPOPMAILDIR, QMAILDIR);
+	exit(EXIT_FAILURE);
+      }
+
+      while ( ( ch = fgetc(defaultdelivery) ) != EOF ) fputc(ch, fs);
+
+      fclose(defaultdelivery);
   } else {
-    fprintf(fs, "| %s/bin/vdelivermail '' bounce-no-mailbox\n", VPOPMAILDIR);
-    fclose(fs);
+    fprintf(fs, "| %s/bin/vdelivermail '' delete\n", VPOPMAILDIR);
   }
+  fclose(fs);
 
   /* create an entry in the assign file for our new domain */
   snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s/%s", dir, DOMAINS_DIR, DomainSubDir);
@@ -553,6 +579,14 @@ int vdeldomain( char *domain )
   if (del_domain_assign(aliases.values, aliases.count, domain, Dir, uid, gid) != 0) {
     fprintf (stderr, "Warning: Failed to delete domain from the assign file\n");
   }
+
+#ifdef SQL_ALIASDOMAINS
+  /* aliasdomain table will eventually be created */
+  for(i=0; i<aliases.count; i++)
+  {
+    vdelete_sql_aliasdomain(aliases.values[i]);
+  }
+#endif
 
   /* send a HUP signal to qmail-send process to reread control files */
   signal_process("qmail-send", SIGHUP);
@@ -3783,6 +3817,11 @@ int vaddaliasdomain( char *alias_domain, char *real_domain)
   /* tell other programs that data has changed */
   snprintf ( onchange_buf, MAX_BUFF, "%s %s", alias_domain, real_domain );
   call_onchange ( "add_alias_domain" );
+#endif
+
+#ifdef SQL_ALIASDOMAINS
+  /* aliasdomain table will eventually be created */
+  vcreate_sql_aliasdomain(real_domain, alias_domain);
 #endif
 
   return(VA_SUCCESS);
