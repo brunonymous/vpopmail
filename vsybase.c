@@ -533,6 +533,14 @@ int vauth_setpw_size( struct vqpasswd *inpw, char *domain, int site_size)
 
  	myuid = geteuid();
 	if ( myuid != VPOPMAIL && myuid != 0 ) return(VA_BAD_UID);
+	
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data will change */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", inpw->pw_name, domain );
+       call_onchange ( "mod_user" );
+       }
+#endif	
 
 	vauth_open();
 	vset_default_domain( domain );
@@ -577,6 +585,14 @@ int vauth_setpw_size( struct vqpasswd *inpw, char *domain, int site_size)
     if( allow_onchange ) {
        /* tell other programs that data has changed */
        snprintf ( onchange_buf, MAX_BUFF, "%s@%s", inpw->pw_name, domain );
+       call_onchange ( "mod_user" );
+       }
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data has changed */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", inpw->pw_name, domain );
        call_onchange ( "mod_user" );
        }
 #endif

@@ -626,6 +626,15 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
   }
 
   if ( (err=vauth_open(1)) != 0 ) return(err);
+  
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data will change */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", inpw->pw_name, domain );
+       call_onchange ( "mod_user" );
+       }
+#endif  
+  
   vset_default_domain( domain );
 
 #ifndef MANY_DOMAINS
@@ -666,6 +675,14 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
     if( allow_onchange ) {
        /* tell other programs that data has changed */
        snprintf ( onchange_buf, MAX_BUFF, "%s@%s", inpw->pw_name, domain );
+       call_onchange ( "mod_user" );
+       }
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data has changed */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", inpw->pw_name, domain );
        call_onchange ( "mod_user" );
        }
 #endif
@@ -1346,6 +1363,14 @@ int valias_insert( char *alias, char *domain, char *alias_line)
   int err;
 
   if ( (err=vauth_open(1)) != 0 ) return(err);
+  
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data will change */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s before", alias, domain, alias_line );
+       call_onchange ( "valias_add" );
+       }
+#endif  
 
   while(*alias_line==' ') ++alias_line;
 
@@ -1376,6 +1401,14 @@ int valias_insert( char *alias, char *domain, char *alias_line)
        }
 #endif
 
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data has changed */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s after", alias, domain, alias_line );
+       call_onchange ( "valias_add" );
+       }
+#endif
+
     return(0);
   }
   return(-1);
@@ -1392,6 +1425,14 @@ int valias_delete( char *alias, char *domain)
   if( allow_onchange ) {
      /* tell other programs that data has changed */
      snprintf ( onchange_buf, MAX_BUFF, "%s@%s", alias, domain );
+     call_onchange ( "valias_delete" );
+     }
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  if( allow_onchange ) {
+     /* tell other programs that data will change */
+     snprintf ( onchange_buf, MAX_BUFF, "%s@%s before", alias, domain );
      call_onchange ( "valias_delete" );
      }
 #endif
@@ -1414,6 +1455,15 @@ int valias_delete( char *alias, char *domain)
     }
   }
   if(pgres) PQclear(pgres);
+  
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  if( allow_onchange ) {
+     /* tell other programs that data has changed */
+     snprintf ( onchange_buf, MAX_BUFF, "%s@%s after", alias, domain );
+     call_onchange ( "valias_delete" );
+     }
+#endif  
+  
   return(0);
 }
 
@@ -1428,6 +1478,14 @@ int valias_remove( char *alias, char *domain, char *alias_line)
   if( allow_onchange ) {
      /* tell other programs that data has changed */
      snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s", alias, domain, alias_line);
+     call_onchange ( "valias_remove" );
+     }
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  if( allow_onchange ) {
+     /* tell other programs that data will change */
+     snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s before", alias, domain, alias_line);
      call_onchange ( "valias_remove" );
      }
 #endif
@@ -1447,6 +1505,15 @@ int valias_remove( char *alias, char *domain, char *alias_line)
     }
   }
   if(pgres) PQclear(pgres);
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  if( allow_onchange ) {
+     /* tell other programs that data has changed */
+     snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s after", alias, domain, alias_line);
+     call_onchange ( "valias_remove" );
+     }
+#endif  
+  
   return(0);
 }
 
@@ -1461,6 +1528,14 @@ int valias_delete_domain( char *domain)
   if( allow_onchange ) {
      /* tell other programs that data has changed */
      snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s", alias, domain, alias_line);
+     call_onchange ( "valias_delete_domain" );
+     }
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  if( allow_onchange ) {
+     /* tell other programs that data will change */
+     snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s before", alias, domain, alias_line);
      call_onchange ( "valias_delete_domain" );
      }
 #endif
@@ -1482,6 +1557,15 @@ int valias_delete_domain( char *domain)
     }
   }
   if(pgres) PQclear(pgres);
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  if( allow_onchange ) {
+     /* tell other programs that data has changed */
+     snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s after", alias, domain, alias_line);
+     call_onchange ( "valias_delete_domain" );
+     }
+#endif
+  
   return(0);
 }
 

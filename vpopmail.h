@@ -362,7 +362,7 @@ void vsqlerror( FILE *f, char *comment );
 extern char sqlerr[MAX_BUFF];
 extern char *last_query;
 
-#ifdef ONCHANGE_SCRIPT
+#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
 /* onchange function */
 extern char onchange_buf[MAX_BUFF];
 extern int allow_onchange;

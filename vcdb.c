@@ -563,6 +563,14 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
  uid_t uid;
  gid_t gid;
  int ret;
+ 
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data will change */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", inpw->pw_name, domain ) ;
+       call_onchange ( "mod_user" ) ;
+       }
+#endif 
 
     ret = vcheck_vqpw(inpw, domain);
     if ( ret != 0 ) return(ret);
@@ -655,6 +663,14 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
     if( allow_onchange ) {
        /* tell other programs that data has changed */
        snprintf ( onchange_buf, MAX_BUFF, "%s@%s", inpw->pw_name, domain ) ;
+       call_onchange ( "mod_user" ) ;
+       }
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data has changed */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", inpw->pw_name, domain ) ;
        call_onchange ( "mod_user" ) ;
        }
 #endif

@@ -879,6 +879,14 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain ) {
     gid_t gid;
 #endif
 
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data will change */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", inpw->pw_name, domain );
+       call_onchange ( "mod_user" );
+       }
+#endif
+
     ret = vcheck_vqpw(inpw, domain);
     if ( ret != 0 ) {
         return(ret);
@@ -963,6 +971,14 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain ) {
     if( allow_onchange ) {
        /* tell other programs that data has changed */
        snprintf ( onchange_buf, MAX_BUFF, "%s@%s", inpw->pw_name, domain );
+       call_onchange ( "mod_user" );
+       }
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data has changed */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", inpw->pw_name, domain );
        call_onchange ( "mod_user" );
        }
 #endif
@@ -1623,6 +1639,14 @@ int valias_insert( char *alias, char *domain, char *alias_line)
       if ( (err=ldap_connect()) != 0 )
 		 return(err);
    }
+   
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data will change */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s before", alias, domain, alias_line );
+       call_onchange ( "valias_insert" );
+       }
+#endif   
 
     while(*alias_line==' ' && *alias_line!=0) ++alias_line;
 
@@ -1719,6 +1743,14 @@ int valias_insert( char *alias, char *domain, char *alias_line)
        }
 #endif
 
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data has changed */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s after", alias, domain, alias_line );
+       call_onchange ( "valias_insert" );
+       }
+#endif
+
     return(0);
 }
 
@@ -1738,6 +1770,14 @@ int valias_remove( char *alias, char *domain, char *alias_line)
     if( allow_onchange ) {
        /* tell other programs that data has changed */
        snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s", alias, domain, alias_line );
+       call_onchange ( "valias_remove" );
+       }
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data will change */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s before", alias, domain, alias_line );
        call_onchange ( "valias_remove" );
        }
 #endif
@@ -1829,6 +1869,15 @@ int valias_remove( char *alias, char *domain, char *alias_line)
 
 	ldap_value_free(di);
 	ldap_msgfree(res);
+	
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data has changed */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s after", alias, domain, alias_line );
+       call_onchange ( "valias_remove" );
+       }
+#endif	
+	
     return(0);
 }
 
@@ -1849,6 +1898,14 @@ int valias_delete( char *alias, char *domain)
        }
 #endif
 
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data will change */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", alias, domain );
+       call_onchange ( "valias_delete" );
+       }
+#endif
+
 	memset(ud, 0, sizeof(ud));
 	snprintf(ud, sizeof(ud), "%s@%s", alias, domain);
 
@@ -1860,6 +1917,14 @@ int valias_delete( char *alias, char *domain)
         ldap_perror(ld,"Error");
         return -1;
     }
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if( allow_onchange ) {
+       /* tell other programs that data has changed */
+       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", alias, domain );
+       call_onchange ( "valias_delete" );
+       }
+#endif
 
     return(0);
 }

@@ -318,6 +318,14 @@ int vadddomain( char *domain, char *dir, uid_t uid, gid_t gid )
   snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s/%s", dir, DOMAINS_DIR, DomainSubDir);
   r_chown(tmpbuf, uid, gid);
 
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  allow_onchange = 1;
+  /* tell other programs that data will change */
+  snprintf ( onchange_buf, MAX_BUFF, "%s - before", domain );
+  call_onchange ( "add_domain" );
+  allow_onchange = 0;
+#endif
+
   /* ask the authentication module to add the domain entry */
   /* until now we checked if domain already exists in cdb and
    * setup all dirs, but vauth_adddomain may __fail__ so we need to check
@@ -379,6 +387,14 @@ int vadddomain( char *domain, char *dir, uid_t uid, gid_t gid )
   allow_onchange = 0;
 #endif
 
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  allow_onchange = 1;
+  /* tell other programs that data has changed */
+  snprintf ( onchange_buf, MAX_BUFF, "%s - after", domain );
+  call_onchange ( "add_domain" );
+  allow_onchange = 0;
+#endif
+
   /* return back to the callers directory and return success */
   fchdir(call_dir); close(call_dir);
 
@@ -401,6 +417,9 @@ int vdeldomain( char *domain )
  char Dir[MAX_BUFF];
  char domain_to_del[MAX_BUFF];
  char dircontrol[MAX_BUFF];
+ #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+ char domain_name[MAX_BUFF];
+ #endif
  uid_t uid;
  gid_t gid;
  string_list aliases;
@@ -447,6 +466,13 @@ int vdeldomain( char *domain )
 #ifdef ONCHANGE_SCRIPT
      /* tell other programs that data has changed */
      snprintf ( onchange_buf, MAX_BUFF, "%s alias of %s", domain_to_del, domain );
+     call_onchange ( "del_domain" );
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+     /* tell other programs that data will change */
+     snprintf ( domain_name , MAX_BUFF , "%s alias of %s", domain_to_del, domain);
+     snprintf ( onchange_buf, MAX_BUFF, "%s - before", domain_name );
      call_onchange ( "del_domain" );
 #endif
 
@@ -506,6 +532,13 @@ int vdeldomain( char *domain )
 #ifdef ONCHANGE_SCRIPT
      /* tell other programs that data has changed */
      snprintf ( onchange_buf, MAX_BUFF, "%s", domain );
+     call_onchange ( "del_domain" );
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+     /* tell other programs that data will change */
+     snprintf ( domain_name , MAX_BUFF , "%s", domain);
+     snprintf ( onchange_buf, MAX_BUFF, "%s - before", domain );
      call_onchange ( "del_domain" );
 #endif
 
@@ -593,6 +626,12 @@ int vdeldomain( char *domain )
 
   /*  clean up memory used by the alias list  */
   string_list_free(&aliases);
+  
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+     /* tell other programs that data has changed */
+     snprintf ( onchange_buf, MAX_BUFF, "%s - after", domain_name );
+     call_onchange ( "del_domain" );
+#endif
 
   return(VA_SUCCESS);
 
@@ -704,7 +743,7 @@ int vadduser( char *username, char *domain, char *password, char *gecos,
  struct vlimits limits;
  char quota[50];
 
-#ifdef ONCHANGE_SCRIPT
+#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
  int temp_onchange;
     temp_onchange = allow_onchange;
     allow_onchange = 0;
@@ -758,6 +797,14 @@ int vadduser( char *username, char *domain, char *password, char *gecos,
     if (verrori != 0 ) return(verrori);
     else return(VA_BAD_U_DIR);
   }
+  
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  allow_onchange = 1;
+  /* tell other programs that data will change */
+  snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", username, domain );
+  call_onchange ( "add_user" );
+  allow_onchange = 0;
+#endif  
         
   /* add the user to the auth backend */
   /* NOTE: We really need to update this method to include the quota. */
@@ -817,6 +864,14 @@ int vadduser( char *username, char *domain, char *password, char *gecos,
   allow_onchange = temp_onchange;
   /* tell other programs that data has changed */
   snprintf ( onchange_buf, MAX_BUFF, "%s@%s", username, domain );
+  call_onchange ( "add_user" );
+  allow_onchange = 1;
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  allow_onchange = temp_onchange;
+  /* tell other programs that data has changed */
+  snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", username, domain );
   call_onchange ( "add_user" );
   allow_onchange = 1;
 #endif
@@ -1833,6 +1888,12 @@ int vdeluser( char *user, char *domain )
   call_onchange ( "del_user" );
 #endif
 
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  /* tell other programs that data will change */
+  snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", user, domain );
+  call_onchange ( "del_user" );
+#endif
+
   /* del the user from the auth system */
   if (vauth_deluser( user, domain ) !=0 ) {
     fprintf (stderr, "Failed to delete user from auth backend\n");
@@ -1852,6 +1913,12 @@ int vdeluser( char *user, char *domain )
     fchdir(call_dir); close(call_dir);
     return(VA_BAD_DIR);
   }
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  /* tell other programs that data has changed */
+  snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", user, domain );
+  call_onchange ( "del_user" );
+#endif
 
   /* go back to the callers directory */
   fchdir(call_dir); close(call_dir);
@@ -3805,6 +3872,12 @@ int vaddaliasdomain( char *alias_domain, char *real_domain)
     fprintf(stderr, "Error. alias and real domain are the same\n");
     return(VA_DOMAIN_ALREADY_EXISTS);
   }
+  
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_BEFORE
+  /* tell other programs that data will change */
+  snprintf ( onchange_buf, MAX_BUFF, "%s %s before", alias_domain, real_domain );
+  call_onchange ( "add_alias_domain" );
+#endif  
 
   /* Add the domain to the assign file */
   add_domain_assign( alias_domain, real_domain, Dir, uid, gid );
@@ -3816,6 +3889,12 @@ int vaddaliasdomain( char *alias_domain, char *real_domain)
 #ifdef ONCHANGE_SCRIPT
   /* tell other programs that data has changed */
   snprintf ( onchange_buf, MAX_BUFF, "%s %s", alias_domain, real_domain );
+  call_onchange ( "add_alias_domain" );
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+  /* tell other programs that data has changed */
+  snprintf ( onchange_buf, MAX_BUFF, "%s %s after", alias_domain, real_domain );
   call_onchange ( "add_alias_domain" );
 #endif
 
@@ -4224,7 +4303,7 @@ struct linklist * linklist_del (struct linklist *list) {
 	return next;
 }
 
-#ifdef ONCHANGE_SCRIPT
+#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
 /************************************************************************
  *
  * Run an external program to notify other systems that something changed
@@ -4239,6 +4318,7 @@ struct linklist * linklist_del (struct linklist *list) {
  */
 char onchange_buf[MAX_BUFF];
 int allow_onchange=1;
+
 int call_onchange ( const char *cmd )
 {
 	char path[MAX_BUFF];
@@ -4250,7 +4330,7 @@ int call_onchange ( const char *cmd )
 
 	/* build the name */
 	snprintf ( path, sizeof(path), "%s/etc/onchange", VPOPMAILDIR );
-
+	
 	/* if it doesn't exist, we're done */
 	if( access(path,F_OK) ) { 
            return(0);
