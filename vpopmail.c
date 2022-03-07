@@ -319,11 +319,9 @@ int vadddomain( char *domain, char *dir, uid_t uid, gid_t gid )
   r_chown(tmpbuf, uid, gid);
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  allow_onchange = 1;
   /* tell other programs that data will change */
   snprintf ( onchange_buf, MAX_BUFF, "%s - before", domain );
   call_onchange ( "add_domain" );
-  allow_onchange = 0;
 #endif
 
   /* ask the authentication module to add the domain entry */
@@ -388,11 +386,9 @@ int vadddomain( char *domain, char *dir, uid_t uid, gid_t gid )
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  allow_onchange = 1;
   /* tell other programs that data has changed */
   snprintf ( onchange_buf, MAX_BUFF, "%s - after", domain );
   call_onchange ( "add_domain" );
-  allow_onchange = 0;
 #endif
 
   /* return back to the callers directory and return success */
@@ -743,7 +739,7 @@ int vadduser( char *username, char *domain, char *password, char *gecos,
  struct vlimits limits;
  char quota[50];
 
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#ifdef ONCHANGE_SCRIPT
  int temp_onchange;
     temp_onchange = allow_onchange;
     allow_onchange = 0;
@@ -799,11 +795,9 @@ int vadduser( char *username, char *domain, char *password, char *gecos,
   }
   
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  allow_onchange = 1;
   /* tell other programs that data will change */
   snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", username, domain );
   call_onchange ( "add_user" );
-  allow_onchange = 0;
 #endif  
         
   /* add the user to the auth backend */
@@ -869,11 +863,9 @@ int vadduser( char *username, char *domain, char *password, char *gecos,
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  allow_onchange = temp_onchange;
   /* tell other programs that data has changed */
   snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", username, domain );
   call_onchange ( "add_user" );
-  allow_onchange = 1;
 #endif
 
   return(VA_SUCCESS);
