@@ -119,6 +119,10 @@ int valias_insert( char *alias, char *domain, char *alias_line)
  uid_t uid;
  gid_t gid;
  FILE *fs;
+ 
+#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+ char user_domain[MAX_BUFF];
+#endif  
 
     if ( alias == NULL ) return(VA_NULL_POINTER);
     if ( domain == NULL ) return(VA_NULL_POINTER);
@@ -135,8 +139,8 @@ int valias_insert( char *alias, char *domain, char *alias_line)
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
     if( allow_onchange ) {
        /* tell other programs that data will change */
-       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s before", alias, domain, alias_line );
-       call_onchange ( "valias_insert" );
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);       
+       call_onchange ( "valias_insert", user_domain, alias_line, "before" );       
        }
 #endif    
 
@@ -159,16 +163,16 @@ int valias_insert( char *alias, char *domain, char *alias_line)
 #ifdef ONCHANGE_SCRIPT
     if( allow_onchange ) {
        /* tell other programs that data has changed */
-       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s", alias, domain, alias_line );
-       call_onchange ( "valias_insert" );
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);       
+       call_onchange ( "valias_insert", user_domain, alias_line, "" );              
        }
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
     if( allow_onchange ) {
        /* tell other programs that data has changed */
-       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s after", alias, domain, alias_line );
-       call_onchange ( "valias_insert" );
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);       
+       call_onchange ( "valias_insert", user_domain, alias_line, "after" );              
        }
 #endif
 
@@ -185,6 +189,10 @@ int valias_remove( char *alias, char *domain, char *alias_line)
  uid_t uid;
  gid_t gid;
  FILE *fr, *fw;
+ 
+#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+ char user_domain[MAX_BUFF];
+#endif  
 
     if ( alias == NULL ) return(VA_NULL_POINTER);
     if ( domain == NULL ) return(VA_NULL_POINTER);
@@ -201,8 +209,8 @@ int valias_remove( char *alias, char *domain, char *alias_line)
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
     if( allow_onchange ) {
        /* tell other programs that data will change */
-       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s before", alias, domain, alias_line );
-       call_onchange ( "valias_remove" );
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
+       call_onchange ( "valias_remove", user_domain, alias_line, "before" );
        }
 #endif
 
@@ -245,16 +253,16 @@ int valias_remove( char *alias, char *domain, char *alias_line)
 #ifdef ONCHANGE_SCRIPT
     if( allow_onchange ) {
        /* tell other programs that data has changed */
-       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s", alias, domain, alias_line );
-       call_onchange ( "valias_remove" );
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
+       call_onchange ( "valias_remove", user_domain, alias_line, "" );       
        }
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
     if( allow_onchange ) {
        /* tell other programs that data has changed */
-       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - %s after", alias, domain, alias_line );
-       call_onchange ( "valias_remove" );
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
+       call_onchange ( "valias_remove", user_domain, alias_line, "after" );       
        }
 #endif
 
@@ -269,6 +277,10 @@ int valias_delete( char *alias, char *domain)
  gid_t gid;
  int i;
  int r;
+ 
+#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+ char user_domain[MAX_BUFF];
+#endif  
 
     if ( alias == NULL ) return(VA_NULL_POINTER); 
     if ( domain == NULL ) return(VA_NULL_POINTER);
@@ -283,16 +295,16 @@ int valias_delete( char *alias, char *domain)
 #ifdef ONCHANGE_SCRIPT
     if( allow_onchange ) {
        /* tell other programs that data has changed */
-       snprintf ( onchange_buf, MAX_BUFF, "%s@%s", alias, domain );
-       call_onchange ( "valias_delete" );
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
+       call_onchange ( "valias_delete", user_domain, "", "" );
        }
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
     if( allow_onchange ) {
        /* tell other programs that data will change */
-       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", alias, domain );
-       call_onchange ( "valias_delete" );
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
+       call_onchange ( "valias_delete", user_domain, "-", "before" );       
        }
 #endif
 
@@ -307,8 +319,8 @@ int valias_delete( char *alias, char *domain)
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
     if( allow_onchange ) {
        /* tell other programs that data has changed */
-       snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", alias, domain );
-       call_onchange ( "valias_delete" );
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
+       call_onchange ( "valias_delete", user_domain, "-", "after" );              
        }
 #endif    
     

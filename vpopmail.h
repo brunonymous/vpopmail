@@ -364,7 +364,6 @@ extern char *last_query;
 
 #if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
 /* onchange function */
-extern char onchange_buf[MAX_BUFF];
 extern int allow_onchange;
 int call_onchange();
 #endif

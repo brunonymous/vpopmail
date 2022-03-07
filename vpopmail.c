@@ -320,8 +320,7 @@ int vadddomain( char *domain, char *dir, uid_t uid, gid_t gid )
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
   /* tell other programs that data will change */
-  snprintf ( onchange_buf, MAX_BUFF, "%s - before", domain );
-  call_onchange ( "add_domain" );
+  call_onchange ( "add_domain", domain, "-", "before" );
 #endif
 
   /* ask the authentication module to add the domain entry */
@@ -380,15 +379,13 @@ int vadddomain( char *domain, char *dir, uid_t uid, gid_t gid )
 #ifdef ONCHANGE_SCRIPT
   allow_onchange = 1;
   /* tell other programs that data has changed */
-  snprintf ( onchange_buf, MAX_BUFF, "%s", domain );
-  call_onchange ( "add_domain" );
+  call_onchange ( "add_domain", domain, "", "" );
   allow_onchange = 0;
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
   /* tell other programs that data has changed */
-  snprintf ( onchange_buf, MAX_BUFF, "%s - after", domain );
-  call_onchange ( "add_domain" );
+  call_onchange ( "add_domain", domain, "-", "after");
 #endif
 
   /* return back to the callers directory and return success */
@@ -413,7 +410,7 @@ int vdeldomain( char *domain )
  char Dir[MAX_BUFF];
  char domain_to_del[MAX_BUFF];
  char dircontrol[MAX_BUFF];
- #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+ #if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
  char domain_name[MAX_BUFF];
  #endif
  uid_t uid;
@@ -461,15 +458,14 @@ int vdeldomain( char *domain )
 
 #ifdef ONCHANGE_SCRIPT
      /* tell other programs that data has changed */
-     snprintf ( onchange_buf, MAX_BUFF, "%s alias of %s", domain_to_del, domain );
-     call_onchange ( "del_domain" );
+     snprintf ( domain_name , MAX_BUFF , "%s alias of %s", domain_to_del, domain);
+     call_onchange ( "del_domain", domain_name, "", "" );
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
      /* tell other programs that data will change */
      snprintf ( domain_name , MAX_BUFF , "%s alias of %s", domain_to_del, domain);
-     snprintf ( onchange_buf, MAX_BUFF, "%s - before", domain_name );
-     call_onchange ( "del_domain" );
+     call_onchange ( "del_domain", domain_name, "-", "before" );     
 #endif
 
   } else {
@@ -527,15 +523,13 @@ int vdeldomain( char *domain )
 
 #ifdef ONCHANGE_SCRIPT
      /* tell other programs that data has changed */
-     snprintf ( onchange_buf, MAX_BUFF, "%s", domain );
-     call_onchange ( "del_domain" );
+     call_onchange ( "del_domain", domain, "", "" );     
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
      /* tell other programs that data will change */
      snprintf ( domain_name , MAX_BUFF , "%s", domain);
-     snprintf ( onchange_buf, MAX_BUFF, "%s - before", domain );
-     call_onchange ( "del_domain" );
+     call_onchange ( "del_domain", domain_name, "-", "before" );
 #endif
 
     /* call the auth module to delete the domain from the storage */
@@ -625,8 +619,7 @@ int vdeldomain( char *domain )
   
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
      /* tell other programs that data has changed */
-     snprintf ( onchange_buf, MAX_BUFF, "%s - after", domain_name );
-     call_onchange ( "del_domain" );
+     call_onchange ( "del_domain", domain_name, "-", "after" );
 #endif
 
   return(VA_SUCCESS);
@@ -738,6 +731,10 @@ int vadduser( char *username, char *domain, char *password, char *gecos,
  gid_t gid = VPOPMAILGID;
  struct vlimits limits;
  char quota[50];
+ 
+ #if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+ char user_domain[MAX_BUFF];
+ #endif 
 
 #ifdef ONCHANGE_SCRIPT
  int temp_onchange;
@@ -796,8 +793,8 @@ int vadduser( char *username, char *domain, char *password, char *gecos,
   
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
   /* tell other programs that data will change */
-  snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", username, domain );
-  call_onchange ( "add_user" );
+  snprintf( user_domain, MAX_BUFF, "%s@%s", username, domain);
+  call_onchange ( "add_user", user_domain, "-", "before" );
 #endif  
         
   /* add the user to the auth backend */
@@ -857,15 +854,15 @@ int vadduser( char *username, char *domain, char *password, char *gecos,
 #ifdef ONCHANGE_SCRIPT
   allow_onchange = temp_onchange;
   /* tell other programs that data has changed */
-  snprintf ( onchange_buf, MAX_BUFF, "%s@%s", username, domain );
-  call_onchange ( "add_user" );
+  snprintf( user_domain, MAX_BUFF, "%s@%s", username, domain);
+  call_onchange ( "add_user", user_domain, "", "" );  
   allow_onchange = 1;
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
   /* tell other programs that data has changed */
-  snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", username, domain );
-  call_onchange ( "add_user" );
+  snprintf( user_domain, MAX_BUFF, "%s@%s", username, domain);
+  call_onchange ( "add_user", user_domain, "-", "after" );
 #endif
 
   return(VA_SUCCESS);
@@ -1822,6 +1819,10 @@ int vdeluser( char *user, char *domain )
  uid_t uid;
  gid_t gid;
  int call_dir;
+ 
+ #if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+ char user_domain[MAX_BUFF];
+ #endif  
 
   if ( user == 0 || strlen(user)<=0) return(VA_ILLEGAL_USERNAME);
 
@@ -1876,14 +1877,14 @@ int vdeluser( char *user, char *domain )
 
 #ifdef ONCHANGE_SCRIPT
   /* tell other programs that data has changed */
-  snprintf ( onchange_buf, MAX_BUFF, "%s@%s", user, domain );
-  call_onchange ( "del_user" );
+  snprintf( user_domain, MAX_BUFF, "%s@%s", user, domain );
+  call_onchange ( "del_user", user_domain, "", "" );
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
   /* tell other programs that data will change */
-  snprintf ( onchange_buf, MAX_BUFF, "%s@%s - before", user, domain );
-  call_onchange ( "del_user" );
+  snprintf( user_domain, MAX_BUFF, "%s@%s", user, domain );  
+  call_onchange ( "del_user", user_domain, "-", "before" );  
 #endif
 
   /* del the user from the auth system */
@@ -1908,8 +1909,8 @@ int vdeluser( char *user, char *domain )
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
   /* tell other programs that data has changed */
-  snprintf ( onchange_buf, MAX_BUFF, "%s@%s - after", user, domain );
-  call_onchange ( "del_user" );
+  snprintf( user_domain, MAX_BUFF, "%s@%s", user, domain );    
+  call_onchange ( "del_user", user_domain, "-", "after" );
 #endif
 
   /* go back to the callers directory */
@@ -3867,8 +3868,7 @@ int vaddaliasdomain( char *alias_domain, char *real_domain)
   
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_BEFORE
   /* tell other programs that data will change */
-  snprintf ( onchange_buf, MAX_BUFF, "%s %s before", alias_domain, real_domain );
-  call_onchange ( "add_alias_domain" );
+  call_onchange ( "add_alias_domain", alias_domain, real_domain, "before" );  
 #endif  
 
   /* Add the domain to the assign file */
@@ -3880,14 +3880,12 @@ int vaddaliasdomain( char *alias_domain, char *real_domain)
 
 #ifdef ONCHANGE_SCRIPT
   /* tell other programs that data has changed */
-  snprintf ( onchange_buf, MAX_BUFF, "%s %s", alias_domain, real_domain );
-  call_onchange ( "add_alias_domain" );
+  call_onchange ( "add_alias_domain", alias_domain, real_domain );  
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
   /* tell other programs that data has changed */
-  snprintf ( onchange_buf, MAX_BUFF, "%s %s after", alias_domain, real_domain );
-  call_onchange ( "add_alias_domain" );
+  call_onchange ( "add_alias_domain", alias_domain, real_domain, "after" );  
 #endif
 
 #ifdef SQL_ALIASDOMAINS
@@ -4308,10 +4306,9 @@ struct linklist * linklist_del (struct linklist *list) {
  *
  * 2007-07-14 jms1 - suppressing "ONCHANGE script not found" message.
  */
-char onchange_buf[MAX_BUFF];
 int allow_onchange=1;
 
-int call_onchange ( const char *cmd )
+int call_onchange ( const char *cmd, const char *arg1, const char *arg2, const char *arg3 )
 {
 	char path[MAX_BUFF];
 	int pid, rv;
@@ -4338,7 +4335,7 @@ int call_onchange ( const char *cmd )
 	pid = vfork();
 	if ( 0 == pid )
 	{
-		execl ( path, "onchange", cmd, onchange_buf, NULL );
+		execl ( path, "onchange", cmd, arg1, arg2, arg3, NULL );
            	fprintf(stderr, "ONCHANGE script %s unable to exec.\n", path);
 	        return(0); /* would "_exit(-1)" make more sense here ??? */
 	}
@@ -4360,4 +4357,6 @@ int call_onchange ( const char *cmd )
 	return(rv);
 }
 #endif
+
+
 
