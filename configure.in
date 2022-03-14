@@ -1156,6 +1156,22 @@ case $AUTH_MODULE in
     auth_libs="-Xlinker -R -Xlinker $libdir -L$libdir $extralibflags -lmysqlclient -lz -lm"
     AC_SUBST(auth_libs)
     ;;
+    
+  sq*|Sq*|SQ*)
+    AC_MSG_RESULT(sqlite)
+    USE_CDB=0
+    USE_SQL=1
+    USE_MYSQL=0
+    USE_SQLITE=1
+    rm -rf vauth.c
+    ln -sf vsqlite.c vauth.c
+    AC_SUBST(USE_SQLITE)
+    AC_DEFINE_UNQUOTED(USE_SQL,$USE_SQL,"")
+    AC_DEFINE_UNQUOTED(USE_SQLITE,$USE_SQLITE,"")
+
+    auth_libs="-lsqlite3"
+    AC_SUBST(auth_libs)
+    ;;    
 
   pg*|Pg*|PG*)
     AC_MSG_RESULT(pgsql)
