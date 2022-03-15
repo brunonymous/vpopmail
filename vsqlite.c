@@ -576,12 +576,6 @@ struct vqpasswd *vauth_getall(char *domain, int first, int sortit)
             fprintf(stderr, "vsqlite: sql error[6]: %s\n", sqlite3_errmsg(sqlite_read));
             return(NULL);
         }
-        
-        rc = sqlite3_step(stmt_getall);
-        if ((rc != SQLITE_ROW) && (rc != SQLITE_DONE)) {
-            fprintf(stderr, "vsqlite: sql error[7]: %s\n", sqlite3_errmsg(sqlite_read));
-            return(NULL);
-        }
 
     } else if ( more == 0 ) {
         return(NULL);
@@ -600,6 +594,12 @@ struct vqpasswd *vauth_getall(char *domain, int first, int sortit)
     vpw.pw_dir    = IDir;
     vpw.pw_shell  = IShell;
     vpw.pw_clear_passwd  = IClearPass;
+    
+    rc = sqlite3_step(stmt_getall);
+    if ((rc != SQLITE_ROW) && (rc != SQLITE_DONE)) {
+        fprintf(stderr, "vsqlite: sql error[7]: %s\n", sqlite3_errmsg(sqlite_read));
+        return(NULL);
+    }    
     
     if (rc == SQLITE_ROW) {
         strncpy(vpw.pw_name,sqlite3_column_text(stmt_getall, 0),SMALL_BUFF);
@@ -767,19 +767,19 @@ int vshow_ip_map( int first, char *ip, char *domain)
             fprintf(stderr, "vsqlite: sql error[11]: %s\n", sqlite3_errmsg(sqlite_read));
             return(0);
         }
-        
-        rc = sqlite3_step(stmt_read);
-        if ((rc != SQLITE_ROW) && (rc != SQLITE_DONE)) {
-            vcreate_ip_map_table();
-            rc = sqlite3_step(stmt_read);
-            if ((rc != SQLITE_ROW) && (rc != SQLITE_DONE)) {
-                fprintf(stderr, "vsqlite: sql error[12]: %s\n", sqlite3_errmsg(sqlite_read));
-                return(0);
-            }
-        }
-        
+                
     } else if ( more == 0 ) {
         return(0);
+    }
+    
+    rc = sqlite3_step(stmt_read);
+    if ((rc != SQLITE_ROW) && (rc != SQLITE_DONE)) {
+        vcreate_ip_map_table();
+        rc = sqlite3_step(stmt_read);
+        if ((rc != SQLITE_ROW) && (rc != SQLITE_DONE)) {
+            fprintf(stderr, "vsqlite: sql error[12]: %s\n", sqlite3_errmsg(sqlite_read));
+            return(0);
+        }
     }
 
     if (rc == SQLITE_ROW) {
