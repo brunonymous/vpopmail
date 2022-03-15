@@ -1466,7 +1466,7 @@ int valias_insert( char *alias, char *domain, char *alias_line)
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
     if( allow_onchange ) {
        /* tell other programs that data will change */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
        call_onchange ( "valias_insert", user_domain, alias_line, "before" );       
        }
 #endif
@@ -1488,7 +1488,7 @@ int valias_insert( char *alias, char *domain, char *alias_line)
 #ifdef ONCHANGE_SCRIPT
     if( allow_onchange ) {
        /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
        call_onchange ( "valias_insert", user_domain, alias_line, "" );              
        }
 #endif
@@ -1496,7 +1496,7 @@ int valias_insert( char *alias, char *domain, char *alias_line)
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
     if( allow_onchange ) {
        /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
+       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
        call_onchange ( "valias_insert", user_domain, alias_line, "after" );              
        }
 #endif
