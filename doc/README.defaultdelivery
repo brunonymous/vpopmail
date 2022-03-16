@@ -1,0 +1,19 @@
+vpopmail-defaultdelivery patch for vpopmail-5.4.33 by Roberto Puzzanghera
+More info here https://notes.sagredo.eu/en/qmail-notes-185/installing-and-configuring-vpopmail-81.html
+
+==================================================================================================================
+
+Normally vpopmail copies its delivery agent vdelivermail into the .qmail-default file of newly created domains.
+This patch makes vpopmail to copy your favourite delivery agent, stored in QMAILDIR/control/defauldelivery.
+
+== Settings
+
+An autoreconf is needed as I modified the original configure.in and Makefile.am files.
+
+Configure as follows:
+
+autoreconf -f -i
+./configure --enable-defaultdelivery (default OFF)
+
+If the functionality is disabled (--disable-defaultdelivery, which is the default option) vdelivermail is
+installed with the "delete" option instead of "bounce-no-mailbox", which is not reasonable anymore.

@@ -243,7 +243,7 @@ slogin user@domain.ext password - silent, just return success or
 
 Rights required: Must be a valid email address.
 
-Action:	Verify the username and password of the persion desiring to
+Action:	Verify the username and password of the person desiring to
 	login, and set their access rights.
 
 	For the "login" command, a successful login will return a
@@ -386,8 +386,8 @@ clear_text_password - The password in clear text.
 
 
 The following values are returned as the character '1' or '0'. '1'
-says the field is active which, for example an active no_password_change
-means the user can not change passwords.
+says the field is active - for example, an active no_password_change field
+ means the user can not change passwords.
 
 no_password_change, no_pop, no_webmail, no_imap, bounce_mail, no_relay,
 no_dialup, user_flag_0, user_flag_1, user_flag_2, user_flag_3, no_smtp
@@ -631,9 +631,9 @@ list_domains [page lines_per_page]
 Rights required: SA_ADMIN
 
 Action:  List all domains on the system, and their parent domain.
-If the optional page is given, lines_per_page must be specified also.
-When both are given, the data is broken up into pages with lines_per_page
-lines on each.  The page returned is specified by page.
+If the optional page is given, lines_per_page must also be specified.
+ When both are given, the data is broken up into pages with lines_per_page
+ lines on each.  The page returned is specified by page.
 
 Alias domains are identified by the fact that the domain name does
 not match the real domain name.
@@ -1088,7 +1088,7 @@ code with this value to find the point where an error happened.
 The actual error messages are stored in the file vpopmaild.msg for easy translation.
 Once there are other language files, I'll create a directory to store the various
 language files, and use a symlink to select a language.  Error messages are set
-at comile time.
+at compile time.
 
-0.X represents a message passed up from fpopmaild primitives, and does not otherwise
-follow the standard error reporting structure.  (yet?)
+0.X represents a message passed up from vpopmaild primitives, and does not otherwise
+ follow the standard error reporting structure.  (yet?)

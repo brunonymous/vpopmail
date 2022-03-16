@@ -1,0 +1,29 @@
+v. 2021.07.08
+vpopmail-dovecot-pwd_query patch for vpopmail-5.4.33 by Roberto Puzzanghera
+More info here https://notes.sagredo.eu/en/qmail-notes-185/installing-and-configuring-vpopmail-81.html
+
+==================================================================================================================
+
+If you want to use the dovecot's sql auth driver with one table for each domain (--disable-many-domains) you have
+to heavily customize your password query.
+With this patch vpopmail installs the sql procedure and functions in the database when you create a new domain.
+The procedure can be called by dovecot to perform the auth.
+The sql stuff supports aliasdomains and mysql limits and will be loaded from ~/vpopmail/etc/pwd-query_disable-many-domains.sql.
+You can customize the sql procedure editing this file.
+Be aware that the aliasdomains support requires that you patched your vpopmail accordingly with my
+sql-aliasdomains patch.
+
+Read the reference above for more info.
+
+=================================================================================================================
+
+== Settings
+
+This patch must be installed over the "sql-aliasdomains" patch.
+
+An autoreconf is needed as I modified the original configure.in and Makefile.am files.
+
+Configure as follows:
+
+autoreconf -f -i
+./configure --disable-many-domains --enable-sql-aliasdomains --enable-mysql-bin=PATH
