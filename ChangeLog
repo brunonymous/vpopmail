@@ -1,6 +1,13 @@
 Numbers in square brackets ([]) are tracker items on SourceForge with patch
 or info related to the entry. <http://sourceforge.net/projects/vpopmail/>
 
+Unreleased -
+  - Merge patches from FreeBSD
+  - Merge patches by Roberto Puzzanghera
+  - Add an option --enable-onchange-script-before-and-after to call onchange
+    script before and after a change
+  - Add SQLite module, adapted from MySQL module code
+
 5.4.33 -
   Matt Brookings
   - Defaulted to Server::Disable=True in vusagec.conf
@@ -1894,7 +1901,7 @@ or info related to the entry. <http://sourceforge.net/projects/vpopmail/>
            the wrong order. 
 
 5.0pre6
-09/15/01   Jan Pavlík <gandie@rootshell.cz>
+09/15/01   Jan Pavl\EDk <gandie@rootshell.cz>
          - Hi, i think there is 5 or 6 real_connects but you set 
            MYSQL_PORT for 2 only...
 
@@ -2850,7 +2857,7 @@ Nov 30 - free memory in vcdb.c under error condition
 
 Nov 27 - vsqwebmail_pass was writing over TmpBuf1 in vadduser so
          that the chdir back to the callers directory was not working.
-                 Martin Köster <mk@ezl-data.dk>
+                 Martin K\F6ster <mk@ezl-data.dk>
 
 Nov 20 - add a res1=NULL in vmysql.c vauth_getall to make it more
          robust.  Garrett Marone <garrettm@web2010.com>
@@ -3164,7 +3171,7 @@ Jun 10 - Check for : character in gecos field and return error if found.
          : characters are in any of the fields, we have a problem
          parsing the lines.
 
-Jun 07 - Ondøej Surý - fixed possible memory problem with handling
+Jun 07 - Ond\F8ej Sur\FD - fixed possible memory problem with handling
          the HOST environment variable in vdelivermail.c 
 
 4.6
