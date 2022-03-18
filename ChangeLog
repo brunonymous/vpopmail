@@ -7,6 +7,9 @@ Unreleased -
   - Add an option --enable-onchange-script-before-and-after to call onchange
     script before and after a change
   - Add SQLite module, adapted from MySQL module code
+  - Add an option --enable-sha512-passwords by default, and increase all 
+    sql modules password size
+  - Disable clear password option by default
 
 5.4.33 -
   Matt Brookings

@@ -906,7 +906,20 @@ int mkpasswd3( char *clearpass, char *crypted, int ssize )
    srand (time(NULL)^(getpid()<<15));
  }
 
-#ifdef MD5_PASSWORDS
+#if defined(SHA512_PASSWORDS)
+  salt[0] = '$';
+  salt[1] = '6';
+  salt[2] = '$';
+  salt[3] = randltr();
+  salt[4] = randltr();
+  salt[5] = randltr();
+  salt[6] = randltr();
+  salt[7] = randltr();
+  salt[8] = randltr();
+  salt[9] = randltr();
+  salt[10] = randltr();
+  salt[11] = 0;
+#elif defined(MD5_PASSWORDS)
   salt[0] = '$';
   salt[1] = '1';
   salt[2] = '$';
@@ -928,7 +941,7 @@ int mkpasswd3( char *clearpass, char *crypted, int ssize )
   tmpstr = crypt(clearpass,salt);
   if ( tmpstr == NULL ) return(VA_CRYPT_FAILED);
 
-#ifdef MD5_PASSWORDS
+#if defined(MD5_PASSWORDS) || defined(SHA512_PASSWORDS)
   /* Make sure this host's crypt supports MD5 passwords.  If not,
    * fall back on old-style crypt
    */
