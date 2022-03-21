@@ -192,6 +192,28 @@ int vauth_deldomain( char *domain )
     valias_delete_domain( domain);
 #endif
 
+#ifdef ENABLE_AUTH_LOGGING
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, 
+        "delete from lastauth where domain = '%s'", domain );
+    err = sqlite3_exec (sqlite_update, SqlBufUpdate, 0, 0, &err_msg); 
+    if (err != SQLITE_OK) {
+	   if (err != SQLITE_ERROR)
+		  fprintf(stderr, "vauth_deldomain: warning: mysql_query(%s) failed: %s\n", SqlBufUpdate, err_msg);
+    } 
+#endif
+
+#ifdef ENABLE_SQL_LOGGING
+#ifdef ENABLE_SQL_REMOVE_DELETED
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
+       "delete from vlog where domain = '%s'", domain );
+    err = sqlite3_exec (sqlite_update, SqlBufUpdate, 0, 0, &err_msg);
+    if (err != SQLITE_OK) {
+	   if (err != SQLITE_ERROR)
+		  fprintf(stderr, "vauth_deldomain: warning: mysql_query(%s) failed: %s\n", SqlBufUpdate, err_msg);
+    }
+#endif
+#endif
+
     vdel_limits(domain);        
 
     return(0);
@@ -269,6 +291,7 @@ int vauth_deluser( char *user, char *domain )
     char *tmpstr;
     char *err_msg = NULL;
     int err = 0;
+    int rc;
     
     if ( (err=vauth_open_update()) != 0 ) return(err);
     vset_default_domain( domain );
@@ -296,11 +319,14 @@ int vauth_deluser( char *user, char *domain )
     qnprintf( SqlBufUpdate, SQL_BUF_SIZE, 
         "delete from lastauth where user = '%s' and domain = '%s'", 
         user, domain );
-    if (sqlite3_exec (sqlite_update, SqlBufUpdate, 0, 0, &err_msg) != SQLITE_OK) {
-        err = -1;
-    } else {
-        err = 0;
-    } 
+    rc = sqlite3_exec (sqlite_update, SqlBufUpdate, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        if (rc != SQLITE_ERROR) {
+            err = -1;
+        } else {
+            err = 0;
+        } 
+    }
 #endif
 
 #ifdef ENABLE_SQL_LOGGING
@@ -308,10 +334,13 @@ int vauth_deluser( char *user, char *domain )
     qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
         "delete from vlog where domain = '%s' and user = '%s'", 
        domain, user );
-    if (sqlite3_exec (sqlite_update, SqlBufUpdate, 0, 0, &err_msg) != SQLITE_OK) {
-        err = -1;
-    } else {
-        err = 0;
+    rc = sqlite3_exec (sqlite_update, SqlBufUpdate, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        if (rc != SQLITE_ERROR) {
+            err = -1;
+        } else {
+            err = 0;
+        }
     }
 #endif
 #endif
@@ -1476,6 +1505,41 @@ void valias_select_names_end() {
 
 }
 
+#endif
+
+/************************************************************************/
+#ifdef ENABLE_SQL_LOGGING
+int logsql(int verror, char *TheUser, char *TheDomain, char *ThePass, 
+  char *TheName, char *IpAddr, char *LogLine) 
+{
+    int err;
+    time_t mytime;
+    char *err_msg = NULL;
+ 
+    mytime = time(NULL);
+    if ( (err=vauth_open_update()) != 0 ) return(err);
+
+    qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
+        "INSERT INTO vlog set user='%s', passwd='%s', \
+        domain='%s', logon='%s', remoteip='%s', message='%s', \
+        error=%i, timestamp=%d", TheUser, ThePass, TheDomain,
+        TheName, IpAddr, LogLine, verror, (int)mytime);
+
+    if (sqlite3_exec (sqlite_update, SqlBufUpdate, 0, 0, &err_msg) != SQLITE_OK) {
+        vcreate_vlog_table();
+        if (sqlite3_exec (sqlite_update, SqlBufUpdate, 0, 0, &err_msg) != SQLITE_OK) {
+            fprintf(stderr, "error inserting into vlog table\n");
+        }
+    }
+
+    return(0);
+}
+
+/************************************************************************/
+void vcreate_vlog_table()
+{
+  vauth_create_table ("vlog", VLOG_TABLE_LAYOUT, 1);
+}
 #endif
 
 #ifdef ENABLE_MYSQL_LIMITS
