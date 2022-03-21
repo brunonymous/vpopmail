@@ -41,7 +41,11 @@
 #define MAX_PW_DOMAIN        96
 #define MAX_PW_PASS         128
 #define MAX_PW_GECOS         48
+#if defined(MD5_PASSWORDS) || defined(SHA512_PASSWORDS)
 #define MAX_PW_CLEAR_PASSWD 128
+#else
+#define MAX_PW_CLEAR_PASSWD 8
+#endif
 #define MAX_PW_DIR          160
 #define MAX_PW_QUOTA         20
 #define MAX_ALIAS_LINE      160

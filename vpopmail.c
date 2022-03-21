@@ -44,10 +44,6 @@
 #include "maildirquota.h"
 #include "storage.h"
 
-#ifndef MD5_PASSWORDS
-#define MAX_PW_CLEAR_PASSWD 8
-#endif
-
 #ifdef VPOPMAIL_DEBUG
 int show_trace=0;
 int show_query=0;
