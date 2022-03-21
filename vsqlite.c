@@ -48,13 +48,13 @@ void vcreate_lastauth_table();
  */
 int vauth_open_update()
 {
-    char filedb[256];
+    char filedb[MAX_BUFF];
     
     /* if the database is already open, just return */
     if ( update_open ) return(0);
     update_open = 1;
     
-    sprintf(filedb, "%s/etc/%s", VPOPMAILDIR, "vpopmail.sqlite");
+    snprintf(filedb, MAX_BUFF, "%s/etc/%s", VPOPMAILDIR, "vpopmail.sqlite");
 
     /* open sqlite3 database for read & write */    
     int rc = sqlite3_open_v2(filedb, &sqlite_update, 
@@ -78,14 +78,14 @@ int vauth_open_update()
  */
 int vauth_open_read()
 {
-    char filedb[256];
+    char filedb[MAX_BUFF];
     
     /* if the database is already open, just return */
     if ( read_open ) return(0);
     read_open = 1;    
     
-    sprintf(filedb, "%s/etc/%s", VPOPMAILDIR, "vpopmail.sqlite");
-    
+    snprintf(filedb, MAX_BUFF, "%s/etc/%s", VPOPMAILDIR, "vpopmail.sqlite");
+        
     /* open sqlite3 database for reading */
     int rc = sqlite3_open_v2(filedb, &sqlite_read, 
         SQLITE_OPEN_READONLY, NULL);
