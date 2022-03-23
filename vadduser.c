@@ -152,7 +152,7 @@ void usage()
     printf("         -c comment (sets the gecos comment field)\n");
     printf("         -e standard_encrypted_password\n");
     printf("         -n no_password\n");
-    printf("         -r[len] (generate a len (default 8) char random password)\n");
+    printf("         -r[len] (generate a len (default 12) char random password)\n");
 }
 
 void get_options(int argc,char **argv)
@@ -198,7 +198,7 @@ void get_options(int argc,char **argv)
             if (optarg)
                 vrandom_pass (Passwd, atoi(optarg));
             else
-                vrandom_pass (Passwd, 8);
+                vrandom_pass (Passwd, 12);
             break;
           default:
             errflag = 1;

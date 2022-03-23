@@ -10,6 +10,8 @@ Unreleased -
   - Add an option --enable-sha512-passwords by default, and increase all 
     sql modules password size
   - Disable clear password option by default
+  - set vpasswd, vadddomain and vadduser default password length to 12, 
+    and add optional password length in vpasswd
 
 5.4.33 -
   Matt Brookings

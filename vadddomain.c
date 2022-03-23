@@ -130,7 +130,7 @@ void usage()
 	printf("         -g gid (sets the gid to use for this domain)\n");
 	printf("         -O optimize adding, for bulk adds set this for all\n");
 	printf("            except the last one\n");
-	printf("         -r[len] (generate a len (default 8) char random postmaster password)\n");
+	printf("         -r[len] (generate a len (default 12) char random postmaster password)\n");
 	printf("\n");
 	printf(" [*] omit @-sign to deliver directly into user's Maildir: '-e postmaster'\n");
         printf("\n");
@@ -199,7 +199,7 @@ void get_options(int argc,char **argv)
             if (optarg)
               vrandom_pass (Passwd, atoi(optarg));
             else
-              vrandom_pass (Passwd, 8);
+              vrandom_pass (Passwd, 12);
             break;
 	default:
 	    errflag = 1;

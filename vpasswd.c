@@ -73,7 +73,7 @@ void usage()
 {
 	printf("vpasswd: usage: [options] email_address [password]\n");
 	printf("options: -v (print version number)\n");
-	printf("         -r generate a random password\n");
+	printf("         -r[len] (generate a len (default 12) char random password)\n");
 }
 
 void get_options(int argc,char **argv)
@@ -81,6 +81,7 @@ void get_options(int argc,char **argv)
  int c;
  int errflag;
  extern int optind;
+ extern char *optarg;
 
 	memset(Email, 0, sizeof(Email));
 	memset(Passwd, 0, sizeof(Passwd));
@@ -89,14 +90,17 @@ void get_options(int argc,char **argv)
 	RandomPw = 0;
 
 	errflag = 0;
-    while( !errflag && (c=getopt(argc,argv,"vr")) != -1 ) {
+    while( !errflag && (c=getopt(argc,argv,"vr::")) != -1 ) {
 		switch(c) {
 			case 'v':
 				printf("version: %s\n", VERSION);
 				break;
 			case 'r':
 				RandomPw = 1;
-				vrandom_pass (Passwd, 8);
+				if (optarg)
+				    vrandom_pass (Passwd, atoi(optarg));
+				else
+    				vrandom_pass (Passwd, 12);
 				break;
 			default:
 				errflag = 1;
