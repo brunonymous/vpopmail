@@ -12,6 +12,8 @@ Unreleased -
   - Disable clear password option by default
   - set vpasswd, vadddomain and vadduser default password length to 12, 
     and add optional password length in vpasswd
+  - fix crash in vpasswd, vadduser, vadddomain for very long password
+  - add an error code for too short passwords (minimum size = 12)
 
 5.4.33 -
   Matt Brookings

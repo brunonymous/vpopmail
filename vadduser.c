@@ -195,10 +195,16 @@ void get_options(int argc,char **argv)
             break;
           case 'r':
             RandomPw = 1;
-            if (optarg)
+            if (optarg) {
+                int sz = atoi(optarg);
+                if (sz > 128) {
+                    printf("Error: %s\n", verror(VA_PASSWD_TOO_LONG));
+                    vexit(VA_PASSWD_TOO_LONG);
+                }
                 vrandom_pass (Passwd, atoi(optarg));
-            else
+            } else {
                 vrandom_pass (Passwd, 12);
+            }
             break;
           default:
             errflag = 1;
