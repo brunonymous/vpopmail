@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sqlite3.h> 
 #include <string.h>
+#include <sys/stat.h>
 
 #include "config.h"
 #include "vpopmail.h"
@@ -48,17 +49,34 @@ void vcreate_lastauth_table();
  */
 int vauth_open_update()
 {
+    int rc;
     char filedb[MAX_BUFF];
     
     /* if the database is already open, just return */
     if ( update_open ) return(0);
     update_open = 1;
     
-    snprintf(filedb, MAX_BUFF, "%s/domains/%s", VPOPMAILDIR, "vpopmail.sqlite");
+    snprintf(filedb, MAX_BUFF, "%s/domains/%s", VPOPMAILDIR, "_vpopmail.sqlite");
+  
+    /* create database for vpopmail user */
+    if (access(filedb, F_OK) != 0) {
+        rc = sqlite3_open_v2(filedb, &sqlite_update, 
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);    
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Cannot create database : %s\n", 
+                sqlite3_errmsg(sqlite_update));
+            sqlite3_close(sqlite_update);
+            verrori = VA_NO_AUTH_CONNECTION;
+            return( VA_NO_AUTH_CONNECTION );
+        }        
+        sqlite3_close(sqlite_update);
+        
+        chown(filedb, VPOPMAILUID, VPOPMAILGID);
+        chmod(filedb, S_IRUSR | S_IWUSR);        
+    }
 
     /* open sqlite3 database for read & write */    
-    int rc = sqlite3_open_v2(filedb, &sqlite_update, 
-        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    rc = sqlite3_open_v2(filedb, &sqlite_update, SQLITE_OPEN_READWRITE, NULL);
     
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Cannot open database : %s\n", 
@@ -78,22 +96,37 @@ int vauth_open_update()
  */
 int vauth_open_read()
 {
+    int rc;
     char filedb[MAX_BUFF];
     
     /* if the database is already open, just return */
     if ( read_open ) return(0);
     read_open = 1;    
     
-    snprintf(filedb, MAX_BUFF, "%s/domains/%s", VPOPMAILDIR, "vpopmail.sqlite");
+    snprintf(filedb, MAX_BUFF, "%s/domains/%s", VPOPMAILDIR, "_vpopmail.sqlite");
+    
+    /* create database for vpopmail user */
+    if (access(filedb, F_OK) != 0) {
+        rc = sqlite3_open_v2(filedb, &sqlite_read, 
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);    
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "Cannot create database : %s\n", 
+                sqlite3_errmsg(sqlite_read));
+            sqlite3_close(sqlite_read);
+            verrori = VA_NO_AUTH_CONNECTION;
+            return( VA_NO_AUTH_CONNECTION );
+        }        
+        sqlite3_close(sqlite_read);
+        
+        chown(filedb, VPOPMAILUID, VPOPMAILGID);
+        chmod(filedb, S_IRUSR | S_IWUSR);        
+    }
         
     /* open sqlite3 database for reading */
-    int rc = sqlite3_open_v2(filedb, &sqlite_read, 
-        SQLITE_OPEN_READONLY, NULL);
+    rc = sqlite3_open_v2(filedb, &sqlite_read, SQLITE_OPEN_READONLY, NULL);
     
     if (rc != SQLITE_OK) {
-        /* can't open, try in read+write mode */
-        rc = sqlite3_open_v2(filedb, &sqlite_read, 
-            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+        rc = sqlite3_open_v2(filedb, &sqlite_read, SQLITE_OPEN_READWRITE, NULL);
         if (rc != SQLITE_OK) {
             fprintf(stderr, "Cannot open database : %s\n", 
                 sqlite3_errmsg(sqlite_read));
