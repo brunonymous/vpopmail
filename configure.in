@@ -989,6 +989,56 @@ esac
 
 #----------------------------------------------------------------------
 
+AC_MSG_CHECKING(whether spam junkfolder is enabled)
+AC_ARG_ENABLE(spam-junkfolder,
+        [  --enable-spam-junkfolder   Automatically move (not deleted) spam messages into Junk folder],
+        ENABLE_SPAM_JUNKFOLDER=$enableval,
+                [
+                        ENABLE_SPAM_JUNKFOLDER=0
+                ]
+)
+
+case $ENABLE_SPAM_JUNKFOLDER in
+  1*|y*|Y*)
+      AC_MSG_RESULT(yes)
+      ENABLE_SPAM_JUNKFOLDER=1
+      AC_DEFINE_UNQUOTED(ENABLE_SPAM_JUNKFOLDER,$ENABLE_SPAM_JUNKFOLDER,"")
+      ;;
+  *)
+      AC_MSG_RESULT(no)
+      ;;
+esac
+
+#----------------------------------------------------------------------
+
+AC_MSG_CHECKING(whether spam threshold was give)
+AC_ARG_ENABLE(spam-threshold,
+        [  --enable-spam-threshold=# or n Automatically delete messages that score more than # spam hits],
+        ENABLE_SPAM_THRESHOLD=$enableval,
+                [
+                        ENABLE_SPAM_THRESHOLD=0
+                ]
+)
+
+if test "${enable_spam_threshold+set}" = set; then
+      AC_MSG_RESULT(yes)
+      enableval="$enable_spam_threshold"
+      ENABLE_SPAM_THRESHOLD=$enableval
+      AC_DEFINE_UNQUOTED(ENABLE_SPAM_THRESHOLD,$ENABLE_SPAM_THRESHOLD,"")
+else
+      ENABLE_SPAM_THRESHOLD=0
+      AC_MSG_RESULT(no)
+fi
+
+case $ENABLE_SPAM_THRESHOLD in
+  0*|n*|N*)
+      AC_MSG_RESULT(no)
+      ;;
+  *)
+esac  
+
+#----------------------------------------------------------------------
+
 AC_MSG_CHECKING(whether maildrop is enabled)
 AC_ARG_ENABLE(maildrop,
         [  --enable-maildrop          Enable maildrop. See  README.maildrop for more info.],
@@ -2075,6 +2125,21 @@ case $ENABLE_SPAMASSASSIN in
     echo "      spamassassin = OFF --disable-spamassassin (default)"
     ;;
 esac
+
+case $ENABLE_SPAM_JUNKFOLDER in
+  1*|y*|Y*)
+    echo "      spam junkfolder = ON  --enable-spam-junkfolder"
+    ;;
+  *)
+    echo "      spam junkfolder = OFF --disable-spam-junkfolder (default)"
+    ;;
+esac
+
+if test "${enable_spam_threshold+set}" = set; then
+    echo "      spam threshold = ${enable_spam_threshold} --enable-spam-threshold"
+else
+    echo "      spam threshold = OFF --disable-spam-threshold (default)"
+fi
 
 case $ENABLE_MAILDROP in
   1*|y*|Y*)
