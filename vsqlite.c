@@ -54,7 +54,7 @@ int vauth_open_update()
     if ( update_open ) return(0);
     update_open = 1;
     
-    snprintf(filedb, MAX_BUFF, "%s/etc/%s", VPOPMAILDIR, "vpopmail.sqlite");
+    snprintf(filedb, MAX_BUFF, "%s/domains/%s", VPOPMAILDIR, "vpopmail.sqlite");
 
     /* open sqlite3 database for read & write */    
     int rc = sqlite3_open_v2(filedb, &sqlite_update, 
@@ -84,7 +84,7 @@ int vauth_open_read()
     if ( read_open ) return(0);
     read_open = 1;    
     
-    snprintf(filedb, MAX_BUFF, "%s/etc/%s", VPOPMAILDIR, "vpopmail.sqlite");
+    snprintf(filedb, MAX_BUFF, "%s/domains/%s", VPOPMAILDIR, "vpopmail.sqlite");
         
     /* open sqlite3 database for reading */
     int rc = sqlite3_open_v2(filedb, &sqlite_read, 
@@ -836,8 +836,12 @@ int vread_dir_control(vdir_type *vdir, char *domain, uid_t uid, gid_t gid)
         
     rc = sqlite3_prepare_v2(sqlite_read, SqlBufRead, -1, &stmt_read, NULL);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "vsqlite: sql error[13]: %s\n", sqlite3_errmsg(sqlite_read));
-        return(-1);
+        vcreate_dir_control(domain);
+        rc = sqlite3_prepare_v2(sqlite_read, SqlBufRead, -1, &stmt_read, NULL);
+        if (rc != SQLITE_OK) {        
+            fprintf(stderr, "vsqlite: sql error[13]: %s\n", sqlite3_errmsg(sqlite_read));
+            return(-1);
+        }
     }        
     
     rc = sqlite3_step(stmt_read);
