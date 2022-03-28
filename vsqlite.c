@@ -1,5 +1,3 @@
-#include "vsqlite.h"
-
 #include <sqlite3.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +9,7 @@
 #include "vauth.h"
 #include "vlimits.h"
 #include "vpopmail.h"
+#include "vsqlite.h"
 
 #define SQL_BUF_SIZE 2048
 static char SqlBufRead[SQL_BUF_SIZE];
