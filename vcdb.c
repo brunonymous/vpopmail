@@ -63,7 +63,7 @@ static char TmpBuf1[MAX_BUFF];
 
 int make_vpasswd_cdb(char *domain)
 {
- char pwline[256];
+ char pwline[512];
  char packbuf[8];
  char *key;
  char *data;
