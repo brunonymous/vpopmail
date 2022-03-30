@@ -32,7 +32,8 @@ vpopmailbin_PROGRAMS = vchkpw vdelivermail clearopensmtp vadddomain \
  vdeldomain vpasswd vadduser vdeluser vaddaliasdomain vsetuserquota \
  vpopbull vdeloldusers vmoduser valias vuserinfo vmkpasswd vipmap \
  vdominfo vconvert vkill vmoddomlimits vchangepw dotqmail2valias \
- vpopmaild vlist authvchkpw vusagec vsavealiasdomains vrcptcheck
+ vpopmaild vlist authvchkpw vusagec vsavealiasdomains vrcptcheck \
+ vverifypw
 
 vusagec_SOURCES = vusagec.c client.c conf.c ippp.c
 vusagec_LDADD = libvpopmail.a @auth_libs@
@@ -120,6 +121,9 @@ vsavealiasdomains_LDADD = libvpopmail.a  @auth_libs@
 
 vrcptcheck_SOURCES = vrcptcheck.c
 vrcptcheck_LDADD = libvpopmail.a @auth_libs@
+
+vverifypw_SOURCES = vverifypw.c
+vverifypw_LDADD = libvpopmail.a @auth_libs@
 
 DEFS=-I. @auth_inc@ 
 
