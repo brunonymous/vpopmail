@@ -1,14 +1,5 @@
 /*
- * $Id: vchangepw.c 1014 2011-02-03 16:04:37Z volz0r $
- * Copyright (C) 1999-2009 Inter7 Internet Technologies, Inc.
- *
- * Modified version of vpasswd created by Rolf Eike Beer, November 2003
- *
- * Usage Note:
- * Set up another user account with this binary as shell. Then chmod
- * it to suid vpopmail. Now users can ssh to the box as this user and
- * change the password remote without asking anyone. If you only allow
- * logins via ssh the password wont be sent unencrypted.
+ * Copyright (C) 2022 TLK Games
  *
  * Copyright (C) 1999,2001 Inter7 Internet Technologies, Inc.
  * Copyright (C) 2003-2006 Rolf Eike Beer
