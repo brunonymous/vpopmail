@@ -143,6 +143,8 @@ int vadddomain(char *domain, char *dir, uid_t uid, gid_t gid) {
   char ch, defaultdelivery_file[MAX_BUFF];
   FILE *defaultdelivery;
   int default_delivery_option;
+  char *ptld;
+  size_t sz;
 
 #ifdef DEFAULT_DELIVERY
   default_delivery_option = 1;
@@ -164,10 +166,21 @@ int vadddomain(char *domain, char *dir, uid_t uid, gid_t gid) {
   /* reject domain names that exceed our max permitted/storable size */
   if (strlen(domain) > MAX_PW_DOMAIN) return (VA_DOMAIN_NAME_TOO_LONG);
 
+  /* reject domain names without TLD */
+  ptld = strrchr(domain, '.');
+  if (ptld == NULL) return (VA_INVALID_DOMAIN_NAME);
+
+  /* reject domain names with invalid TLD size */
+  sz = domain + strlen(domain) - 1 - ptld;
+  if ((sz < 2) || (sz > 63)) return (VA_INVALID_DOMAIN_NAME);
+
   /* check invalid email domain characters */
   for (i = 0; domain[i] != 0; ++i) {
     if (i == 0 && domain[i] == '-') return (VA_INVALID_DOMAIN_NAME);
     if (isalnum((int)domain[i]) == 0 && domain[i] != '-' && domain[i] != '.') {
+      return (VA_INVALID_DOMAIN_NAME);
+    }
+    if ((i > 0) && (domain[i] == '.') && (domain[i - 1] == '.')) {
       return (VA_INVALID_DOMAIN_NAME);
     }
   }

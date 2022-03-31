@@ -14,6 +14,7 @@ Unreleased -
     and add optional password length in vpasswd
   - fix crash in vpasswd, vadduser, vadddomain for very long password
   - add an error code for too short passwords (minimum size = 12)
+  - in vadddomain() : reject no TLD or invalid size TLD, or two consecutive '.'
 
 5.4.33 -
   Matt Brookings
