@@ -33,7 +33,7 @@
 #define SYBASE_LARGE_USERS_TABLE "users"
 
 /* small site table layout */
-#define SMALL_TABLE_LAYOUT "pw_name char(32) not null, \
+#define SMALL_TABLE_LAYOUT "pw_name char(64) not null, \
 pw_domain varchar(223) not null, \
 pw_passwd varchar(255) not null, \
 pw_uid int, \
@@ -43,7 +43,7 @@ pw_dir varchar(255), \
 pw_shell varchar(255), primary key (pw_name, pw_domain) "
 
 /* large site table layout */
-#define LARGE_TABLE_LAYOUT "pw_name char(32) not null, \
+#define LARGE_TABLE_LAYOUT "pw_name char(64) not null, \
 pw_passwd varchar(255) not null, \
 pw_uid int, \
 pw_gid int, \

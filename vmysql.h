@@ -48,40 +48,40 @@
 
 #ifdef MANY_DOMAINS
 #ifdef CLEAR_PASS
-#define TABLE_LAYOUT "pw_name char(32) not null, \
+#define TABLE_LAYOUT "pw_name char(64) not null, \
 pw_domain char(96) not NULL, \
 pw_passwd char(128), \
 pw_uid int, pw_gid int, \
-pw_gecos char(48), \
+pw_gecos char(64), \
 pw_dir char(160), \
 pw_shell char(20), \
 pw_clear_passwd char(16), \
 primary key (pw_name, pw_domain ) "
 #else
-#define TABLE_LAYOUT "pw_name char(32) not null, \
+#define TABLE_LAYOUT "pw_name char(64) not null, \
 pw_domain char(96) not null, \
 pw_passwd char(128), \
 pw_uid int, pw_gid int, \
-pw_gecos char(48), \
+pw_gecos char(64), \
 pw_dir char(160), \
 pw_shell char(20), \
 primary key (pw_name, pw_domain ) "
 #endif
 #else
 #ifdef CLEAR_PASS
-#define TABLE_LAYOUT "pw_name char(32) not null, \
+#define TABLE_LAYOUT "pw_name char(64) not null, \
 pw_passwd char(128), \
 pw_uid int, pw_gid int, \
-pw_gecos char(48), \
+pw_gecos char(64), \
 pw_dir char(160), \
 pw_shell char(20), \
 pw_clear_passwd char(16), \
 primary key (pw_name ) "
 #else
-#define TABLE_LAYOUT "pw_name char(32) not null, \
+#define TABLE_LAYOUT "pw_name char(64) not null, \
 pw_passwd char(128), \
 pw_uid int, pw_gid int, \
-pw_gecos char(48), \
+pw_gecos char(64), \
 pw_dir char(160), \
 pw_shell char(20), \
 primary key (pw_name ) "

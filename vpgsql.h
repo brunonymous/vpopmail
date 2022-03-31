@@ -33,40 +33,40 @@
 
 #ifdef MANY_DOMAINS
 #ifdef CLEAR_PASS
-#define TABLE_LAYOUT "pw_name varchar(32) NOT NULL, \
+#define TABLE_LAYOUT "pw_name varchar(64) NOT NULL, \
 pw_domain varchar(96) NOT NULL, \
 pw_passwd varchar(128), \
 pw_uid int4, pw_gid int4, \
-pw_gecos varchar(48), \
+pw_gecos varchar(64), \
 pw_dir varchar(160), \
 pw_shell varchar(20), \
 pw_clear_passwd varchar(16), \
 PRIMARY KEY(\"pw_domain\", \"pw_name\")"
 #else
-#define TABLE_LAYOUT "pw_name varchar(32) NOT NULL, \
+#define TABLE_LAYOUT "pw_name varchar(64) NOT NULL, \
 pw_domain varchar(96) NOT NULL, \
 pw_passwd varchar(128), \
 pw_uid int4, pw_gid int4, \
-pw_gecos varchar(48), \
+pw_gecos varchar(64), \
 pw_dir varchar(160), \
 pw_shell varchar(20), \
 PRIMARY KEY (pw_name, pw_domain ) "
 #endif
 #else
 #ifdef CLEAR_PASS
-#define TABLE_LAYOUT "pw_name varchar(32) NOT NULL, \
+#define TABLE_LAYOUT "pw_name varchar(64) NOT NULL, \
 pw_passwd varchar(128), \
 pw_uid int4, pw_gid int4, \
-pw_gecos varchar(48), \
+pw_gecos varchar(64), \
 pw_dir varchar(160), \
 pw_shell varchar(20), \
 pw_clear_passwd varchar(16), \
 PRIMARY KEY (pw_name ) "
 #else
-#define TABLE_LAYOUT "pw_name varchar(32) NOT NULL, \
+#define TABLE_LAYOUT "pw_name varchar(64) NOT NULL, \
 pw_passwd varchar(128), \
 pw_uid int4, pw_gid int4, \
-pw_gecos varchar(48), \
+pw_gecos varchar(64), \
 pw_dir varchar(160), \
 pw_shell varchar(20), \
 PRIMARY KEY (pw_name ) "
