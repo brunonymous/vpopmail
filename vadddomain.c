@@ -74,6 +74,13 @@ int main(int argc, char *argv[])
     if ((err=vadduser("postmaster", Domain, Passwd, "Postmaster", Apop )) != 
         VA_SUCCESS ) {
         printf("Error: (vadduser) %s\n", verror(err));
+        
+        /* remove the domain, because we were not able to create the 
+           postmaster account */
+        if ( (err=vdeldomain(Domain)) != VA_SUCCESS) {
+    		printf("Error: %s\n", verror(err));
+	    }
+        
         vexit(err);
     }
 

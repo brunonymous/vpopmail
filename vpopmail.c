@@ -2917,21 +2917,21 @@ char *verror(int va_err) {
     case VA_MEMORY_ALLOC_ERR:
       return ("memory allocation error");
     case VA_USER_NAME_TOO_LONG:
-      return ("user name too long");
+      return ("user name too long (max=64)");
     case VA_DOMAIN_NAME_TOO_LONG:
-      return ("domain name too long");
+      return ("domain name too long (max=96)");
     case VA_PASSWD_TOO_LONG:
-      return ("password too long");
+      return ("password too long (max=128)");
     case VA_GECOS_TOO_LONG:
-      return ("gecos too long");
+      return ("gecos too long (max=64)");
     case VA_QUOTA_TOO_LONG:
-      return ("quota too long");
+      return ("quota too long (max=20)");
     case VA_DIR_TOO_LONG:
-      return ("dir too long");
+      return ("dir too long (max=160)");
     case VA_CLEAR_PASSWD_TOO_LONG:
-      return ("clear password too long");
+      return ("clear password too long (max=128)");
     case VA_ALIAS_LINE_TOO_LONG:
-      return ("alias line too long");
+      return ("alias line too long (max=160)");
     case VA_NULL_POINTER:
       return ("null pointer");
     case VA_INVALID_EMAIL_CHAR:
@@ -2965,7 +2965,7 @@ char *verror(int va_err) {
     case VA_CANNOT_DELETE_CATCHALL:
       return ("can't delete catchall account");
     case VA_PASSWD_TOO_SHORT:
-      return ("password too short");
+      return ("password too short (min=12)");
     default:
       return ("Unknown error");
   }

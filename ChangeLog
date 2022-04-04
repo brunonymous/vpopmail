@@ -17,6 +17,10 @@ Unreleased -
   - in vadddomain() : reject no TLD or invalid size TLD, or two consecutive '.'
   - change max size of user name and gecos to 64, and increase temporary buffer
     in make_vpasswd_cdb to fix a crash after changing the user name size
+  - add fix from Roberto Puzzanghera : 
+         - fix mysql module compilation on Debian 11 / gcc 10
+  - in vadddomain, remove domain if the postmaster user can't be created
+  - add minimum and maximum length of parameters in error messages
 
 5.4.33 -
   Matt Brookings
