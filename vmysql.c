@@ -1983,6 +1983,8 @@ int vauth_crypt(char *user,char *domain,char *clear_pass,struct vqpasswd *vpw)
 
 
 /************************************************************************/
+#ifndef MANY_DOMAINS
+#ifdef SQL_ALIASDOMAINS
 int vcreate_pwd_query_proc()
 {
   char sql_file[256], command[256];
@@ -2005,6 +2007,8 @@ int vcreate_pwd_query_proc()
 
   fclose(sql);
 }
+#endif
+#endif
 
 
 /************************************************************************/
