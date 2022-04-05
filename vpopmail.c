@@ -2867,6 +2867,7 @@ int host_in_locals(char *domain) {
 
 /* Convert error flag to text */
 char *verror(int va_err) {
+  static char errorstr[MAX_BUFF];
   switch (va_err) {
     case VA_SUCCESS:
       return ("Success");
@@ -2965,7 +2966,9 @@ char *verror(int va_err) {
     case VA_CANNOT_DELETE_CATCHALL:
       return ("can't delete catchall account");
     case VA_PASSWD_TOO_SHORT:
-      return ("password too short (min=12)");
+      snprintf(errorstr, MAX_BUFF, "password too short (min=%d)", 
+        MIN_PW_CLEAR_PASSWD);
+      return errorstr;
     default:
       return ("Unknown error");
   }

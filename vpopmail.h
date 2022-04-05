@@ -44,10 +44,10 @@
 #define MAX_PW_GECOS 64
 #if defined(MD5_PASSWORDS) || defined(SHA512_PASSWORDS)
 #define MAX_PW_CLEAR_PASSWD 128
-#define MIN_PW_CLEAR_PASSWD 12
+/* #define MIN_PW_CLEAR_PASSWD 12 */
 #else
 #define MAX_PW_CLEAR_PASSWD 8
-#define MIN_PW_CLEAR_PASSWD 8
+/* #define MIN_PW_CLEAR_PASSWD 8 */
 #endif
 #define MAX_PW_DIR 160
 #define MAX_PW_QUOTA 20
