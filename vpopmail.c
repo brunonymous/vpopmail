@@ -1557,6 +1557,7 @@ int signal_process(char *name, int sig_num) {
   while (fgets(tmpbuf1, sizeof(tmpbuf1), ps) != NULL) {
     if (strstr(tmpbuf1, name) != NULL && strstr(tmpbuf1, "supervise") == NULL &&
         strstr(tmpbuf1, "multilog") == NULL &&
+        strstr(tmpbuf1, "runsv") == NULL &&
         strstr(tmpbuf1, "svscan") == NULL) {
       tmpstr = strtok(tmpbuf1, PS_TOKENS);
       col = 0;
