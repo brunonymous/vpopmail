@@ -35,8 +35,14 @@
 #include <time.h>
 #include <utime.h>
 #include <sys/types.h>
-#include <cdbmake.h>
 #include "config.h"
+
+#ifdef TINYCDB
+#include <cdb.h>
+#else
+#include <cdbmake.h>
+#endif
+
 #include "vpopmail.h"
 #include "vauth.h"
 #include "vcdb.h"
@@ -44,6 +50,10 @@
 #include "vlimits.h"
 
 #define TOKENS " \n"
+
+#ifdef TINYCDB
+typedef uint32_t uint32;
+#endif
 
 char *dc_filename(char *domain, uid_t uid, gid_t gid);
 void vcdb_strip_char( char *instr );
@@ -61,6 +71,90 @@ static char vpasswd_lock_file[MAX_BUFF];
 static char vpasswd_dir[MAX_BUFF];
 static char TmpBuf1[MAX_BUFF];
 
+#ifdef TINYCDB
+int make_vpasswd_cdb(char *domain)
+{
+    struct cdb_make cdbm;
+    char pwline[512];
+    char Dir[156];
+    char *key;
+    char *data;
+    char *ptr;
+    long unsigned keylen,datalen;
+    FILE *pwfile;
+    int tmpfile;
+    uid_t uid;
+    gid_t gid;
+    char *tmpstr;
+    mode_t oldmask;
+
+    /* If we don't optimize the index this time, just return */
+    if ( NoMakeIndex == 1 ) return(0);
+
+    if ((pwfile = fopen(vpasswd_file,"r")) == NULL) {
+        return(-1);
+    }
+
+    /* temporarily set umask (no group/other access) and open temp file */
+    oldmask = umask(VPOPMAIL_UMASK);
+    tmpfile = open(vpasswd_cdb_tmp_file, O_RDWR | O_CREAT);
+    umask(oldmask);
+
+    if (tmpfile == -1) {
+        fprintf(stderr,"Error: could not create/open temporary file\n");
+        return(-1);
+    }
+    
+    if (cdb_make_start(&cdbm, tmpfile) != 0) {
+        fprintf(stderr,"Error: could not initialise cdb\n");
+        return(-1);
+    }
+
+    /* creation */
+    fgets(pwline,sizeof(pwline),pwfile);
+    while (!feof(pwfile)) {
+        key = pwline; ptr = pwline;
+        while (*ptr != ':') { ptr++; }
+        *ptr = 0; data = ptr; data++;
+        while (*ptr != '\n') { ptr++; }
+        *ptr = 0;
+        keylen = strlen(key); datalen = strlen(data);
+#ifdef VPOPMAIL_DEBUG
+        fprintf (stderr,"Got entry: keylen = %lu, key = %s\n           datalen = %lu, data = %s\n",keylen,key,datalen,data);
+#endif
+
+        if (cdb_make_add(&cdbm, key, keylen, data, datalen) != 0) {
+            fprintf(stderr,"Error: could not add cdb entry\n");
+            return(-1);
+        }
+        fgets(pwline,sizeof(pwline),pwfile);
+    }
+    fclose(pwfile);
+ 
+    if (cdb_make_finish(&cdbm) != 0) {
+        fprintf(stderr,"Error: could not write cdb file\n");
+        return(-1);
+    }
+
+    if (close(tmpfile) == -1) {
+        fprintf(stderr,"Error 24: error with close()\n");
+        return(-1);
+    }
+      
+    if (rename(vpasswd_cdb_tmp_file,vpasswd_cdb_file)) {
+        fprintf(stderr, 
+            "Error 25: could not rename cdb.tmp to vpasswd.cdb\n");
+        return(-1);
+    }
+    
+    tmpstr = vget_assign(domain, Dir, 156, &uid, &gid );
+    chown(vpasswd_cdb_file, uid, gid);
+    chown(vpasswd_lock_file, uid, gid);
+    chown(vpasswd_file, uid, gid);
+
+    return 0;
+}
+#else
 int make_vpasswd_cdb(char *domain)
 {
  char pwline[512];
@@ -119,7 +213,6 @@ int make_vpasswd_cdb(char *domain)
 #ifdef VPOPMAIL_DEBUG
         fprintf (stderr,"Got entry: keylen = %lu, key = %s\n           datalen = %lu, data = %s\n",keylen,key,datalen,data);
 #endif
-
         cdbmake_pack(packbuf, (uint32)keylen);
         cdbmake_pack(packbuf + 4, (uint32)datalen);
         if (fwrite(packbuf,1,8,tmfile) < 8) {
@@ -218,6 +311,7 @@ int make_vpasswd_cdb(char *domain)
 
     return 0;
 }
+#endif
 
 struct vqpasswd *vauth_getpw(char *user, char *domain)
 {
@@ -281,10 +375,17 @@ struct vqpasswd *vauth_getpw(char *user, char *domain)
             close(pwf);
             return NULL;
     }
+#ifdef TINYCDB
+    if (cdb_bread(pwf, ptr, dlen) != 0) {
+        close(pwf); 
+        return NULL;
+    }
+#else    
     if (read(pwf, ptr,dlen) != (int)dlen) {
         close(pwf);
         return NULL;
     }
+#endif
     close(pwf);
     line[(dlen+strlen(user)+1)] = 0;
 

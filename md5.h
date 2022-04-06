@@ -19,7 +19,9 @@
 #ifndef VPOPMAIL_MD5_H
 #define VPOPMAIL_MD5_H
 
-#include "cdb/uint32.h"
+#include "storage.h"
+
+typedef uint32_t uint32;
 
 struct MD5Context {
 	uint32 buf[4];

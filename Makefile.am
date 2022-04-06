@@ -2,16 +2,25 @@
 
 @SET_MAKE@
 
+if BUILD_CDB
 SUBDIRS=cdb
+endif
 OBJEXT=o
 
+if BUILD_CDB
 EXTRA_DIST=README.* cdb/* vcdb.c vldap.c vmysql.c voracle.pc vpgsql.c vsybase.c
+else
+EXTRA_DIST=README.* vcdb.c vldap.c vmysql.c voracle.pc vpgsql.c vsybase.c
+endif
 
 noinst_HEADERS=md5.h vpopmail.h file_lock.h vauth.h vlimits.h maildirquota.h vcdb.h vldap.h vmysql.h voracle.h vpgsql.h vsybase.h vlog.h global.h hmac_md5.h seek.h vutil.h
 
 COMMONSOURCES=vpopmail.c md5.c bigdir.c vauth.c file_lock.c vpalias.c seek.c vlimits.c maildirquota.c vutil.c vlistlib.c backfill.c client.c conf.c ippp.c
 
-CONFIG_CLEAN_FILES=vauth.c cdb/conf-cc cdb/conf-ld cdb/compile cdb/load
+CONFIG_CLEAN_FILES=vauth.c 
+if BUILD_CDB
+CONFIG_CLEAN_FILES+=cdb/conf-cc cdb/conf-ld cdb/compile cdb/load  
+endif
 
 INSTALL_PROGRAM= ${INSTALL} -o @vpopuser@ -m 711 -g @vpopgroup@ $(AM_INSTALL_PROGRAM_FLAGS)
 INSTALL_STRIP_PROGRAM=${INSTALL_PROGRAM} -s
@@ -24,7 +33,9 @@ DOVECOT_SQL=$(DESTDIR)@vpopmaildir@/etc/pwd-query_disable-many-domains.sql
 noinst_LIBRARIES=libvpopmail.a
 
 libvpopmail_a_SOURCES=$(COMMONSOURCES) 
+if BUILD_CDB
 libvpopmail_a_LIBADD =  cdb/*.o
+endif
 libvpopmail_a_CFLAGS = -fPIC
 
 vpopmailbindir=@vpopmaildir@/bin

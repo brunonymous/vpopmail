@@ -1164,6 +1164,30 @@ AC_ARG_ENABLE(libdir,
 
 #----------------------------------------------------------------------
 
+AC_MSG_CHECKING(whether tinycdb is enabled)
+AC_ARG_ENABLE(tinycdb,
+        [  --enable-tinycdb Enable tinycdb library.],
+        TINYCDB=$enableval,
+                [
+                        TINYCDB=n
+                ]
+)
+
+case $TINYCDB in
+  1*|y*|Y*)
+        AC_MSG_RESULT(yes)
+        TINYCDB=1
+        AC_DEFINE_UNQUOTED(TINYCDB,$TINYCDB,"")
+        ;;
+  *)
+        AC_MSG_RESULT(no)
+        ;;
+esac
+
+AM_CONDITIONAL([BUILD_CDB], [test x"${TINYCDB}" != x1])
+
+#----------------------------------------------------------------------
+
 AC_MSG_CHECKING(whether an auth module has been specified)
 
 #default to use CDB authentication
@@ -1182,11 +1206,16 @@ case $AUTH_MODULE in
     USE_SQL=0
     rm -rf vauth.c
     ln -sf vcdb.c vauth.c
-    AC_DEFINE_UNQUOTED(USE_CDB,$USE_CDB,"")
-    authlib=""
-    AC_SUBST(authlib)
-    auth_inc="-Icdb"
-    AC_SUBST(auth_inc)
+    AC_DEFINE_UNQUOTED(USE_CDB,$USE_CDB,"")    
+    if test "$TINYCDB" = 1; then
+        auth_libs="-lcdb"
+        AC_SUBST(auth_libs)
+    else
+        authlib=""
+        auth_inc="-Icdb"
+        AC_SUBST(auth_inc)
+        AC_SUBST(authlib)
+    fi
     ;;
 
   my*|My*|MY*)
@@ -2000,17 +2029,6 @@ case $ENABLE_DOMAIN_QUOTAS in
     ;;
 esac
 
-case $MIN_PWD_LENGTH  in
-  yes)
-    echo "   min password length = 12  --enable-min-pwd-length"
-    ;;
-  no)
-    echo "   min password length = 1  --disable-min-pwd-length"
-    ;;
-  *)
-    echo "   min password length = ${minpwdlength}  --enable-min-pwd-length (default)"
-    ;;
-esac
 
 case $AUTH_MODULE in
   cd*|Cd*|CD*)
@@ -2093,6 +2111,15 @@ echo "          auth inc = $auth_inc"
 echo "          auth lib = $auth_libs"
 
 
+case $TINYCDB in
+  1*|y*|Y*)
+    echo "  using tinycdb = ON  --enable-tinycdb"
+    ;;
+  *)
+    echo "  using tinycdb = OFF --disable-tinycdb (default)"
+    ;;
+esac
+
 case $ENABLE_PASSWD in
   1*|y*|Y*)
     echo "  system passwords = ON  --enable-passwd"
@@ -2151,6 +2178,18 @@ then
     echo "one domain per SQL table     = --disable-many-domains"
   fi
 fi
+
+case $MIN_PWD_LENGTH  in
+  yes)
+    echo "   min password length = 12  --enable-min-pwd-length"
+    ;;
+  no)
+    echo "   min password length = 1  --disable-min-pwd-length"
+    ;;
+  *)
+    echo "   min password length = ${minpwdlength}  --enable-min-pwd-length (default)"
+    ;;
+esac
 
 if [[ "$AUTH_MODULE" == "mysql" ]];
 then
