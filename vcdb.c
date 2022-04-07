@@ -35,6 +35,10 @@
 #include <time.h>
 #include <utime.h>
 #include <sys/types.h>
+
+/* test */
+#include <signal.h>
+
 #include "config.h"
 
 #ifdef TINYCDB
@@ -75,7 +79,7 @@ static char TmpBuf1[MAX_BUFF];
 int make_vpasswd_cdb(char *domain)
 {
     struct cdb_make cdbm;
-    char pwline[512];
+    char pwline[MAX_BUFF_CDB];
     char Dir[156];
     char *key;
     char *data;
@@ -86,11 +90,11 @@ int make_vpasswd_cdb(char *domain)
     uid_t uid;
     gid_t gid;
     char *tmpstr;
-    mode_t oldmask;
-
+    mode_t oldmask; 
+        
     /* If we don't optimize the index this time, just return */
     if ( NoMakeIndex == 1 ) return(0);
-
+    
     if ((pwfile = fopen(vpasswd_file,"r")) == NULL) {
         return(-1);
     }
@@ -109,9 +113,9 @@ int make_vpasswd_cdb(char *domain)
         fprintf(stderr,"Error: could not initialise cdb\n");
         return(-1);
     }
-
+    
     /* creation */
-    fgets(pwline,sizeof(pwline),pwfile);
+    fgets(pwline,MAX_BUFF_CDB,pwfile);
     while (!feof(pwfile)) {
         key = pwline; ptr = pwline;
         while (*ptr != ':') { ptr++; }
@@ -127,8 +131,10 @@ int make_vpasswd_cdb(char *domain)
             fprintf(stderr,"Error: could not add cdb entry\n");
             return(-1);
         }
-        fgets(pwline,sizeof(pwline),pwfile);
+        
+        fgets(pwline,MAX_BUFF_CDB,pwfile);
     }
+
     fclose(pwfile);
  
     if (cdb_make_finish(&cdbm) != 0) {
@@ -140,14 +146,15 @@ int make_vpasswd_cdb(char *domain)
         fprintf(stderr,"Error 24: error with close()\n");
         return(-1);
     }
-      
+   
     if (rename(vpasswd_cdb_tmp_file,vpasswd_cdb_file)) {
         fprintf(stderr, 
             "Error 25: could not rename cdb.tmp to vpasswd.cdb\n");
         return(-1);
     }
-    
+        
     tmpstr = vget_assign(domain, Dir, 156, &uid, &gid );
+    
     chown(vpasswd_cdb_file, uid, gid);
     chown(vpasswd_lock_file, uid, gid);
     chown(vpasswd_file, uid, gid);
@@ -157,7 +164,7 @@ int make_vpasswd_cdb(char *domain)
 #else
 int make_vpasswd_cdb(char *domain)
 {
- char pwline[512];
+ char pwline[MAX_BUFF_CDB];
  char packbuf[8];
  char *key;
  char *data;
@@ -202,7 +209,7 @@ int make_vpasswd_cdb(char *domain)
     pos = sizeof(cdbm.final);
 
     /* creation **/
-    fgets(pwline,sizeof(pwline),pwfile);
+    fgets(pwline,MAX_BUFF_CDB,pwfile);
     while (!feof(pwfile)) {
         key = pwline; ptr = pwline;
         while (*ptr != ':') { ptr++; }
@@ -251,7 +258,7 @@ int make_vpasswd_cdb(char *domain)
             fprintf(stderr,"Error: out of memory\n");
             return(-1);
         }
-        fgets(pwline,sizeof(pwline),pwfile);
+        fgets(pwline,MAX_BUFF_CDB,pwfile);
         free(cdbm.split);
     }
     fclose(pwfile);
@@ -494,8 +501,8 @@ void set_vpasswd_files( char *domain )
 
 int vauth_adduser(char *user, char *domain, char *pass, char *gecos, char *dir, int apop )
 {
- static char tmpbuf1[MAX_BUFF];
- static char tmpbuf2[MAX_BUFF];
+ static char tmpbuf1[MAX_BUFF_CDB];
+ static char tmpbuf2[MAX_BUFF_CDB];
  char *tmpstr;
  int added = 0;
  FILE *fs1;
@@ -523,7 +530,7 @@ int vauth_adduser(char *user, char *domain, char *pass, char *gecos, char *dir, 
     fs1 = fopen(vpasswd_bak_file, "w+");
     if ( (fs2 = fopen(vpasswd_file, "r+")) == NULL ) {
     	fs2 = fopen(vpasswd_file, "w+");
-	}
+	}	
         
     if ( fs1 == NULL || fs2 == NULL ) {
 		if ( fs1 != NULL ) fclose(fs1);
@@ -535,8 +542,8 @@ int vauth_adduser(char *user, char *domain, char *pass, char *gecos, char *dir, 
         return(-1);
     }
 
-    while (fgets(tmpbuf1,MAX_BUFF,fs2)!=NULL){
-        strncpy(tmpbuf2, tmpbuf1, MAX_BUFF);
+    while (fgets(tmpbuf1,MAX_BUFF_CDB,fs2)!=NULL){    
+        strncpy(tmpbuf2, tmpbuf1, MAX_BUFF_CDB);
         tmpstr = strtok(tmpbuf2,":");
         if ( added == 0 && strcmp(user, tmpstr) < 0 ) {
             added = 1;
@@ -549,17 +556,17 @@ int vauth_adduser(char *user, char *domain, char *pass, char *gecos, char *dir, 
     }
     fclose(fs1);
     fclose(fs2);
-
+    
     rename(vpasswd_bak_file, vpasswd_file);
+      
     make_vpasswd_cdb(domain);
-
+    
 #ifdef FILE_LOCKING
 	unlock_lock(fd3, 0, SEEK_SET, 0);
 	close(fd3);
 #endif
 
     return(0);
-
 }
 
 int vauth_adddomain( char *domain )
@@ -574,8 +581,8 @@ int vauth_deldomain( char *domain )
 
 int vauth_deluser( char *user, char *domain )
 {
- static char tmpbuf1[MAX_BUFF];
- static char tmpbuf2[MAX_BUFF];
+ static char tmpbuf1[MAX_BUFF_CDB];
+ static char tmpbuf2[MAX_BUFF_CDB];
  char *tmpstr;
  FILE *fs1;
  FILE *fs2;
@@ -605,8 +612,8 @@ int vauth_deluser( char *user, char *domain )
         return(-1);
     }
 
-    while (fgets(tmpbuf1,MAX_BUFF,fs2)!=NULL){
-        strncpy(tmpbuf2, tmpbuf1, MAX_BUFF);
+    while (fgets(tmpbuf1,MAX_BUFF_CDB,fs2)!=NULL){
+        strncpy(tmpbuf2, tmpbuf1, MAX_BUFF_CDB);
         tmpstr = strtok(tmpbuf2,":");
         
         if ( strcmp(user, tmpstr) != 0) {
@@ -652,8 +659,8 @@ int vauth_setquota( char *username, char *domain, char *quota)
 
 int vauth_setpw( struct vqpasswd *inpw, char *domain ) 
 {
- static char tmpbuf1[MAX_BUFF];
- static char tmpbuf2[MAX_BUFF];
+ static char tmpbuf1[MAX_BUFF_CDB];
+ static char tmpbuf2[MAX_BUFF_CDB];
  
 #if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
  char user_domain[MAX_BUFF];
@@ -721,8 +728,8 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
     vcdb_strip_char( inpw->pw_clear_passwd );
 #endif
 
-    while (fgets(tmpbuf1,MAX_BUFF,fs2)!=NULL){
-        strncpy(tmpbuf2, tmpbuf1, MAX_BUFF);
+    while (fgets(tmpbuf1,MAX_BUFF_CDB,fs2)!=NULL){
+        strncpy(tmpbuf2, tmpbuf1, MAX_BUFF_CDB);
         tmpstr = strtok(tmpbuf2,":\n");
         
         if ( strcmp(inpw->pw_name, tmpstr) != 0) {
@@ -795,7 +802,7 @@ int vauth_adduser_line( FILE *fs1,
  uid_t uid;
  gid_t gid;
  char crypted[100];
-
+ 
 	if ( vget_assign(domain, Dir, 156, &uid, &gid ) == NULL ) {
 		strcpy(Dir, VPOPMAILDIR);
         }
@@ -805,9 +812,9 @@ int vauth_adduser_line( FILE *fs1,
         } else {
             crypted[0] = 0;
         }
-
+                                         
         fprintf(fs1,"%s:", user );
-
+        
         if ( apop == USE_POP ) fprintf(fs1, "%s:1:", crypted);
         else fprintf(fs1, "%s:2:", crypted);
 

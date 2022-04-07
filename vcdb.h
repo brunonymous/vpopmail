@@ -26,6 +26,9 @@
 #define VPASSWD_CDB_FILE     "vpasswd.cdb"
 #define VPASSWD_CDB_TMP_FILE "cdb.tmp"
 
+/* buffer size when reading/writing vpasswd file */
+#define MAX_BUFF_CDB 512
+
 int make_vpasswd_cdb(char *domain);
 struct vqpasswd *vgetpw(char *, char *, struct vqpasswd *, int);
 void set_vpasswd_files( char *);
