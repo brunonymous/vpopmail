@@ -36,9 +36,6 @@
 #include <utime.h>
 #include <sys/types.h>
 
-/* test */
-#include <signal.h>
-
 #include "config.h"
 
 #ifdef TINYCDB
