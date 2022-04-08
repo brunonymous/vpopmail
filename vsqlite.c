@@ -49,6 +49,7 @@ void vcreate_lastauth_table();
  */
 int vauth_open_update() {
   int rc;
+  mode_t oldmask; 
   char filedb[MAX_BUFF];
 
   /* if the database is already open, just return */
@@ -59,8 +60,10 @@ int vauth_open_update() {
 
   /* create database for vpopmail user */
   if (access(filedb, F_OK) != 0) {
+    oldmask = umask(VPOPMAIL_UMASK);
     rc = sqlite3_open_v2(filedb, &sqlite_update,
                          SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    umask(oldmask);
     if (rc != SQLITE_OK) {
       fprintf(stderr, "Cannot create database : %s\n",
               sqlite3_errmsg(sqlite_update));
@@ -71,7 +74,6 @@ int vauth_open_update() {
     sqlite3_close(sqlite_update);
 
     chown(filedb, VPOPMAILUID, VPOPMAILGID);
-    chmod(filedb, S_IRUSR | S_IWUSR);
   }
 
   /* open sqlite3 database for read & write */
@@ -95,6 +97,7 @@ int vauth_open_update() {
  */
 int vauth_open_read() {
   int rc;
+  mode_t oldmask; 
   char filedb[MAX_BUFF];
 
   /* if the database is already open, just return */
@@ -105,8 +108,10 @@ int vauth_open_read() {
 
   /* create database for vpopmail user */
   if (access(filedb, F_OK) != 0) {
+    oldmask = umask(VPOPMAIL_UMASK);
     rc = sqlite3_open_v2(filedb, &sqlite_read,
                          SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    umask(oldmask);
     if (rc != SQLITE_OK) {
       fprintf(stderr, "Cannot create database : %s\n",
               sqlite3_errmsg(sqlite_read));
@@ -117,7 +122,6 @@ int vauth_open_read() {
     sqlite3_close(sqlite_read);
 
     chown(filedb, VPOPMAILUID, VPOPMAILGID);
-    chmod(filedb, S_IRUSR | S_IWUSR);
   }
 
   /* open sqlite3 database for reading */

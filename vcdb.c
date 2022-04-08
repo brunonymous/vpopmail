@@ -98,7 +98,7 @@ int make_vpasswd_cdb(char *domain)
 
     /* temporarily set umask (no group/other access) and open temp file */
     oldmask = umask(VPOPMAIL_UMASK);
-    tmpfile = open(vpasswd_cdb_tmp_file, O_RDWR | O_CREAT);
+    tmpfile = open(vpasswd_cdb_tmp_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     umask(oldmask);
 
     if (tmpfile == -1) {
@@ -152,9 +152,9 @@ int make_vpasswd_cdb(char *domain)
         
     tmpstr = vget_assign(domain, Dir, 156, &uid, &gid );
     
-    chown(vpasswd_cdb_file, uid, gid);
-    chown(vpasswd_lock_file, uid, gid);
-    chown(vpasswd_file, uid, gid);
+    if (chown(vpasswd_cdb_file, uid, gid) == -1) fprintf(stderr, "error!\n");
+    if (chown(vpasswd_lock_file, uid, gid) == -1) fprintf(stderr, "error!\n");
+    if (chown(vpasswd_file, uid, gid) == -1) fprintf(stderr, "error!\n");
 
     return 0;
 }
