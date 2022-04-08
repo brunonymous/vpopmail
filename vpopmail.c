@@ -91,21 +91,21 @@ void string_list_init(string_list *a, int initial) {
   a->count = 0;
   a->size = ((initial + 3) / 4) * 4;
   if (a->size <= 0) a->size = 4;
-  a->values = calloc(a->size, sizeof(char **));
+  a->values = calloc(a->size, sizeof(char *));
   if (a->values == NULL) a->size = 0;
 }
 
-int string_list_add(string_list *a, char *value) {
+int string_list_add(string_list *a, const char *value) {
   if (a->count >= (a->size - 2)) {
     char **new;
 
     a->size += 8;
-    new = realloc(a->values, a->size * sizeof(char **));
+    new = realloc(a->values, a->size * sizeof(char *));
     if (new != NULL) {
       a->values = new;
-      return a->size;
+    } else {
+      return 0;
     }
-    return 0;
   }
 
   if ((a->values[a->count] = strdup(value)) == NULL) return 0;
@@ -1557,8 +1557,7 @@ int signal_process(char *name, int sig_num) {
   while (fgets(tmpbuf1, sizeof(tmpbuf1), ps) != NULL) {
     if (strstr(tmpbuf1, name) != NULL && strstr(tmpbuf1, "supervise") == NULL &&
         strstr(tmpbuf1, "multilog") == NULL &&
-        strstr(tmpbuf1, "runsv") == NULL &&
-        strstr(tmpbuf1, "svscan") == NULL) {
+        strstr(tmpbuf1, "runsv") == NULL && strstr(tmpbuf1, "svscan") == NULL) {
       tmpstr = strtok(tmpbuf1, PS_TOKENS);
       col = 0;
       do {
@@ -2967,8 +2966,8 @@ char *verror(int va_err) {
     case VA_CANNOT_DELETE_CATCHALL:
       return ("can't delete catchall account");
     case VA_PASSWD_TOO_SHORT:
-      snprintf(errorstr, MAX_BUFF, "password too short (min=%d)", 
-        MIN_PW_CLEAR_PASSWD);
+      snprintf(errorstr, MAX_BUFF, "password too short (min=%d)",
+               MIN_PW_CLEAR_PASSWD);
       return errorstr;
     default:
       return ("Unknown error");

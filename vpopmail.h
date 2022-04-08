@@ -172,7 +172,7 @@ typedef struct string_list {
 } string_list;
 
 void string_list_init(string_list *a, int first);
-int string_list_add(string_list *a, char *value);
+int string_list_add(string_list *a, const char *value);
 void string_list_free(string_list *a);
 
 /*   Domain entry  */
