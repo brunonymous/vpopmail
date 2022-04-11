@@ -95,7 +95,7 @@ ssize_t get_message_size();
 void deliver_mail(char *address, char *quota);
 int check_forward_deliver(char *dir);
 int is_looping( char *address );
-void run_command(char *prog);
+static void run_command(const char *prog);
 void checkuser(void);
 void usernotfound(void);
 int is_loop_match( const char *dt, const char *address);
@@ -360,9 +360,6 @@ static int fdcopy (int write_fd, int read_fd, const char *extra_headers, size_t 
   long unsigned pid;
   int  pim[2];
 #endif
-#ifdef MAILDROP
-  char maildrop_command[256];
-#endif
 
     /* write the Return-Path: and Delivered-To: headers */
     if (headerlen > 0) {
@@ -409,7 +406,8 @@ static int fdcopy (int write_fd, int read_fd, const char *extra_headers, size_t 
 #ifdef MAILDROP
       if ( limits.disable_maildrop==0 && vpw!=NULL &&
            !(vpw->pw_gid & NO_MAILDROP) ) {
-	sprintf(maildrop_command, "| preline %s", MAILDROP_PROG);
+    char maildrop_command[256];
+	sprintf(maildrop_command, "preline %s", MAILDROP_PROG);
 	run_command(maildrop_command);
 	DeleteMail = 1;
 	return(0);
@@ -957,10 +955,10 @@ void (*f)();
 /* open a pipe to a command 
  * return the pid or -1 if error
  */
-void run_command(char *prog)
+void run_command(const char *prog)
 {
  int child;
- char *(args[4]);
+ const char *(args[4]);
  int wstat;
 
  while ((*prog == ' ') || (*prog == '|')) ++prog;
@@ -973,7 +971,7 @@ void run_command(char *prog)
    case 0:
      
      putenv("SHELL=/bin/sh");
-     args[0] = "/bin/sh"; args[1] = "-c"; args[2] = prog; args[3] = 0;
+     args[0] = "/bin/sh"; args[1] = "-c"; args[2] = prog; args[3] = NULL;
      sig_catch(SIGPIPE,SIG_DFL);
      execv(*args,args);
      printf("Unable to run /bin/sh: %d.", errno);
