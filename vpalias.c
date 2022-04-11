@@ -432,7 +432,7 @@ char *valias_select_names( char *domain )
         }
       }
     }
-    if (num_names < max_names) {
+    if (num_names < max_names && num_names > 0) {
       new_names = realloc( names, num_names * sizeof(char *) );
       if (new_names != NULL)
 	names = new_names;
