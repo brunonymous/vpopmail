@@ -480,10 +480,10 @@ int vlimits_write_limits_file(const char *dir, const struct vlimits *limits)
         fprintf(fs, "maxforwards: %d\n", limits->maxforwards);
         fprintf(fs, "maxautoresponders: %d\n", limits->maxautoresponders);
         fprintf(fs, "maxmailinglists: %d\n", limits->maxmailinglists);
-        fprintf(fs, "quota: %llu\n", limits->diskquota);
-        fprintf(fs, "maxmsgcount: %llu\n", limits->maxmsgcount);
-        fprintf(fs, "default_quota: %llu\n", limits->defaultquota);
-        fprintf(fs, "default_maxmsgcount: %llu\n", limits->defaultmaxmsgcount);
+        fprintf(fs, "quota: %" PRIu64 "\n", limits->diskquota);
+        fprintf(fs, "maxmsgcount: %" PRIu64 "\n", limits->maxmsgcount);
+        fprintf(fs, "default_quota: %" PRIu64 "\n", limits->defaultquota);
+        fprintf(fs, "default_maxmsgcount: %" PRIu64 "\n", limits->defaultmaxmsgcount);
         if (limits->disable_pop) fprintf(fs, "disable_pop\n");
         if (limits->disable_imap) fprintf(fs, "disable_imap\n");
         if (limits->disable_dialup) fprintf(fs, "disable_dialup\n");

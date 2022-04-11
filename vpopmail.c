@@ -838,13 +838,13 @@ int vadduser(char *username, char *domain, char *password, char *gecos,
 
   if (limits.defaultquota > 0) {
     if (limits.defaultmaxmsgcount > 0)
-      snprintf(quota, sizeof(quota), "%lluS,%lluC", limits.defaultquota,
+      snprintf(quota, sizeof(quota), "%" PRIu64 "S,%" PRIu64 "C", limits.defaultquota,
                limits.defaultmaxmsgcount);
     else
-      snprintf(quota, sizeof(quota), "%lluS", limits.defaultquota);
+      snprintf(quota, sizeof(quota), "%" PRIu64 "S", limits.defaultquota);
   } else {
     if (limits.defaultmaxmsgcount > 0)
-      snprintf(quota, sizeof(quota), "%lluC", limits.defaultmaxmsgcount);
+      snprintf(quota, sizeof(quota), "%" PRIu64 "C", limits.defaultmaxmsgcount);
     else
       strcpy(quota, "NOQUOTA");
   }
@@ -4030,11 +4030,11 @@ char *format_maildirquota(const char *q) {
     if (quota_size == 0)
       strcpy(tempquota, ""); /* invalid quota */
     else
-      sprintf(tempquota, "%lluS", quota_size);
+      sprintf(tempquota, "%" PRIu64 "S", quota_size);
   else if (quota_size == 0)
-    sprintf(tempquota, "%lluC", quota_count);
+    sprintf(tempquota, "%" PRIu64 "C", quota_count);
   else
-    sprintf(tempquota, "%lluS,%lluC", quota_size, quota_count);
+    sprintf(tempquota, "%" PRIu64 "S,%" PRIu64 "C", quota_size, quota_count);
 
   return tempquota;
 }
@@ -4253,7 +4253,7 @@ int qnprintf(char *buffer, size_t size, const char *format, ...) {
           break;
 
         case 'S':
-          snprintf(n, sizeof(n), "%llu", va_arg(ap, storage_t));
+          snprintf(n, sizeof(n), "%" PRIu64 "", va_arg(ap, storage_t));
           break;
 
         case 'l':

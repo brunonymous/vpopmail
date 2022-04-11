@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 		 if (uusage == -1)
 			printf("%s: No data available\n", argv[i]);
 		 else
-			printf("%s: %llu byte(s) in %llu file(s)\n", *(argv[i]) == '@' ? (argv[i] + 1) : argv[i], uusage, musage);
+			printf("%s: %" PRIu64 " byte(s) in %" PRIu64 " file(s)\n", *(argv[i]) == '@' ? (argv[i] + 1) : argv[i], uusage, musage);
 	  }
    }
 #else
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	  if (uusage == -1)
 		 printf("%s: No data available\n", argv[i]);
 	  else
-		 printf("%s: %llu byte(s) in %llu file(s)\n", *(argv[i]) == '@' ? (argv[i] + 1) : argv[i], uusage, musage);
+		 printf("%s: %" PRIu64 " byte(s) in %" PRIu64 " file(s)\n", *(argv[i]) == '@' ? (argv[i] + 1) : argv[i], uusage, musage);
    }
 
    client_close(handle);

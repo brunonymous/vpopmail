@@ -207,10 +207,10 @@ int main(int argc, char *argv[])
             printf ((limits.perm_defaultquota & VLIMIT_DISABLE_DELETE ? "DENY_DELETE  " :"ALLOW_DELETE ") );
             
             printf("\n");
-            printf("Domain Quota: %llu MB\n", limits.diskquota);
-            printf("Default User Quota: %llu bytes\n", limits.defaultquota);
-            printf("Max Domain Messages: %llu\n", limits.maxmsgcount);
-            printf("Default Max Messages per User: %llu\n", limits.defaultmaxmsgcount);
+            printf("Domain Quota: %" PRIu64 " MB\n", limits.diskquota);
+            printf("Default User Quota: %" PRIu64 " bytes\n", limits.defaultquota);
+            printf("Max Domain Messages: %" PRIu64 "\n", limits.maxmsgcount);
+            printf("Default Max Messages per User: %" PRIu64 "\n", limits.defaultmaxmsgcount);
             return(vexit(0));
         }
                 

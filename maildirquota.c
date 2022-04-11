@@ -400,7 +400,7 @@ static int maildirsize_read(const char *filename,	/* The filename */
 			first=0;
 			continue;
 		}
-		sscanf(q, "%llu %llu", &n, &c);
+		sscanf(q, "%" PRIu64 " %" PRIu64 "", &n, &c);
 		*sizeptr += n;
 		*cntptr += c;
 		++ *nlines;
@@ -806,7 +806,7 @@ int	n;
 		niov=2;
 	}
 
-	sprintf(u.buf, "%llu %llu\n", maildirsize_size, maildirsize_cnt);
+	sprintf(u.buf, "%" PRIu64 " %" PRIu64 "\n", maildirsize_size, maildirsize_cnt);
 	iov[niov].iov_base=u.buf;
 	iov[niov].iov_len=strlen(u.buf);
 

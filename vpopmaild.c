@@ -2280,13 +2280,13 @@ int get_limits()
     mylimits.maxautoresponders); wait_write();
   snprintf(WriteBuf,sizeof(WriteBuf), "max_mailinglists %d" RET_CRLF, 
     mylimits.maxmailinglists); wait_write();
-  snprintf(WriteBuf,sizeof(WriteBuf), "disk_quota %llu" RET_CRLF, 
+  snprintf(WriteBuf,sizeof(WriteBuf), "disk_quota %" PRIu64 "" RET_CRLF, 
     mylimits.diskquota); wait_write();
-  snprintf(WriteBuf,sizeof(WriteBuf), "max_msgcount %llu" RET_CRLF, 
+  snprintf(WriteBuf,sizeof(WriteBuf), "max_msgcount %" PRIu64 "" RET_CRLF, 
     mylimits.maxmsgcount); wait_write();
-  snprintf(WriteBuf,sizeof(WriteBuf), "default_quota %llu" RET_CRLF, 
+  snprintf(WriteBuf,sizeof(WriteBuf), "default_quota %" PRIu64 "" RET_CRLF, 
     mylimits.defaultquota); wait_write();
-  snprintf(WriteBuf,sizeof(WriteBuf), "default_maxmsgcount %llu" RET_CRLF, 
+  snprintf(WriteBuf,sizeof(WriteBuf), "default_maxmsgcount %" PRIu64 "" RET_CRLF, 
     mylimits.defaultmaxmsgcount); wait_write();
 
   if (mylimits.disable_pop) 
@@ -2625,9 +2625,9 @@ int get_user_size()
 
   snprintf(WriteBuf, sizeof(WriteBuf), "%s", RET_OK_MORE);
   wait_write();
-  snprintf(WriteBuf, sizeof(WriteBuf), "size %llu" RET_CRLF, bytes);
+  snprintf(WriteBuf, sizeof(WriteBuf), "size %" PRIu64 "" RET_CRLF, bytes);
   wait_write();
-  snprintf(WriteBuf, sizeof(WriteBuf), "count %llu" RET_CRLF, cnt);
+  snprintf(WriteBuf, sizeof(WriteBuf), "count %" PRIu64 "" RET_CRLF, cnt);
   wait_write();
   snprintf(WriteBuf, sizeof(WriteBuf), "%s", "." RET_CRLF);
 
@@ -2680,9 +2680,9 @@ int get_domain_size()
     } else {
       snprintf(WriteBuf, sizeof(WriteBuf), "user %s@%s" RET_CRLF, tmpvpw->pw_name, domain);
       wait_write();
-      snprintf(WriteBuf, sizeof(WriteBuf), "size %llu" RET_CRLF, bytes);
+      snprintf(WriteBuf, sizeof(WriteBuf), "size %" PRIu64 "" RET_CRLF, bytes);
       wait_write();
-      snprintf(WriteBuf, sizeof(WriteBuf), "count %llu" RET_CRLF, cnt);
+      snprintf(WriteBuf, sizeof(WriteBuf), "count %" PRIu64 "" RET_CRLF, cnt);
       wait_write();
       totalbytes += (unsigned long)bytes;
       totalcnt += (unsigned int)cnt;
@@ -2691,9 +2691,9 @@ int get_domain_size()
 
   snprintf(WriteBuf, sizeof(WriteBuf), "domain %s" RET_CRLF, domain);
   wait_write();
-  snprintf(WriteBuf, sizeof(WriteBuf), "size %llu" RET_CRLF, totalbytes);
+  snprintf(WriteBuf, sizeof(WriteBuf), "size %" PRIu64 "" RET_CRLF, totalbytes);
   wait_write();
-  snprintf(WriteBuf, sizeof(WriteBuf), "count %llu" RET_CRLF, totalcnt);
+  snprintf(WriteBuf, sizeof(WriteBuf), "count %" PRIu64 "" RET_CRLF, totalcnt);
   wait_write();
   snprintf(WriteBuf, sizeof(WriteBuf), "%s", "." RET_CRLF);
 
