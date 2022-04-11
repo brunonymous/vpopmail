@@ -323,7 +323,7 @@ int process_valias(void)
 #endif
 
 /* Forks off qmail-inject.  Returns PID of child, or 0 for failure. */
-pid_t qmail_inject_open(char *address)
+static pid_t qmail_inject_open(char *address)
 {
  int pim[2];
  pid_t pid;
@@ -352,7 +352,7 @@ pid_t qmail_inject_open(char *address)
     return(pid);
 }
 
-int fdcopy (int write_fd, int read_fd, const char *extra_headers, size_t headerlen, char *address)
+static int fdcopy (int write_fd, int read_fd, const char *extra_headers, size_t headerlen, char *address)
 {
   ssize_t file_count;
   struct vlimits limits;
