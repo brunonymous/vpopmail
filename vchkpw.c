@@ -91,7 +91,6 @@ void login_system_user();
 void read_user_pass();
 void vlog(int verror, char *TheUser, char *TheDomain, char *ThePass, char *TheName, char *IpAddr, char *LogLine);
 void vchkpw_exit(int err);
-void run_command(char *prog);
 int authcram( char *response, char *challenge, char *password);
 int authapop( char *password, char *timestamp, char *clearpass);
 
