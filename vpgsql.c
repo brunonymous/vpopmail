@@ -1376,7 +1376,7 @@ int valias_insert( char *alias, char *domain, char *alias_line)
     if( allow_onchange ) {
        /* tell other programs that data will change */
        snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-       call_onchange ( "valias_add", user_domain, alias_line, "before" );
+       call_onchange ( "valias_add", domain, alias_line, "before" );
        }
 #endif  
 
@@ -1413,7 +1413,7 @@ int valias_insert( char *alias, char *domain, char *alias_line)
     if( allow_onchange ) {
        /* tell other programs that data has changed */
        snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-       call_onchange ( "valias_add", user_domain, alias_line, "after" );       
+       call_onchange ( "valias_add", domain, alias_line, "after" );       
        }
 #endif
 
@@ -1547,16 +1547,16 @@ int valias_delete_domain( char *domain)
 #ifdef ONCHANGE_SCRIPT
   if( allow_onchange ) {
      /* tell other programs that data has changed */
-     snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-     call_onchange ( "valias_delete_domain", user_domain, alias_line, "" );
+     snprintf( user_domain, MAX_BUFF, "%s", domain);
+     call_onchange ( "valias_delete_domain", domain, "", "" );
      }
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
   if( allow_onchange ) {
      /* tell other programs that data will change */
-     snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-     call_onchange ( "valias_delete_domain", user_domain, alias_line, "before" );     
+     snprintf( user_domain, MAX_BUFF, "%s", domain);
+     call_onchange ( "valias_delete_domain", domain, "-", "before" );     
      }
 #endif
 
@@ -1581,8 +1581,8 @@ int valias_delete_domain( char *domain)
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
   if( allow_onchange ) {
      /* tell other programs that data has changed */
-     snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-     call_onchange ( "valias_delete_domain", user_domain, alias_line, "after" );     
+     snprintf( user_domain, MAX_BUFF, "%s", domain);
+     call_onchange ( "valias_delete_domain", domain, "-", "after" );     
      }
 #endif
   
