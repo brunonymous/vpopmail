@@ -1791,8 +1791,11 @@ void vcreate_vlog_table()
 
 int vauth_crypt(char *user,char *domain,char *clear_pass,struct vqpasswd *vpw)
 {
-	  if ( vpw == NULL ) return(-1);
+    const char *c;
+    if ( vpw == NULL ) return(-1);
 
-	    return(strcmp(crypt(clear_pass,vpw->pw_passwd),vpw->pw_passwd));
+    c = crypt(clear_pass,vpw->pw_passwd);
+    if (c == NULL) return(-1);
+	return(strcmp(c,vpw->pw_passwd));
 }
 

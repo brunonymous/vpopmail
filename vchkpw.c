@@ -608,6 +608,7 @@ void login_system_user()
  struct spwd *spw;
 #endif
  struct passwd *pw;
+ const char *c;
 
   if ((pw=getpwnam(TheUser)) == NULL ) {
     snprintf(LogLine, sizeof(LogLine), "%s: system user not found %s:%s", 
@@ -627,9 +628,13 @@ void login_system_user()
     vchkpw_exit(22);
   }
 
-  if ( strcmp(crypt(ThePass,spw->sp_pwdp),spw->sp_pwdp) != 0 ) {
+  c = crypt(ThePass,spw->sp_pwdp);
+  if (c == NULL) vchkpw_exit(24);
+  if ( strcmp(c,spw->sp_pwdp) != 0 ) {
 #else
-  if ( strcmp(crypt(ThePass,pw->pw_passwd),pw->pw_passwd) != 0 ) {
+  c = crypt(ThePass,pw->pw_passwd);
+  if (c == NULL) vchkpw_exit(24);
+  if ( strcmp(c,pw->pw_passwd) != 0 ) {
 #endif
     if (ENABLE_LOGGING==1||ENABLE_LOGGING==2) {
       snprintf(LogLine, sizeof(LogLine), "%s: system password fail %s:%s", 
