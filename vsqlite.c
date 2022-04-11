@@ -49,7 +49,7 @@ void vcreate_lastauth_table();
  */
 int vauth_open_update() {
   int rc;
-  mode_t oldmask; 
+  mode_t oldmask;
   char filedb[MAX_BUFF];
 
   /* if the database is already open, just return */
@@ -97,7 +97,7 @@ int vauth_open_update() {
  */
 int vauth_open_read() {
   int rc;
-  mode_t oldmask; 
+  mode_t oldmask;
   char filedb[MAX_BUFF];
 
   /* if the database is already open, just return */
@@ -619,7 +619,8 @@ struct vqpasswd *vauth_getall(char *domain, int first, int sortit) {
     );
 
     if (sortit == 1) {
-      strncat(SqlBufRead, " order by pw_name", SQL_BUF_SIZE);
+      strncat(SqlBufRead, " order by pw_name",
+              SQL_BUF_SIZE - strlen(SqlBufRead) - 1);
     }
 
     if (stmt_read != NULL) sqlite3_finalize(stmt_read);

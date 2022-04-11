@@ -755,7 +755,7 @@ struct vqpasswd *vauth_getall(char *domain, int first, int sortit)
             );
 
         if ( sortit == 1 ) {
-            strncat( SqlBufRead, " order by pw_name", SQL_BUF_SIZE);
+            strncat( SqlBufRead, " order by pw_name", SQL_BUF_SIZE-strlen(SqlBufRead)-1);
         }
 
         if (res_read!=NULL) mysql_free_result(res_read_getall);

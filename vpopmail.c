@@ -2064,8 +2064,8 @@ int extract_domain(char *domain, char *update_line, int file_type) {
 
     //  Copy the rest of the terms into the domain name
     for (j = 1; j < i; j++) {
-      strncat(domain, ".", MAX_BUFF);
-      strncat(domain, parts[j], MAX_BUFF);
+      strncat(domain, ".", MAX_BUFF - strlen(domain) - 1);
+      strncat(domain, parts[j], MAX_BUFF - strlen(domain) - 1);
     }
   }
 

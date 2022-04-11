@@ -526,7 +526,7 @@ struct vqpasswd *vauth_getall(char *domain, int first, int sortit)
 #endif
 	     );
     if ( sortit == 1 ) {
-      strncat( SqlBufRead, " order by pw_name", SQL_BUF_SIZE);
+      strncat( SqlBufRead, " order by pw_name", SQL_BUF_SIZE-strlen(SqlBufRead)-1);
     }
     if ( pgres ) { /* reset state if we had previous result */
       PQclear(pgres);    // clear previous result	
