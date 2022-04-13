@@ -24,6 +24,7 @@ Unreleased -
   - add an option --enable-min-pwd-length to choose minimum password length
   - add an option --enable-tinycdb to replace cdb code by libcdb
   - fix bug in string_list_add when resizing the list
+  - add patches from Rolf Eike Beer
 
 5.4.33 - Released 10-23-2012
   Matt Brookings
