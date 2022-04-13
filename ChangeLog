@@ -2,8 +2,101 @@ Numbers in square brackets ([]) are tracker items on SourceForge with patch
 or info related to the entry. <http://sourceforge.net/projects/vpopmail/>
 
 Unreleased -
-  - Merge patches from FreeBSD
-  - Merge patches by Roberto Puzzanghera
+  - Merge patches from FreeBSD :
+    (Peter Pentchev <roam@FreeBSD.org>)
+    - authvchkpw.c : Various sanity- and security-related fixes.
+      Buffer handling:
+        - use snprintf() instead of strncpy() to ensure null-termination;
+        - explicitly pass sizeof(var) as a second argument to snprintf() to
+          protect against a variable definition changing in the future;
+        - display the correct amount of failed-to-allocate memory.
+      Fix a misspelling of TCPREMOTEIP that would prevent POP-before-SMTP.
+      Enclose a write() into a loop so that it succeeds even for amounts
+        too large to write at once.
+      Display an error message if the execv() in exec_local() fails and
+        propagate the error all the way up to main()'s exit code.
+      Extract the indiargs as separate defines so that the port's Makefile may
+        modify them easily.
+      Mark two function parameters as unused.
+      Fix a couple of const-related compiler warnings.
+    - backfill.c : String buffer handling fixes.
+      - convert a strncpy() to snprintf() to ensure null-termination;
+      - explicitly pass sizeof(var) as the second argument of snprintf().
+    - vlist.c : Sanity and usage fixes.
+      Do not impose an arbitrary limit of 100 list entries.
+      Fix the usage message and an error message.
+    - vlistlib.c : Sanity and safety checks.
+      Honor lots of limits - convert sprintf() to snprintf(), use the correct
+        limit size, etc.
+      Check a couple more calls for errors.
+      Wait for the correct child process - waitpid() instead of wait().
+      Add two closedir()'s to fix file descriptor leaks.
+      Look for the arguments properly if progname should ever containing spaces.   
+    - vmysql.c : Fix the virtual alias support; implement SQL_REMOVE_DELETED.
+    - vpalias.c : Honor the correct limits.
+    - vpgsql.c : Implement valias support; implement SQL_REMOVE_DELETED.
+    - vutil.c : Sanity and safety.
+      Optimize a lot of calls by just using access(2).
+      Fix a file descriptor and FILE structure leak.
+    - README.vpopmaild : Fix a couple of typos and grammatical errors.
+    - README.onchange : Fix a typo.
+    - README.vdelivermail : Fix a typo.
+        
+    (Peter Pentchev <roam@FreeBSD.org>,
+	 Alex Dupre <ale@FreeBSD.org>)
+    - vpopmail.c : SpamAssassin support, sanity checks.
+      Implement SpamAssassin support.
+      Honor limits correctly.
+      Wait for the correct child process - waitpid() instead of wait().
+      Check for a couple more errors.
+      Add a closedir() to fix a file descriptor leak.
+    
+    (Suzuki <xsuzu@yokohama.riken.jp>)
+    - vldap.c : Fix a crash when adding a virtual domain.    
+    
+    (Alex Dupre <ale@FreeBSD.org>, 
+     Peter Pentchev <roam@FreeBSD.org>,
+	 Bryan Drewery <bdrewery@FreeBSD.org>)
+    - vdelivermail.c : SpamAssassin support, build optimization      
+      Add SpamAssassin support.
+      Drop the unneeded MAX_ENV_BUFF definition.
+      Add DELIVER_TO_STDOUT support    
+  
+  - Merge patches by Roberto Puzzanghera :
+    - A patch to make vpopmail store domain aliases to MySQL. This gets 
+      dovecot's sql auth driver aware of domain aliases, provided that you 
+      modify the sql query accordingly.
+      See doc/README.sql-aliasdomains for more info.
+    - A patch which installs the sql procedure needed for the dovecot's 
+      password_query for servers with one table for each domains 
+      (--disable-many-domains).
+      You have to add --enable-mysql-bin to you configure command.
+      The sql procedure is in the vpopmail-5.4.33/dovecot/ folder and it will 
+      be copied to ~/vpopmail/etc/.
+      It supports aliasdomains and user/domain limits.
+      This feature does nothing if you have all domains in the vpopmail table 
+      (--enable-many-domains).
+      See doc/README.dovecot-pwd-query for more info.
+    - A patch which makes vpopmail to copy your favourite delivery agent 
+      (stored in QMAILDIR/control/defauldelivery)into the .qmail-default file 
+      of any newly created domain, overriding the default vpopmail's behaviour,
+      where vpopmail copies its delivery agent vdelivermail.
+      configure --enable-defaultdelivery (default is OFF) to enable this 
+      functionality.
+      See doc/README.defaultdelivery for more info.
+    - vusaged-configure patch
+      It seems that at least on Debian 11 vusaged refuses to run the configure 
+      successfully, as the mysql libraries are not linked with this error: 
+      configure: error: No vauth_getpw in libvpopmail 
+      After some inspection, I noticed that avoiding the break of the configure 
+      command, the following make command will find libmysqlclient and compile 
+      with no problems, and the program works as expected.
+      NB: an "autoreconf -f -i" into the vusaged directory is needed before 
+      configuring, as the configure.ac was modified.
+    - A "recipient check" program to be used with E. Hoffmann's s/qmail.
+      Look at doc/README.vrcptcheck for more info.
+    - A patch which gets vpopmail to compile with gcc-10
+    
   - Add an option --enable-onchange-script-before-and-after to call onchange
     script before and after a change
   - Add SQLite module, adapted from MySQL module code
@@ -24,17 +117,18 @@ Unreleased -
   - Add an option --enable-min-pwd-length to choose minimum password length
   - Add an option --enable-tinycdb to replace cdb code by libcdb
   - Fix bug in string_list_add when resizing the list
-  - Add patches from Rolf Eike Beer :
-        - Fix strncat warnings
-        - Fix printf format strings
-        - Fix build when using PostgreSQL and --enable-onchange-script
-        - Add test for crypt return value
-        - Remove unneeded forward declaration in vchkpw.c
-        - Add missing include in cdb_seek.c
-        - Add static in vdelivermail.c
-        - Clean up calling maildrop in vdelivermail.c
-        - Remove unneeded reallocation in vpalias.c
-        
+  
+  - Merge patches by Rolf Eike Beer :
+    - Fix strncat warnings
+    - Fix printf format strings
+    - Fix build when using PostgreSQL and --enable-onchange-script
+    - Add test for crypt return value
+    - Remove unneeded forward declaration in vchkpw.c
+    - Add missing include in cdb_seek.c
+    - Add static in vdelivermail.c
+    - Clean up calling maildrop in vdelivermail.c
+    - Remove unneeded reallocation in vpalias.c
+    
 
 5.4.33 - Released 10-23-2012
   Matt Brookings
