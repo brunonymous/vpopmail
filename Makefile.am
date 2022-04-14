@@ -66,6 +66,7 @@ vdominfo_LDADD = libvpopmail.a @auth_libs@
 
 vchkpw_SOURCES = vchkpw.c md5.c hmac_md5.c
 vchkpw_LDADD = libvpopmail.a @auth_libs@
+vchkpw_LDFLAGS = -Wl,-z,now
 
 vchangepw_SOURCES = vchangepw.c
 vchangepw_LDADD = libvpopmail.a @auth_libs@
