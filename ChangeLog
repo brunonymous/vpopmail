@@ -107,7 +107,8 @@ Unreleased -
     - Add static in vdelivermail.c
     - Clean up calling maildrop in vdelivermail.c
     - Remove unneeded reallocation in vpalias.c
-    - vpopmail-lazy.patch 
+    - vpopmail-lazy.patch
+    - fix ,S= tag in case spamassassin changed the file size  
         
   - Add an option --enable-onchange-script-before-and-after to call onchange
     script before and after a change
