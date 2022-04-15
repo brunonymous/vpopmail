@@ -324,7 +324,7 @@ static pid_t qmail_inject_open(char *address) {
 
   if (pipe(pim) == -1) return 0;
 
-  switch (pid = vfork()) {
+  switch (pid = fork()) {
     case -1:
       close(pim[0]);
       close(pim[1]);
@@ -377,7 +377,7 @@ static int fdcopy(int write_fd, int read_fd, const char *extra_headers,
     if (limits.disable_spamassassin == 0 && vpw != NULL &&
         !(vpw->pw_gid & NO_SPAMASSASSIN)) {
       if (!pipe(pim)) {
-        pid = vfork();
+        pid = fork();
         switch (pid) {
           case -1:
             close(pim[0]);

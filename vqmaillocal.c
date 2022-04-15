@@ -359,7 +359,7 @@ long unsigned qmail_inject_open(char *address)
 
         if ( pipe(pim) == -1) return(-1);
 
-        switch(pid=vfork()){
+        switch(pid=fork()){
         case -1:
                 close(pim[0]);
                 close(pim[1]);

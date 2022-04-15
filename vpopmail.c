@@ -1586,7 +1586,7 @@ int signal_process(char *name, int sig_num) {
 int update_newu() {
   int pid;
 
-  pid = vfork();
+  pid = fork();
   if (pid == 0) {
     umask(022);
     execl(QMAILNEWU, "qmail-newu", NULL);
@@ -3571,7 +3571,7 @@ long unsigned tcprules_open() {
     return (-1);
   }
 
-  switch (pid = vfork()) {
+  switch (pid = fork()) {
     case -1:
       /* vfork error. close pipes and exit */
       close(pim[0]);
