@@ -145,6 +145,7 @@ int vadddomain(char *domain, char *dir, uid_t uid, gid_t gid) {
   int default_delivery_option;
   char *ptld;
   size_t sz;
+  int r;
 
 #ifdef DEFAULT_DELIVERY
   default_delivery_option = 1;
@@ -276,8 +277,11 @@ int vadddomain(char *domain, char *dir, uid_t uid, gid_t gid) {
   }
 
   /* create the .qmail-default file */
-  snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s/%s/.qmail-default", dir, DOMAINS_DIR,
-           DomainSubDir);
+  r = snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s/%s/.qmail-default", dir,
+               DOMAINS_DIR, DomainSubDir);
+  if (r == -1) {
+    return (VA_DIR_TOO_LONG);
+  }
   if ((fs = fopen(tmpbuf, "w+")) == NULL) {
     /* back out of changes made so far */
     chdir(dir);
@@ -314,7 +318,11 @@ int vadddomain(char *domain, char *dir, uid_t uid, gid_t gid) {
   fclose(fs);
 
   /* create an entry in the assign file for our new domain */
-  snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s/%s", dir, DOMAINS_DIR, DomainSubDir);
+  r = snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s/%s", dir, DOMAINS_DIR,
+               DomainSubDir);
+  if (r == -1) {
+    return (VA_DIR_TOO_LONG);
+  }
   if (add_domain_assign(domain, domain, tmpbuf, uid, gid) != 0) {
     /* back out of changes made so far */
     chdir(dir);
@@ -330,7 +338,11 @@ int vadddomain(char *domain, char *dir, uid_t uid, gid_t gid) {
   }
 
   /* recursively change ownership to new file system entries */
-  snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s/%s", dir, DOMAINS_DIR, DomainSubDir);
+  r = snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s/%s", dir, DOMAINS_DIR,
+               DomainSubDir);
+  if (r == -1) {
+    return (VA_DIR_TOO_LONG);
+  }
   r_chown(tmpbuf, uid, gid);
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
@@ -438,6 +450,7 @@ int vdeldomain(char *domain) {
   domain_entry *entry;
   int i = 0;
   int call_dir;
+  int r;
 
   /* we always convert domains to lower case */
   lowerit(domain);
@@ -477,13 +490,21 @@ int vdeldomain(char *domain) {
 
 #ifdef ONCHANGE_SCRIPT
     /* tell other programs that data has changed */
-    snprintf(domain_name, MAX_BUFF, "%s alias of %s", domain_to_del, domain);
+    r = snprintf(domain_name, MAX_BUFF, "%s alias of %s", domain_to_del,
+                 domain);
+    if (r == -1) {
+      return (VA_DIR_TOO_LONG);
+    }
     call_onchange("del_domain", domain_name, "", "");
 #endif
 
 #ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
     /* tell other programs that data will change */
-    snprintf(domain_name, MAX_BUFF, "%s alias of %s", domain_to_del, domain);
+    r = snprintf(domain_name, MAX_BUFF, "%s alias of %s", domain_to_del,
+                 domain);
+    if (r == -1) {
+      return (VA_DIR_TOO_LONG);
+    }
     call_onchange("del_domain", domain_name, "-", "before");
 #endif
 
@@ -838,8 +859,8 @@ int vadduser(char *username, char *domain, char *password, char *gecos,
 
   if (limits.defaultquota > 0) {
     if (limits.defaultmaxmsgcount > 0)
-      snprintf(quota, sizeof(quota), "%" PRIu64 "S,%" PRIu64 "C", limits.defaultquota,
-               limits.defaultmaxmsgcount);
+      snprintf(quota, sizeof(quota), "%" PRIu64 "S,%" PRIu64 "C",
+               limits.defaultquota, limits.defaultmaxmsgcount);
     else
       snprintf(quota, sizeof(quota), "%" PRIu64 "S", limits.defaultquota);
   } else {
@@ -2530,6 +2551,7 @@ char *make_user_dir(char *username, char *domain, uid_t uid, gid_t gid) {
 #endif
   };
   int i;
+  int r;
 
   verrori = 0;
   /* record the dir where the command was run from */
@@ -2606,10 +2628,14 @@ char *make_user_dir(char *username, char *domain, uid_t uid, gid_t gid) {
     /* user does exist in the auth backend, so fill in the dir field */
     mypw->pw_dir = malloc(MAX_PW_DIR + 1);
     if (strlen(user_hash) > 0) {
-      snprintf(mypw->pw_dir, MAX_PW_DIR + 1, "%s/%s/%s", domain_dir, user_hash,
-               username);
+      r = snprintf(mypw->pw_dir, MAX_PW_DIR + 1, "%s/%s/%s", domain_dir,
+                   user_hash, username);
     } else {
-      snprintf(mypw->pw_dir, MAX_PW_DIR + 1, "%s/%s", domain_dir, username);
+      r = snprintf(mypw->pw_dir, MAX_PW_DIR + 1, "%s/%s", domain_dir, username);
+    }
+    if (r == -1) {
+      verrori = VA_DIR_TOO_LONG;
+      return (NULL);
     }
     /* save these values to the auth backend */
     vauth_setpw(mypw, domain);
@@ -3013,6 +3039,7 @@ int vadddotqmail(char *alias, char *domain, ...) {
   uid_t uid;
   gid_t gid;
   char tmpbuf[MAX_BUFF];
+  int r;
 
   /* extract the details for the domain (Dir, uid, gid) */
   if (vget_assign(domain, Dir, sizeof(Dir), &uid, &gid) == NULL) {
@@ -3020,7 +3047,10 @@ int vadddotqmail(char *alias, char *domain, ...) {
   }
 
   /* open the .qmail-alias file for writing */
-  snprintf(tmpbuf, sizeof(tmpbuf), "%s/.qmail-%s", Dir, alias);
+  r = snprintf(tmpbuf, sizeof(tmpbuf), "%s/.qmail-%s", Dir, alias);
+  if (r == -1) {
+    return (VA_DOMAIN_NAME_TOO_LONG);
+  }
   if ((fs = fopen(tmpbuf, "w")) == NULL) return (VA_COULD_NOT_OPEN_DOT_QMAIL);
 
   va_start(args, domain);
@@ -3041,7 +3071,10 @@ int vadddotqmail(char *alias, char *domain, ...) {
   fclose(fs);
 
   /* setup the permission of the .qmail-alias file */
-  snprintf(tmpbuf, sizeof(tmpbuf), "%s/.qmail-%s", Dir, alias);
+  r = snprintf(tmpbuf, sizeof(tmpbuf), "%s/.qmail-%s", Dir, alias);
+  if (r == -1) {
+    return (VA_DOMAIN_NAME_TOO_LONG);
+  }
   chown(tmpbuf, uid, gid);
 
   va_end(args);
@@ -3060,12 +3093,16 @@ int vdeldotqmail(char *alias, char *domain) {
   uid_t uid;
   gid_t gid;
   char tmpbuf[MAX_BUFF];
+  int r;
 
   if (vget_assign(domain, Dir, sizeof(Dir), &uid, &gid) == NULL) {
     return (VA_DOMAIN_DOES_NOT_EXIST);
   }
 
-  snprintf(tmpbuf, sizeof(tmpbuf), "%s/.qmail-%s", Dir, alias);
+  r = snprintf(tmpbuf, sizeof(tmpbuf), "%s/.qmail-%s", Dir, alias);
+  if (r == -1) {
+    return (VA_DOMAIN_NAME_TOO_LONG);
+  }
   if (unlink(tmpbuf) < 0) return (VA_COULD_NOT_OPEN_DOT_QMAIL);
   return (VA_SUCCESS);
 }
