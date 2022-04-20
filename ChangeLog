@@ -110,6 +110,9 @@ Unreleased -
     - vpopmail-lazy.patch
     - fix ,S= tag in case spamassassin changed the file size
     - fix those vfork() instances that do more than exec*() 
+    
+  - Merge patch from Ivan Zahariev :
+    -  backfill algo fails if the username is contained anywhere in the file path 
         
   Patrice Duhamel
   - Add an option --enable-onchange-script-before-and-after to call onchange

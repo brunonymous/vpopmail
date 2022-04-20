@@ -133,6 +133,29 @@ remove_line(char *template, char *filename, mode_t mode, int once_only)
 	return (found);
 }
 
+/* Find the last occurrence of the substring needle in the string haystack */
+char *strrstr(const char *haystack, const char *needle)
+{
+	char *ptr = NULL;
+	char *last = NULL;
+
+	/* find the first occurrence of needle */
+	ptr = strstr(haystack, needle);
+	if (ptr == NULL) {
+		/* needle not found */
+		return NULL;
+	}
+
+	/* Keep searching forward for needle */
+	do {
+		last = ptr;
+		ptr++;
+	} while (ptr = strstr(ptr, needle));
+
+	/* The last known good location is in last */
+	return last;
+}
+
 char *
 backfill(char *username, char *domain, char *path, int operation)
 {
@@ -195,14 +218,17 @@ backfill(char *username, char *domain, char *path, int operation)
 	if (operation == 2) /*- add */
 	{
 		snprintf(tmpbuf, sizeof(tmpbuf), "%s", path);
-		if ((ptr = strstr(tmpbuf, username)))
+		if ((ptr = strrstr(tmpbuf, username)))
 		{
 			if (ptr != tmpbuf)
 				ptr--;
 			if (*ptr == '/')
 				*ptr = 0;
+		} else {
+			/* if the username isn't in the path, something is clearly wrong */
+			return((char *) 0);
 		}
-		if ((ptr = strstr(tmpbuf, domain)))
+		if ((ptr = strrstr(tmpbuf, domain)))
 		{
 			ptr += strlen(domain);
 			if (*ptr == '/')
