@@ -175,7 +175,7 @@ int process_domain(domain, fsi, fsx )
  FILE *fsi;
  FILE *fsx;
 {
- char filename[MAX_BUFF];
+ char filename[MAX_BUFF+50];
  char hostname[MAX_BUFF];
  static struct vqpasswd *pwent;
  time_t tm;
@@ -221,6 +221,7 @@ int copy_email( fs_file, filename, domain, pwent)
  struct stat mystatbuf;
  uid_t uid;
  gid_t gid;
+ int r;
 
     /* At this point, we know that the user exists in the auth backend.
      * Now we need to run some other checks before we can copy the
@@ -291,17 +292,25 @@ int copy_email( fs_file, filename, domain, pwent)
 		fclose(fs);
 	} else if ( DeliveryMethod == HARD_LINK_IT ) {
 		if (*EmailFile == '/')
-			snprintf(tmpbuf1, sizeof(tmpbuf1), "%s", EmailFile);
+			r = snprintf(tmpbuf1, sizeof(tmpbuf1), "%s", EmailFile);
 		else
-			snprintf(tmpbuf1, sizeof(tmpbuf1), "%s/%s", CurDir, EmailFile);
+			r = snprintf(tmpbuf1, sizeof(tmpbuf1), "%s/%s", CurDir, EmailFile);
+		if (r == -1) {
+		    fprintf(stderr, "path too long\n");
+		    return -1;
+		}
 		if ( link( tmpbuf1, tmpbuf) < 0 ) {
 			perror("link");
 		}
 	} else if ( DeliveryMethod == SYMBOLIC_LINK_IT ) {
 		if (*EmailFile == '/')
-			snprintf(tmpbuf1, sizeof(tmpbuf1), "%s", EmailFile);
+			r = snprintf(tmpbuf1, sizeof(tmpbuf1), "%s", EmailFile);
 		else
-			snprintf(tmpbuf1, sizeof(tmpbuf1), "%s/%s", CurDir, EmailFile);
+			r = snprintf(tmpbuf1, sizeof(tmpbuf1), "%s/%s", CurDir, EmailFile);
+		if (r == -1) {
+		    fprintf(stderr, "path too long\n");
+		    return -1;
+		}			
 		if ( symlink( tmpbuf1, tmpbuf) < 0 ) {
 			perror("symlink");
 		}
