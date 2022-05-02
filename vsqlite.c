@@ -421,16 +421,13 @@ int vauth_setpw(struct vqpasswd *inpw, char *domain) {
   gid_t gid;
   int err;
 
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#if USE_ONCHANGE
   char user_domain[MAX_BUFF];
 #endif
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_BEFORE
-  if (allow_onchange) {
-    /* tell other programs that data will change */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
-    call_onchange("mod_user", user_domain, "-", "before");
-  }
+#ifdef USE_ONCHANGE
+  snprintf(user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
+  on_change("mod_user", user_domain, "-", 0, 0);
 #endif
 
   err = vcheck_vqpw(inpw, domain);
@@ -473,20 +470,9 @@ int vauth_setpw(struct vqpasswd *inpw, char *domain) {
   vsqwebmail_pass(inpw->pw_dir, inpw->pw_passwd, uid, gid);
 #endif
 
-#ifdef ONCHANGE_SCRIPT
-  if (allow_onchange) {
-    /* tell other programs that data has changed */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
-    call_onchange("mod_user", user_domain, "", "");
-  }
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  if (allow_onchange) {
-    /* tell other programs that data has changed */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
-    call_onchange("mod_user", user_domain, "-", "after");
-  }
+#ifdef USE_ONCHANGE
+  snprintf(user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
+  on_change("mod_user", user_domain, "-", 1, 1);
 #endif
 
   return (0);
@@ -1193,18 +1179,15 @@ int valias_insert(char *alias, char *domain, char *alias_line) {
   int err;
   char *err_msg = NULL;
 
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#if USE_ONCHANGE
   char user_domain[MAX_BUFF];
 #endif
 
   if ((err = vauth_open_update()) != 0) return (err);
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  if (allow_onchange) {
-    /* tell other programs that data will change */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
-    call_onchange("valias_insert", user_domain, alias_line, "before");
-  }
+#ifdef USE_ONCHANGE
+  snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
+  on_change("valias_insert", user_domain, alias_line, 0, 0);
 #endif
 
   while (*alias_line == ' ' && *alias_line != 0) ++alias_line;
@@ -1223,20 +1206,9 @@ int valias_insert(char *alias, char *domain, char *alias_line) {
     }
   }
 
-#ifdef ONCHANGE_SCRIPT
-  if (allow_onchange) {
-    /* tell other programs that data has changed */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
-    call_onchange("valias_insert", user_domain, alias_line, "");
-  }
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  if (allow_onchange) {
-    /* tell other programs that data has changed */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
-    call_onchange("valias_insert", user_domain, alias_line, "after");
-  }
+#ifdef USE_ONCHANGE
+  snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
+  on_change("valias_insert", user_domain, alias_line, 1, 1);
 #endif
 
   return (0);
@@ -1247,26 +1219,15 @@ int valias_remove(char *alias, char *domain, char *alias_line) {
   int err;
   char *err_msg = NULL;
 
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#if USE_ONCHANGE
   char user_domain[MAX_BUFF];
 #endif
 
   if ((err = vauth_open_update()) != 0) return (err);
 
-#ifdef ONCHANGE_SCRIPT
-  if (allow_onchange) {
-    /* tell other programs that data has changed */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
-    call_onchange("valias_remove", user_domain, alias_line, "");
-  }
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  if (allow_onchange) {
-    /* tell other programs that data will change */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
-    call_onchange("valias_remove", user_domain, alias_line, "before");
-  }
+#ifdef USE_ONCHANGE
+  snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
+  on_change("valias_remove", user_domain, alias_line, 1, 0);
 #endif
 
   qnprintf(SqlBufUpdate, SQL_BUF_SIZE,
@@ -1283,12 +1244,9 @@ and valias_line = '%s' and domain = '%s'",
     }
   }
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  if (allow_onchange) {
-    /* tell other programs that data has changed */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
-    call_onchange("valias_remove", user_domain, alias_line, "after");
-  }
+#ifdef USE_ONCHANGE
+  snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
+  on_change("valias_remove", user_domain, alias_line, 0, 1);
 #endif
 
   return (0);
@@ -1299,26 +1257,15 @@ int valias_delete(char *alias, char *domain) {
   int err;
   char *err_msg = NULL;
 
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#if USE_ONCHANGE
   char user_domain[MAX_BUFF];
 #endif
 
   if ((err = vauth_open_update()) != 0) return (err);
 
-#ifdef ONCHANGE_SCRIPT
-  if (allow_onchange) {
-    /* tell other programs that data has changed */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
-    call_onchange("valias_delete", user_domain, "", "");
-  }
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  if (allow_onchange) {
-    /* tell other programs that data will change */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
-    call_onchange("valias_delete", user_domain, "-", "before");
-  }
+#ifdef USE_ONCHANGE
+  snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
+  on_change("valias_delete", user_domain, "-", 1, 0);
 #endif
 
   qnprintf(SqlBufUpdate, SQL_BUF_SIZE,
@@ -1335,12 +1282,9 @@ and domain = '%s'",
     }
   }
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  if (allow_onchange) {
-    /* tell other programs that data has changed */
-    snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
-    call_onchange("valias_delete", user_domain, "", "after");
-  }
+#ifdef USE_ONCHANGE
+  snprintf(user_domain, MAX_BUFF, "%s@%s", alias, domain);
+  on_change("valias_delete", user_domain, "-", 0, 1);
 #endif
 
   return (0);
@@ -1353,18 +1297,8 @@ int valias_delete_domain(char *domain) {
 
   if ((err = vauth_open_update()) != 0) return (err);
 
-#ifdef ONCHANGE_SCRIPT
-  if (allow_onchange) {
-    /* tell other programs that data has changed */
-    call_onchange("valias_delete_domain", domain, "", "");
-  }
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  if (allow_onchange) {
-    /* tell other programs that data will change */
-    call_onchange("valias_delete_domain", domain, "-", "before");
-  }
+#ifdef USE_ONCHANGE
+  on_change("valias_delete_domain", domain, "-", 1, 0);
 #endif
 
   qnprintf(SqlBufUpdate, SQL_BUF_SIZE, "delete from valias where domain = '%s'",
@@ -1379,11 +1313,8 @@ int valias_delete_domain(char *domain) {
     }
   }
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  if (allow_onchange) {
-    /* tell other programs that data has changed */
-    call_onchange("valias_delete_domain", domain, "-", "after");
-  }
+#ifdef USE_ONCHANGE
+  on_change("valias_delete_domain", domain, "-", 0, 1);
 #endif
 
   return (0);

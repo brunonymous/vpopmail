@@ -138,6 +138,8 @@ Unreleased -
   - Add an error message in vpasswd, vadduser, vadddomain when using -r 
     and a password on command line
   - Allow -n in vadduser only if min password size = 0
+  - Simplify calls to call_onchange, and add an option to log all changes
+    to syslog or a sqlite database
 
 5.4.33 - Released 10-23-2012
   Matt Brookings

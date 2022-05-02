@@ -659,7 +659,7 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
  static char tmpbuf1[MAX_BUFF_CDB];
  static char tmpbuf2[MAX_BUFF_CDB];
  
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif 
  
@@ -674,13 +674,10 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
  gid_t gid;
  int ret;
  
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    if( allow_onchange ) {
-       /* tell other programs that data will change */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
-       call_onchange ( "mod_user", user_domain, "-", "before" );  
-       }
-#endif 
+#ifdef USE_ONCHANGE
+  snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
+  on_change("mod_user", user_domain, "-", 0, 0);
+#endif
 
     ret = vcheck_vqpw(inpw, domain);
     if ( ret != 0 ) return(ret);
@@ -769,20 +766,9 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
     vsqwebmail_pass( inpw->pw_dir, inpw->pw_passwd, uid, gid);
 #endif
 
-#ifdef ONCHANGE_SCRIPT
-    if( allow_onchange ) {
-       /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
-       call_onchange ( "mod_user", user_domain, "", "" );
-       }
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    if( allow_onchange ) {
-       /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
-       call_onchange ( "mod_user", user_domain, "-", "after" );
-       }
+#ifdef USE_ONCHANGE
+  snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
+  on_change("mod_user", user_domain, "-", 1, 1);
 #endif
 
     return(0);

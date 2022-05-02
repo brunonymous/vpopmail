@@ -1112,6 +1112,53 @@ case $ENABLE_DOMAIN_QUOTAS in
 esac
 
 #----------------------------------------------------------------------
+loglib=""
+
+AC_MSG_CHECKING(whether logger syslog is enabled)
+AC_ARG_ENABLE(logger-syslog,
+        [  --enable-logger-syslog   Log all changes to syslog],
+        ENABLE_LOGGER_SYSLOG=$enableval,
+                [
+                        ENABLE_LOGGER_SYSLOG=0
+                ]
+)
+
+case $ENABLE_LOGGER_SYSLOG in
+  1*|y*|Y*)
+      AC_MSG_RESULT(yes)
+      ENABLE_LOGGER_SYSLOG=1
+      AC_DEFINE_UNQUOTED(ENABLE_LOGGER_SYSLOG,$ENABLE_LOGGER_SYSLOG,"")
+      ;;
+  *)
+      AC_MSG_RESULT(no)
+      ;;
+esac
+
+#----------------------------------------------------------------------
+
+AC_MSG_CHECKING(whether logger sqlite is enabled)
+AC_ARG_ENABLE(logger-sqlite,
+        [  --enable-logger-sqlite   Log all changes to a sqlite database],
+        ENABLE_LOGGER_SQLITE=$enableval,
+                [
+                        ENABLE_LOGGER_SQLITE=0
+                ]
+)
+
+case $ENABLE_LOGGER_SQLITE in
+  1*|y*|Y*)
+      AC_MSG_RESULT(yes)
+      ENABLE_LOGGER_SQLITE=1
+      loglib="-lsqlite3"
+      AC_DEFINE_UNQUOTED(ENABLE_LOGGER_SQLITE,$ENABLE_LOGGER_SQLITE,"")
+      ;;
+  *)
+      AC_MSG_RESULT(no)
+      ;;
+esac
+
+
+#----------------------------------------------------------------------
 
 vlimits_default="$vpopmaildir/etc/vlimits.default"
 
@@ -1208,10 +1255,10 @@ case $AUTH_MODULE in
     ln -sf vcdb.c vauth.c
     AC_DEFINE_UNQUOTED(USE_CDB,$USE_CDB,"")    
     if test "$TINYCDB" = 1; then
-        auth_libs="-lcdb"
+        auth_libs="-lcdb $loglib"
         AC_SUBST(auth_libs)
     else
-        authlib=""
+        authlib="$loglib"
         auth_inc="-Icdb"
         AC_SUBST(auth_inc)
         AC_SUBST(authlib)
@@ -1254,7 +1301,7 @@ case $AUTH_MODULE in
         AC_MSG_ERROR([Unable to find your MySQL lib dir, specify --enable-libdir.])
     fi
 
-    auth_libs="-Xlinker -R -Xlinker $libdir -L$libdir $extralibflags -lmysqlclient -lz -lm"
+    auth_libs="-Xlinker -R -Xlinker $libdir -L$libdir $extralibflags -lmysqlclient -lz -lm $loglib"
     AC_SUBST(auth_libs)
     ;;
     
@@ -1305,7 +1352,7 @@ case $AUTH_MODULE in
     AC_DEFINE_UNQUOTED(USE_SQL,$USE_SQL,"")
     AC_DEFINE_UNQUOTED(USE_POSTGRES,$USE_POSTGRES,"")
 
-    auth_libs="-L`$pgconfig --libdir` -lpq "
+    auth_libs="-L`$pgconfig --libdir` -lpq $loglib"
     AC_SUBST(auth_libs)
     auth_inc="-I`$pgconfig --includedir`"
     AC_SUBST(auth_inc)
@@ -1319,7 +1366,7 @@ case $AUTH_MODULE in
     rm -rf vauth.c
     ln -sf vldap.c vauth.c
     AC_DEFINE_UNQUOTED(USE_LDAP,$USE_LDAP,"")
-    auth_libs="-L/usr/local/lib -lldap -llber -lresolv"
+    auth_libs="-L/usr/local/lib -lldap -llber -lresolv $loglib"
     AC_SUBST(auth_libs)
     auth_inc="-I/usr/local/include"
     AC_SUBST(auth_inc)
@@ -1334,7 +1381,7 @@ case $AUTH_MODULE in
     ln -sf voracle.c vauth.c
     AC_DEFINE_UNQUOTED(USE_SQL,$USE_SQL,"")
     AC_DEFINE_UNQUOTED(USE_ORACLE,$USE_ORACLE,"")
-    auth_libs="-L$libdir -lclntsh -lclient8"
+    auth_libs="-L$libdir -lclntsh -lclient8 $loglib"
     AC_SUBST(auth_libs)
     auth_inc="-I$incdir"
     AC_SUBST(auth_inc)
@@ -1349,7 +1396,7 @@ case $AUTH_MODULE in
     ln -sf vsybase.c vauth.c
     AC_DEFINE_UNQUOTED(USE_SQL,$USE_SQL,"")
     AC_DEFINE_UNQUOTED(USE_SYBASE,$USE_SYBASE,"")
-    auth_libs="-L/opt/sybase/lib -lsybdb -lm"
+    auth_libs="-L/opt/sybase/lib -lsybdb -lm $loglib"
     AC_SUBST(auth_libs)
     auth_inc="-I/opt/sybase/include"
     AC_SUBST(auth_inc)
@@ -2129,7 +2176,6 @@ case $ENABLE_PASSWD in
     ;;
 esac
 
-
 case $ENABLE_LOGGING in
   1*|y*|Y*)
     echo "        pop syslog = show successful and failed login attempts --enable-logging=y"
@@ -2155,6 +2201,26 @@ case $ENABLE_AUTH_LOGGING in
     ;;
   *)
     echo "      auth logging = OFF --disable-auth-logging"
+    ;;
+esac
+
+
+case $ENABLE_LOGGER_SYSLOG in
+  1*|y*|Y*)
+    echo "   logger syslog = ON  --enable-logger-syslog"
+    ;;
+  *)
+    echo "   logger syslog = OFF --disable-logger-syslog (default)"
+    ;;
+esac
+
+
+case $ENABLE_LOGGER_SQLITE in
+  1*|y*|Y*)
+    echo "   logger sqlite = ON  --enable-logger-sqlite"
+    ;;
+  *)
+    echo "   logger sqlite = OFF --disable-logger-sqlite (default)"
     ;;
 esac
 

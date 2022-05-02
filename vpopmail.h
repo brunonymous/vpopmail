@@ -22,6 +22,8 @@
 #include <sys/types.h>  // for uid_t
 #include "storage.h"
 
+#include "vlogger.h"
+
 /*  Enable expanded debug information.  Consider these for ./configure options
  */
 //  Show entry and parms when hitting vpopmail library functions
@@ -362,10 +364,12 @@ void vsqlerror(FILE *f, char *comment);
 extern char sqlerr[MAX_BUFF];
 extern char *last_query;
 
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER) | \
+    defined(ENABLE_LOGGER_SQLITE) | defined(ENABLE_LOGGER_SYSLOG)
+#define USE_ONCHANGE
 /* onchange function */
-extern int allow_onchange;
-int call_onchange();
+extern void on_change(const char *cmd, const char *arg1, const char *arg2,
+                      int change, int mode);
 #endif
 
 #ifdef USERS_BIG_DIR

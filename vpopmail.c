@@ -57,6 +57,11 @@ static char relay_tempfile[MAX_BUFF];
 
 int verrori = 0;
 
+#ifdef USE_ONCHANGE
+int allow_onchange = 1;
+int call_onchange();
+#endif
+
 extern int cdb_seek();
 
 /* Global Flags */
@@ -345,9 +350,8 @@ int vadddomain(char *domain, char *dir, uid_t uid, gid_t gid) {
   }
   r_chown(tmpbuf, uid, gid);
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  /* tell other programs that data will change */
-  call_onchange("add_domain", domain, "-", "before");
+#ifdef USE_ONCHANGE
+  on_change("add_domain", domain, "-", 0, 0);
 #endif
 
   /* ask the authentication module to add the domain entry */
@@ -407,16 +411,10 @@ int vadddomain(char *domain, char *dir, uid_t uid, gid_t gid) {
     signal_process("qmail-send", SIGHUP);
   }
 
-#ifdef ONCHANGE_SCRIPT
+#ifdef USE_ONCHANGE
   allow_onchange = 1;
-  /* tell other programs that data has changed */
-  call_onchange("add_domain", domain, "", "");
+  on_change("add_domain", domain, "-", 1, 1);
   allow_onchange = 0;
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  /* tell other programs that data has changed */
-  call_onchange("add_domain", domain, "-", "after");
 #endif
 
   /* return back to the callers directory and return success */
@@ -488,24 +486,13 @@ int vdeldomain(char *domain) {
     string_list_init(&aliases, 1);
     string_list_add(&aliases, domain_to_del);
 
-#ifdef ONCHANGE_SCRIPT
-    /* tell other programs that data has changed */
+#ifdef USE_ONCHANGE
     r = snprintf(domain_name, MAX_BUFF, "%s alias of %s", domain_to_del,
                  domain);
     if (r == -1) {
       return (VA_DIR_TOO_LONG);
     }
-    call_onchange("del_domain", domain_name, "", "");
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    /* tell other programs that data will change */
-    r = snprintf(domain_name, MAX_BUFF, "%s alias of %s", domain_to_del,
-                 domain);
-    if (r == -1) {
-      return (VA_DIR_TOO_LONG);
-    }
-    call_onchange("del_domain", domain_name, "-", "before");
+    on_change("del_domain", domain_name, "-", 1, 0);
 #endif
 
   } else {
@@ -560,15 +547,13 @@ int vdeldomain(char *domain) {
     //       fprintf(stderr,"alias %s\n", aliases[i]);
     //     }
 
-#ifdef ONCHANGE_SCRIPT
-    /* tell other programs that data has changed */
-    call_onchange("del_domain", domain, "", "");
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    /* tell other programs that data will change */
-    snprintf(domain_name, MAX_BUFF, "%s", domain);
-    call_onchange("del_domain", domain_name, "-", "before");
+#ifdef USE_ONCHANGE
+    r = snprintf(domain_name, MAX_BUFF, "%s alias of %s", domain_to_del,
+                 domain);
+    if (r == -1) {
+      return (VA_DIR_TOO_LONG);
+    }
+    on_change("del_domain", domain, "-", 1, 0);
 #endif
 
     /* call the auth module to delete the domain from the storage */
@@ -661,9 +646,8 @@ int vdeldomain(char *domain) {
   /*  clean up memory used by the alias list  */
   string_list_free(&aliases);
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  /* tell other programs that data has changed */
-  call_onchange("del_domain", domain_name, "-", "after");
+#ifdef USE_ONCHANGE
+  on_change("del_domain", domain_name, "-", 0, 1);
 #endif
 
   return (VA_SUCCESS);
@@ -773,11 +757,11 @@ int vadduser(char *username, char *domain, char *password, char *gecos,
   struct vlimits limits;
   char quota[50];
 
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#ifdef USE_ONCHANGE
   char user_domain[MAX_BUFF];
 #endif
 
-#ifdef ONCHANGE_SCRIPT
+#ifdef USE_ONCHANGE
   int temp_onchange;
   temp_onchange = allow_onchange;
   allow_onchange = 0;
@@ -836,10 +820,9 @@ int vadduser(char *username, char *domain, char *password, char *gecos,
       return (VA_BAD_U_DIR);
   }
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  /* tell other programs that data will change */
+#ifdef USE_ONCHANGE
   snprintf(user_domain, MAX_BUFF, "%s@%s", username, domain);
-  call_onchange("add_user", user_domain, "-", "before");
+  on_change("add_user", user_domain, "-", 0, 0);
 #endif
 
   /* add the user to the auth backend */
@@ -903,18 +886,11 @@ int vadduser(char *username, char *domain, char *password, char *gecos,
   fchdir(call_dir);
   close(call_dir);
 
-#ifdef ONCHANGE_SCRIPT
+#ifdef USE_ONCHANGE
   allow_onchange = temp_onchange;
-  /* tell other programs that data has changed */
   snprintf(user_domain, MAX_BUFF, "%s@%s", username, domain);
-  call_onchange("add_user", user_domain, "", "");
+  on_change("add_user", user_domain, "-", 1, 1);
   allow_onchange = 1;
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  /* tell other programs that data has changed */
-  snprintf(user_domain, MAX_BUFF, "%s@%s", username, domain);
-  call_onchange("add_user", user_domain, "-", "after");
 #endif
 
   return (VA_SUCCESS);
@@ -1930,16 +1906,9 @@ int vdeluser(char *user, char *domain) {
     return (VA_CANNOT_DELETE_CATCHALL);
   }
 
-#ifdef ONCHANGE_SCRIPT
-  /* tell other programs that data has changed */
+#ifdef USE_ONCHANGE
   snprintf(user_domain, MAX_BUFF, "%s@%s", user, domain);
-  call_onchange("del_user", user_domain, "", "");
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  /* tell other programs that data will change */
-  snprintf(user_domain, MAX_BUFF, "%s@%s", user, domain);
-  call_onchange("del_user", user_domain, "-", "before");
+  on_change("del_user", user_domain, "-", 1, 0);
 #endif
 
   /* del the user from the auth system */
@@ -1964,10 +1933,9 @@ int vdeluser(char *user, char *domain) {
     return (VA_BAD_DIR);
   }
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  /* tell other programs that data has changed */
+#ifdef USE_ONCHANGE
   snprintf(user_domain, MAX_BUFF, "%s@%s", user, domain);
-  call_onchange("del_user", user_domain, "-", "after");
+  on_change("del_user", user_domain, "-", 0, 1);
 #endif
 
   /* go back to the callers directory */
@@ -3989,9 +3957,8 @@ int vaddaliasdomain(char *alias_domain, char *real_domain) {
     return (VA_DOMAIN_ALREADY_EXISTS);
   }
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_BEFORE
-  /* tell other programs that data will change */
-  call_onchange("add_alias_domain", alias_domain, real_domain, "before");
+#ifdef USE_ONCHANGE
+  on_change("add_alias_domain", alias_domain, real_domain, 0, 0);
 #endif
 
   /* Add the domain to the assign file */
@@ -4000,14 +3967,8 @@ int vaddaliasdomain(char *alias_domain, char *real_domain) {
   /* signal qmail-send, so it can see the changes */
   signal_process("qmail-send", SIGHUP);
 
-#ifdef ONCHANGE_SCRIPT
-  /* tell other programs that data has changed */
-  call_onchange("add_alias_domain", alias_domain, real_domain);
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-  /* tell other programs that data has changed */
-  call_onchange("add_alias_domain", alias_domain, real_domain, "after");
+#ifdef USE_ONCHANGE
+  on_change("add_alias_domain", alias_domain, real_domain, 1, 1);
 #endif
 
 #ifdef SQL_ALIASDOMAINS
@@ -4412,6 +4373,35 @@ struct linklist *linklist_del(struct linklist *list) {
   return next;
 }
 
+/* simplify the calls of call_onchange & logmessage
+   change = 1 for the ONCHANGE_SCRIPT option
+   mode = 0 for before, and 1 for after
+  */
+void on_change(const char *cmd, const char *arg1, const char *arg2, int change,
+               int mode) {
+  if (allow_onchange) {
+#ifdef ONCHANGE_SCRIPT
+    if (change) {
+      call_onchange(cmd, arg1, arg2, "");
+    }
+#endif
+
+#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
+    if (mode == 0) {
+      call_onchange(cmd, arg1, arg2, "before");
+    } else {
+      call_onchange(cmd, arg1, arg2, "after");
+    }
+#endif
+
+#if defined(ENABLE_LOGGER_SQLITE) | defined(ENABLE_LOGGER_SYSLOG)
+    if (mode == 1) {
+      logmessage(cmd, arg1, arg2);
+    }
+#endif
+  }
+}
+
 #if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
 /************************************************************************
  *
@@ -4425,7 +4415,6 @@ struct linklist *linklist_del(struct linklist *list) {
  *
  * 2007-07-14 jms1 - suppressing "ONCHANGE script not found" message.
  */
-int allow_onchange = 1;
 
 int call_onchange(const char *cmd, const char *arg1, const char *arg2,
                   const char *arg3) {

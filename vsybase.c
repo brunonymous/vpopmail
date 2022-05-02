@@ -531,20 +531,17 @@ int vauth_setpw_size( struct vqpasswd *inpw, char *domain, int site_size)
  uid_t uid;
  gid_t gid;
  
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#if USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif  
 
  	myuid = geteuid();
 	if ( myuid != VPOPMAIL && myuid != 0 ) return(VA_BAD_UID);
 	
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    if( allow_onchange ) {
-       /* tell other programs that data will change */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
-       call_onchange ( "mod_user", user_domain, "-", "before" ); 
-       }
-#endif	
+#ifdef USE_ONCHANGE
+  snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);  
+  on_change("mod_user", user_domain, "-", 0, 0);
+#endif
 
 	vauth_open();
 	vset_default_domain( domain );
@@ -585,20 +582,9 @@ int vauth_setpw_size( struct vqpasswd *inpw, char *domain, int site_size)
     vsqwebmail_pass( inpw->pw_dir, inpw->pw_passwd, uid, gid);
 #endif
 
-#ifdef ONCHANGE_SCRIPT
-    if( allow_onchange ) {
-       /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
-       call_onchange ( "mod_user", user_domain, "", "" );        
-       }
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    if( allow_onchange ) {
-       /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);
-       call_onchange ( "mod_user", user_domain, "-", "after" );        
-       }
+#ifdef USE_ONCHANGE
+  snprintf( user_domain, MAX_BUFF, "%s@%s", inpw->pw_name, domain);  
+  on_change("mod_user", user_domain, "-", 1, 1);
 #endif
 
 	return(0);

@@ -120,7 +120,7 @@ int valias_insert( char *alias, char *domain, char *alias_line)
  gid_t gid;
  FILE *fs;
  
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif  
 
@@ -136,13 +136,10 @@ int valias_insert( char *alias, char *domain, char *alias_line)
 	return(-1);
     }
     
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    if( allow_onchange ) {
-       /* tell other programs that data will change */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);       
-       call_onchange ( "valias_insert", user_domain, alias_line, "before" );       
-       }
-#endif    
+#ifdef USE_ONCHANGE
+  snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);       
+  on_change("valias_insert", user_domain, alias_line, 0, 0);
+#endif
 
     // create dotqmail filename, converting '.' to ':' as we go
     strncat(Dir, "/.qmail-", sizeof(Dir)-strlen(Dir)-1);
@@ -160,20 +157,9 @@ int valias_insert( char *alias, char *domain, char *alias_line)
     fprintf(fs, "%s\n", alias_line);
     fclose(fs);
 
-#ifdef ONCHANGE_SCRIPT
-    if( allow_onchange ) {
-       /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);       
-       call_onchange ( "valias_insert", user_domain, alias_line, "" );              
-       }
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    if( allow_onchange ) {
-       /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);       
-       call_onchange ( "valias_insert", user_domain, alias_line, "after" );              
-       }
+#ifdef USE_ONCHANGE
+  snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain); 
+  on_change("valias_insert", user_domain, alias_line, 1, 1);
 #endif
 
     return(0);
@@ -190,7 +176,7 @@ int valias_remove( char *alias, char *domain, char *alias_line)
  gid_t gid;
  FILE *fr, *fw;
  
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif  
 
@@ -206,12 +192,9 @@ int valias_remove( char *alias, char *domain, char *alias_line)
     return(-1);
     }
 
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    if( allow_onchange ) {
-       /* tell other programs that data will change */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-       call_onchange ( "valias_remove", user_domain, alias_line, "before" );
-       }
+#ifdef USE_ONCHANGE
+  snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
+  on_change("valias_remove", user_domain, alias_line, 0, 0);
 #endif
 
     // create dotqmail filename, converting '.' to ':' as we go
@@ -250,22 +233,10 @@ int valias_remove( char *alias, char *domain, char *alias_line)
     rename(DirNew, Dir);
     free(DirNew);
 
-#ifdef ONCHANGE_SCRIPT
-    if( allow_onchange ) {
-       /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-       call_onchange ( "valias_remove", user_domain, alias_line, "" );       
-       }
+#ifdef USE_ONCHANGE
+  snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
+  on_change("valias_remove", user_domain, alias_line, 1, 1);
 #endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    if( allow_onchange ) {
-       /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-       call_onchange ( "valias_remove", user_domain, alias_line, "after" );       
-       }
-#endif
-
     return(0);
 }
 
@@ -278,7 +249,7 @@ int valias_delete( char *alias, char *domain)
  int i;
  int r;
  
-#if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
+#ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif  
 
@@ -292,20 +263,9 @@ int valias_delete( char *alias, char *domain)
 	return(-1);
     }
 
-#ifdef ONCHANGE_SCRIPT
-    if( allow_onchange ) {
-       /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-       call_onchange ( "valias_delete", user_domain, "", "" );
-       }
-#endif
-
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    if( allow_onchange ) {
-       /* tell other programs that data will change */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-       call_onchange ( "valias_delete", user_domain, "-", "before" );       
-       }
+#ifdef USE_ONCHANGE
+  snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
+  on_change("valias_delete", user_domain, alias_line, 1, 0);
 #endif
 
     strncat(Dir, "/.qmail-", sizeof(Dir)-strlen(Dir)-1);
@@ -316,13 +276,10 @@ int valias_delete( char *alias, char *domain)
 
     r = unlink(Dir);
     
-#ifdef ONCHANGE_SCRIPT_BEFORE_AND_AFTER
-    if( allow_onchange ) {
-       /* tell other programs that data has changed */
-       snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
-       call_onchange ( "valias_delete", user_domain, "-", "after" );              
-       }
-#endif    
+#ifdef USE_ONCHANGE  
+  snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
+  on_change("valias_delete", user_domain, alias_line, 1, 1);
+#endif
     
     return r;
 }
