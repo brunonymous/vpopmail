@@ -34,6 +34,7 @@
 #include <unistd.h>
 #endif
 
+#ifdef ENABLE_LOGGER_SQLITE
 int createTableLog(sqlite3 *sqlite_log) {
   char *err_msg = NULL;
   int rc;
@@ -49,6 +50,7 @@ int createTableLog(sqlite3 *sqlite_log) {
   }
   return rc;
 }
+#endif
 
 /* log message to syslog or sqlite database */
 int logmessage(const char *cmd, const char *arg1, const char *arg2) {
