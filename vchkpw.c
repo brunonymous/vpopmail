@@ -312,9 +312,6 @@ int main(int argc, char **argv) {
     vchkpw_exit(10);
   }
 
-  /* close the log connection */
-  if (ENABLE_LOGGING > 0) closelog();
-
   /* And now a simple way to kick off the next program */
   execvp(argv[1], argv + 1);
 
@@ -382,11 +379,6 @@ It is not for runnning on the command line.\n",
     TheChallenge[j] = TheDomain[l];
     if (TheChallenge[j] == 0) break;
     if (l == i) break;
-  }
-
-  /* open the log if configured */
-  if (ENABLE_LOGGING > 0) {
-    openlog(LOG_NAME, LOG_PID, LOG_MAIL);
   }
 
   if (TheName[0] == 0) {
@@ -674,7 +666,6 @@ void login_system_user() {
 #endif
 
 void vchkpw_exit(int err) {
-  if (ENABLE_LOGGING > 0) closelog();
   vclose();
   exit(err);
 }
@@ -686,6 +677,12 @@ void vchkpw_exit(int err) {
  */
 void vlog(int verror, char *TheUser, char *TheDomain, char *ThePass,
           char *TheName, char *IpAddr, char *LogLine) {
+          
+  /* open the log if configured */
+  if (ENABLE_LOGGING > 0) {
+    openlog(LOG_NAME, LOG_PID, LOG_MAIL);
+  }          
+          
   /* always log to syslog if enabled */
   if ((verror == VLOG_ERROR_PASSWD) &&
       (ENABLE_LOGGING == 1 || ENABLE_LOGGING == 2 || ENABLE_LOGGING == 3 ||
@@ -745,6 +742,9 @@ void vlog(int verror, char *TheUser, char *TheDomain, char *ThePass,
     }
   }
 #endif
+
+  /* close the log connection */
+  if (ENABLE_LOGGING > 0) closelog();
 }
 
 int authcram(char *response, char *challenge, char *password) {

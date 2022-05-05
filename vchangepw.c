@@ -76,12 +76,11 @@ int main(void)
 		vexit(i);
 	}
 
-	openlog("vchangepw", 0, LOG_AUTH);
-
 	passwdtmp = getpass("Enter old password: ");
 	i = strlen(passwdtmp);
 	if (i >= sizeof(Passwd)) {
 		puts("Error: password too long.");
+    	openlog("vchangepw", 0, LOG_AUTH);
 		syslog(LOG_NOTICE, "Too long password for user <%s>\n", Email);
 		closelog();
 		vexit(3);
@@ -92,12 +91,14 @@ int main(void)
 		vget_assign(Domain, NULL, 0, NULL, NULL);
 		if ( vauth_crypt(User, Domain, Passwd, vpw) != 0 ) {
 			puts("Error: authentication failed!");
+			openlog("vchangepw", 0, LOG_AUTH);
 			syslog(LOG_NOTICE, "Wrong password for user <%s>\n", Email);
 			closelog();
 			vexit(3);
 		}
 	} else {
 		puts("Error: authentication failed!");
+		openlog("vchangepw", 0, LOG_AUTH);
 		syslog(LOG_NOTICE, "Domain of address <%s> does not exist\n", Email);
 		closelog();
 		vexit(3);
@@ -107,13 +108,16 @@ int main(void)
 
 	if ( (i = vpasswd( User, Domain, Passwd, USE_POP )) != 0 ) {
 		printf("Error: %s\n", verror(i));
+		openlog("vchangepw", 0, LOG_AUTH);
 		syslog(LOG_NOTICE, "Error changing users password! User <%s>, message: ""%s""\n",
 			Email, verror(i));
+		closelog();
 		vexit(i);
 	} else {
 		printf("Password successfully changed.\n");
+		openlog("vchangepw", 0, LOG_AUTH);
 		syslog(LOG_DEBUG, "User <%s> changed password\n", Email);
+		closelog();
 	}
-	closelog();
 	return vexit(i);
 }

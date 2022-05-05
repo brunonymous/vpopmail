@@ -55,7 +55,9 @@ int createTableLog(sqlite3 *sqlite_log) {
 /* log message to syslog or sqlite database */
 int logmessage(const char *cmd, const char *arg1, const char *arg2) {
 #ifdef ENABLE_LOGGER_SYSLOG
-  syslog(LOG_NOTICE, "%s %s %s", cmd, arg1, arg2);
+  openlog(LOG_NAME, LOG_PID, LOG_USER);
+  syslog(LOG_NOTICE, "vpopmail-logger: %s %s %s", cmd, arg1, arg2);
+  closelog();
 #endif
 
 #ifdef ENABLE_LOGGER_SQLITE
