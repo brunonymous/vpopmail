@@ -1258,10 +1258,10 @@ case $AUTH_MODULE in
         auth_libs="-lcdb $loglib"
         AC_SUBST(auth_libs)
     else
-        authlib="$loglib"
+        auth_libs="$loglib"
         auth_inc="-Icdb"
         AC_SUBST(auth_inc)
-        AC_SUBST(authlib)
+        AC_SUBST(auth_libs)
     fi
     ;;
 
