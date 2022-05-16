@@ -36,6 +36,7 @@
 #include <signal.h>
 #include <pwd.h>
 #include <string.h>
+#include <strings.h>
 #include "md5.h"
 #include "hmac_md5.h"
 #include <unistd.h>

@@ -2,9 +2,9 @@ Numbers in square brackets ([]) are tracker items on SourceForge with patch
 or info related to the entry. <http://sourceforge.net/projects/vpopmail/>
 
 Unreleased -
-  - Merge patches from FreeBSD :
+  - Merge patches from FreeBSD:
     (Peter Pentchev <roam@FreeBSD.org>)
-    - authvchkpw.c : Various sanity- and security-related fixes.
+    - authvchkpw.c: Various sanity- and security-related fixes.
       Buffer handling:
         - use snprintf() instead of strncpy() to ensure null-termination;
         - explicitly pass sizeof(var) as a second argument to snprintf() to
@@ -19,32 +19,32 @@ Unreleased -
         modify them easily.
       Mark two function parameters as unused.
       Fix a couple of const-related compiler warnings.
-    - backfill.c : String buffer handling fixes.
+    - backfill.c: String buffer handling fixes.
       - convert a strncpy() to snprintf() to ensure null-termination;
       - explicitly pass sizeof(var) as the second argument of snprintf().
-    - vlist.c : Sanity and usage fixes.
+    - vlist.c: Sanity and usage fixes.
       Do not impose an arbitrary limit of 100 list entries.
       Fix the usage message and an error message.
-    - vlistlib.c : Sanity and safety checks.
+    - vlistlib.c: Sanity and safety checks.
       Honor lots of limits - convert sprintf() to snprintf(), use the correct
         limit size, etc.
       Check a couple more calls for errors.
       Wait for the correct child process - waitpid() instead of wait().
       Add two closedir()'s to fix file descriptor leaks.
       Look for the arguments properly if progname should ever containing spaces.   
-    - vmysql.c : Fix the virtual alias support; implement SQL_REMOVE_DELETED.
-    - vpalias.c : Honor the correct limits.
-    - vpgsql.c : Implement valias support; implement SQL_REMOVE_DELETED.
-    - vutil.c : Sanity and safety.
+    - vmysql.c: Fix the virtual alias support; implement SQL_REMOVE_DELETED.
+    - vpalias.c: Honor the correct limits.
+    - vpgsql.c: Implement valias support; implement SQL_REMOVE_DELETED.
+    - vutil.c: Sanity and safety.
       Optimize a lot of calls by just using access(2).
       Fix a file descriptor and FILE structure leak.
-    - README.vpopmaild : Fix a couple of typos and grammatical errors.
-    - README.onchange : Fix a typo.
-    - README.vdelivermail : Fix a typo.
+    - README.vpopmaild: Fix a couple of typos and grammatical errors.
+    - README.onchange: Fix a typo.
+    - README.vdelivermail: Fix a typo.
         
     (Peter Pentchev <roam@FreeBSD.org>,
 	 Alex Dupre <ale@FreeBSD.org>)
-    - vpopmail.c : SpamAssassin support, sanity checks.
+    - vpopmail.c: SpamAssassin support, sanity checks.
       Implement SpamAssassin support.
       Honor limits correctly.
       Wait for the correct child process - waitpid() instead of wait().
@@ -52,17 +52,17 @@ Unreleased -
       Add a closedir() to fix a file descriptor leak.
     
     (Suzuki <xsuzu@yokohama.riken.jp>)
-    - vldap.c : Fix a crash when adding a virtual domain.    
+    - vldap.c: Fix a crash when adding a virtual domain.    
     
     (Alex Dupre <ale@FreeBSD.org>, 
      Peter Pentchev <roam@FreeBSD.org>,
 	 Bryan Drewery <bdrewery@FreeBSD.org>)
-    - vdelivermail.c : SpamAssassin support, build optimization      
+    - vdelivermail.c: SpamAssassin support, build optimization      
       Add SpamAssassin support.
       Drop the unneeded MAX_ENV_BUFF definition.
       Add DELIVER_TO_STDOUT support    
   
-  - Merge patches by Roberto Puzzanghera :
+  - Merge patches by Roberto Puzzanghera:
     - A patch to make vpopmail store domain aliases to MySQL. This gets 
       dovecot's sql auth driver aware of domain aliases, provided that you 
       modify the sql query accordingly.
@@ -97,7 +97,7 @@ Unreleased -
       Look at doc/README.vrcptcheck for more info.
     - A patch which gets vpopmail to compile with gcc-10
   
-  - Merge patches by Rolf Eike Beer :
+  - Merge patches by Rolf Eike Beer:
     - Fix strncat warnings
     - Fix printf format strings
     - Fix build when using PostgreSQL and --enable-onchange-script
@@ -111,9 +111,12 @@ Unreleased -
     - fix ,S= tag in case spamassassin changed the file size
     - fix those vfork() instances that do more than exec*() 
     
-  - Merge patch from Ivan Zahariev :
+  - Merge patch from Ivan Zahariev:
     -  backfill algo fails if the username is contained anywhere in the file path 
-        
+      
+  - Merge patch from Paul Oehler:
+     - Fix bug in string_list_add when resizing the list
+       
   Patrice Duhamel
   - Add an option --enable-onchange-script-before-and-after to call onchange
     script before and after a change
@@ -125,21 +128,21 @@ Unreleased -
     and add optional password length in vpasswd
   - Fix crash in vpasswd, vadduser, vadddomain for very long password
   - Add an error code for too short passwords (minimum size = 12)
-  - In vadddomain() : reject no TLD or invalid size TLD, or two consecutive '.'
+  - In vadddomain(): reject no TLD or invalid size TLD, or two consecutive '.'
   - Change max size of user name and gecos to 64, and increase temporary buffer
     in make_vpasswd_cdb to fix a crash after changing the user name size
-  - Add fix from Roberto Puzzanghera : 
+  - Add fix from Roberto Puzzanghera: 
          - Fix mysql module compilation on Debian 11 / gcc 10
   - In vadddomain, remove domain if the postmaster user can't be created
   - Add minimum and maximum length of parameters in error messages
   - Add an option --enable-min-pwd-length to choose minimum password length
   - Add an option --enable-tinycdb to replace cdb code by libcdb
-  - Fix bug in string_list_add when resizing the list
   - Add an error message in vpasswd, vadduser, vadddomain when using -r 
     and a password on command line
   - Allow -n in vadduser only if min password size = 0
   - Simplify calls to call_onchange, and add an option to log all changes
     to syslog or a sqlite database
+  - add missing includes and compilation option for c99
 
 5.4.33 - Released 10-23-2012
   Matt Brookings
