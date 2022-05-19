@@ -134,6 +134,8 @@ int load_connection_info() {
     char conn_info[256];
     char config[256];
     char *conf_read;    
+    int eof;
+    char delimiters[] = "|\n";
     static int loaded = 0;
     
     if (loaded) return 0;
@@ -154,7 +156,7 @@ int load_connection_info() {
 
     if (eof) {
         /* no valid data read, return error */
-        fprintf(stderr, "vmysql: no valid settings in %s\n", config);
+        fprintf(stderr, "vpgsql: no valid settings in %s\n", config);
         fclose(fp);
         return(VA_NO_AUTH_CONNECTION);
     }
@@ -667,7 +669,7 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
   gid_t gid;
   int err;
 
-#if USE_ONCHANGE
+#ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif 
 
