@@ -40,6 +40,9 @@ int show_query=0;
 int dump_data=0;
 #endif
 
+char *PGSQL_DATABASE;
+char *PGSQL_USER;
+
 /* pgsql has no built-in replication, yet.
    #ifdef PGSQL_REPLICATION
    static PGconn *pgc_read;
@@ -125,9 +128,52 @@ int pg_end(void)
   return 0;
 }                                                   
 
+int load_connection_info() {
+
+    FILE *fp;
+    char conn_info[256];
+    char config[256];
+    char *conf_read;    
+    static int loaded = 0;
+    
+    if (loaded) return 0;
+    loaded = 1;
+    
+    sprintf(config, "%s/etc/%s", VPOPMAILDIR, "vpopmail.pgsql");
+
+    fp = fopen(config, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "vpgsql: can't read settings from %s\n", config);
+        return(VA_NO_AUTH_CONNECTION);
+    }
+    
+    /* skip comments and blank lines */
+    do {
+        eof = (fgets (conn_info, sizeof(conn_info), fp) == NULL);
+    } while (!eof && ((*conn_info == '#') || (*conn_info == '\n')));
+
+    if (eof) {
+        /* no valid data read, return error */
+        fprintf(stderr, "vmysql: no valid settings in %s\n", config);
+        fclose(fp);
+        return(VA_NO_AUTH_CONNECTION);
+    }
+    fclose(fp);
+    
+    conf_read = strdup(conn_info);
+    PGSQL_DATABASE = strtok(conf_read, delimiters);
+    if (PGSQL_DATABASE == NULL) return VA_PARSE_ERROR;
+    PGSQL_USER = strtok(NULL, delimiters);
+    if (PGSQL_USER == NULL) return VA_PARSE_ERROR;
+      
+    return 0;
+}
+
 /*** Open a connection to pgsql ***/
 int vauth_open( int will_update )
 {
+    char dbconnect[256];
+
 #ifdef VPOPMAIL_DEBUG
 show_trace = ( getenv("VPSHOW_TRACE") != NULL);
 show_query = ( getenv("VPSHOW_QUERY") != NULL);
@@ -155,9 +201,14 @@ dump_data  = ( getenv("VPDUMP_DATA")  != NULL);
   if ( is_open != 0 ) return(0);
   is_open = 1;
   verrori = 0;
+  
+  verrori = load_connection_info();
+  if (verrori) return -1;
 
   /* Try to connect to the pgserver with the specified database. */
-  pgc = PQconnectdb(PG_CONNECT);
+  snprintf(dbconnect, 256, "user=%s dbname=%s", PGSQL_USER, PGSQL_DATABASE);
+  pgc = PQconnectdb(dbconnect);
+  
   if( PQstatus(pgc) == CONNECTION_BAD) {
     fprintf(stderr, "vauth_open: can't connect: %s\n", PQerrorMessage(pgc));
     return VA_NO_AUTH_CONNECTION;
