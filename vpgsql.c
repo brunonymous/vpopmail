@@ -40,8 +40,18 @@ int show_query=0;
 int dump_data=0;
 #endif
 
-char *PGSQL_DATABASE;
-char *PGSQL_USER;
+const char *pgsql_server_default = "localhost";
+const char *pgsql_database_default = "vpopmail";
+const char *pgsql_user_default = "postgres";
+const char *pgsql_password_default = "";
+const char *pgsql_socket_default = "0";
+ 
+char PGSQL_SERVER[256];
+char PGSQL_SOCKET[8];
+int PGSQL_PORT;
+char PGSQL_DATABASE[64];
+char PGSQL_USER[64];
+char PGSQL_PASSWORD[128];
 
 /* pgsql has no built-in replication, yet.
    #ifdef PGSQL_REPLICATION
@@ -133,9 +143,9 @@ int load_connection_info() {
     FILE *fp;
     char conn_info[256];
     char config[256];
-    char *conf_read;    
     int eof;
-    char delimiters[] = "|\n";
+    char *p;
+    char *p2;
     static int loaded = 0;
     
     if (loaded) return 0;
@@ -162,19 +172,59 @@ int load_connection_info() {
     }
     fclose(fp);
     
-    conf_read = strdup(conn_info);
-    PGSQL_DATABASE = strtok(conf_read, delimiters);
-    if (PGSQL_DATABASE == NULL) return VA_PARSE_ERROR;
-    PGSQL_USER = strtok(NULL, delimiters);
-    if (PGSQL_USER == NULL) return VA_PARSE_ERROR;
-      
+    p = conn_info;
+    p2 = strchr(p, '|');
+    if (p2 == NULL) return VA_PARSE_ERROR;
+    if (p != p2) {
+        strncpy(PGSQL_SERVER, p, p2 - p);
+    } else {
+        strcpy(PGSQL_SERVER, pgsql_server_default);
+    }
+        
+    p = p2 + 1;
+    p2 = strchr(p, '|');
+    if (p2 == NULL) return VA_PARSE_ERROR;
+    if (p != p2) {
+        strncpy(PGSQL_SOCKET, p, p2 - p);
+    } else {
+        strcpy(PGSQL_SOCKET, pgsql_socket_default);
+    }
+    PGSQL_PORT = atoi(PGSQL_SOCKET);
+    
+    p = p2 + 1;
+    p2 = strchr(p, '|');
+    if (p2 == NULL) return VA_PARSE_ERROR;
+    if (p != p2) {
+        strncpy(PGSQL_USER, p, p2 - p);
+    } else {
+        strcpy(PGSQL_USER, pgsql_user_default);
+    }
+        
+    p = p2 + 1;
+    p2 = strchr(p, '|');
+    if (p2 == NULL) return VA_PARSE_ERROR;
+    if (p != p2) {
+        strncpy(PGSQL_PASSWORD, p, p2 - p);
+    } else {
+        strcpy(PGSQL_PASSWORD, pgsql_password_default);
+    }
+        
+    p = p2 + 1;
+    p2 = strchr(p, '\n');
+    if (p2 == NULL) return VA_PARSE_ERROR;
+    if (p != p2) {
+        strncpy(PGSQL_DATABASE, p, p2 - p);
+    } else {
+        strcpy(PGSQL_DATABASE, pgsql_database_default);
+    }
+          
     return 0;
 }
 
 /*** Open a connection to pgsql ***/
 int vauth_open( int will_update )
 {
-    char dbconnect[256];
+    char dbconnect[512];
 
 #ifdef VPOPMAIL_DEBUG
 show_trace = ( getenv("VPSHOW_TRACE") != NULL);
@@ -208,7 +258,22 @@ dump_data  = ( getenv("VPDUMP_DATA")  != NULL);
   if (verrori) return -1;
 
   /* Try to connect to the pgserver with the specified database. */
-  snprintf(dbconnect, 256, "user=%s dbname=%s", PGSQL_USER, PGSQL_DATABASE);
+  if (strlen(PGSQL_SERVER) != 0) {
+    if (strlen(PGSQL_PASSWORD) != 0) {
+       snprintf(dbconnect, 512, "host=%s port=%d user=%s password=%s dbname=%s", 
+        PGSQL_SERVER, PGSQL_PORT, PGSQL_USER, PGSQL_PASSWORD, PGSQL_DATABASE);
+    } else {
+      snprintf(dbconnect, 512, "host=%s port=%d user=%s dbname=%s", 
+        PGSQL_SERVER, PGSQL_PORT, PGSQL_USER, PGSQL_DATABASE);
+    }
+  } else {
+    if (strlen(PGSQL_PASSWORD) != 0) {    
+      snprintf(dbconnect, 512, "user=%s password=%s dbname=%s", 
+        PGSQL_USER, PGSQL_PASSWORD, PGSQL_DATABASE);
+    } else {
+      snprintf(dbconnect, 512, "user=%s dbname=%s", PGSQL_USER, PGSQL_DATABASE);
+    }
+  }
   pgc = PQconnectdb(dbconnect);
   
   if( PQstatus(pgc) == CONNECTION_BAD) {
