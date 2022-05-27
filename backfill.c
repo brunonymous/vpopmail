@@ -171,6 +171,7 @@ backfill(char *username, char *domain, char *path, int operation)
 	uid_t           uid;
 	gid_t           gid;
 	FILE           *fp;
+	int r;
 
 	if (!domain || !*domain)
 		return ((char *) 0);
@@ -236,7 +237,11 @@ backfill(char *username, char *domain, char *path, int operation)
 			if (ptr && *ptr)
 			{
 #ifdef FILE_LOCKING
-				snprintf(lockfile, sizeof(lockfile), "%s.lock", filename);
+				r = snprintf(lockfile, sizeof(lockfile), "%s.lock", filename);
+				if (r == -1) {
+				    fprintf(stderr, "file name too long\n");
+				    return((char *) 0);
+				}
 				if ((lockfd = open(lockfile, O_WRONLY | O_CREAT, S_IRUSR|S_IWUSR)) < 0)
 				{
 					fprintf(stderr, "could not open lock file %s: %s\n", lockfile, strerror(errno));

@@ -48,6 +48,7 @@ void get_options(int argc, char **argv);
 int main(int argc, char *argv[]) {
   int err;
   FILE *fs;
+  int r;
 
   char a_dir[MAX_BUFF];
   uid_t a_uid;
@@ -94,7 +95,11 @@ int main(int argc, char *argv[]) {
    */
   if (BounceEmail[0] != 0) {
     vget_assign(Domain, a_dir, sizeof(a_dir), &a_uid, &a_gid);
-    snprintf(TmpBuf1, sizeof(TmpBuf1), "%s/.qmail-default", a_dir);
+    r = snprintf(TmpBuf1, sizeof(TmpBuf1), "%s/.qmail-default", a_dir);
+    if (r == -1) {
+        printf("Error: path too long\n");
+        vexit(-1);
+    }
     if ((fs = fopen(TmpBuf1, "w+")) != NULL) {
       /* if catchall address is an email address... */
       if (strstr(BounceEmail, "@") != NULL) {

@@ -237,6 +237,7 @@ main(int argc, char **argv)
 	struct vqpasswd  *pw;
 	char           *(indiargs[]) = { PATH_IMAPLOGIN, PATH_AUTHVCHKPW,
 					PATH_IMAPD, "Maildir", 0 };
+    int r;
 
 	if ((prog_name = strrchr(argv[0], '/')))
 		prog_name++;
@@ -343,7 +344,11 @@ main(int argc, char **argv)
 		pipe_exec(argv, buf, offset);
 		return (1);
 	}
-	snprintf(Email, sizeof(Email), "%s@%s", user, domain);
+	r = snprintf(Email, sizeof(Email), "%s@%s", user, domain);
+	if (r == -1) {
+	    fprintf(stderr, "%s: email too long\n", prog_name);
+	    return (1);
+	}
     if (vauth_open(0))
 	{
 		fprintf(stderr, "%s: inquery: %s\n", prog_name, strerror(errno));
@@ -430,6 +435,7 @@ exec_local(char **argv, char *userid, char *TheDomain, struct vqpasswd *pw, char
 	                authenv4[MAX_BUFF], authenv5[MAX_BUFF], TheUser[MAX_BUFF], TmpBuf[MAX_BUFF];
 	char           *ptr, *cptr;
 	int             status;
+	int r;
 #ifdef USE_MAILDIRQUOTA
 	mdir_t          size_limit, count_limit;
 #endif
@@ -452,7 +458,11 @@ exec_local(char **argv, char *userid, char *TheDomain, struct vqpasswd *pw, char
 		return(1);
 	}
 	snprintf(authenv1, sizeof(authenv1), "AUTHENTICATED=%s", userid);
-	snprintf(authenv2, sizeof(authenv2), "AUTHADDR=%s@%s", TheUser, TheDomain);
+	r = snprintf(authenv2, sizeof(authenv2), "AUTHADDR=%s@%s", TheUser, TheDomain);
+	if (r == -1) {
+	    fprintf(stderr, "email too long\n");
+	    return(1);
+	}
 	snprintf(authenv3, sizeof(authenv3), "AUTHFULLNAME=%s", pw->pw_gecos);
 #ifdef USE_MAILDIRQUOTA	
 	size_limit = parse_quota(pw->pw_shell, &count_limit);
@@ -460,7 +470,11 @@ exec_local(char **argv, char *userid, char *TheDomain, struct vqpasswd *pw, char
 #else
 	snprintf(authenv4, sizeof(authenv4), "MAILDIRQUOTA=%sS", pw->pw_shell);
 #endif
-	snprintf(authenv5, sizeof(authenv5), "MAILDIR=%s", Maildir);
+	r = snprintf(authenv5, sizeof(authenv5), "MAILDIR=%s", Maildir);
+	if (r == -1) {
+	    fprintf(stderr, "mail dir too long\n");
+	    return(1);
+	}
 	putenv(authenv1);
 	putenv(authenv2);
 	putenv(authenv3);
