@@ -31,7 +31,7 @@
 
 int make_vpasswd_cdb(char *domain);
 struct vqpasswd *vgetpw(char *, char *, struct vqpasswd *, int);
-void set_vpasswd_files( char *);
+int set_vpasswd_files( char *);
 int vauth_adduser_line(FILE *, char *, char *, char *, char *, char *, int);
 
 #endif

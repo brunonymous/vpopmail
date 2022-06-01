@@ -142,11 +142,11 @@ struct vlimits limits;
 
 int readdomainquota(const char *dir, storage_t *sizep, storage_t *cntp)
 {
-int tries;
-char	checkdir[256];
-DIR	*dirp;
-struct dirent *de;
-
+    int tries;
+    char	checkdir[256];
+    DIR	*dirp;
+    struct dirent *de;
+    int r;
 
 	if (dir == NULL || sizep == NULL || cntp == NULL)
 		return -1;
@@ -163,14 +163,20 @@ struct dirent *de;
 #ifdef USERS_BIG_DIR
 		if (strlen(de->d_name) == 1) {
 			/* recursive call for hashed directory */
-			snprintf (checkdir, sizeof(checkdir), "%s/%s", dir, de->d_name);
+			r = snprintf (checkdir, sizeof(checkdir), "%s/%s", dir, de->d_name);
+			if (r == -1) {
+			    return -1;
+			}
 			if (readdomainquota (checkdir, sizep, cntp) == -1) {
 				return -1;
 			}
 		} else
 #endif
 		{
-			snprintf(checkdir, sizeof(checkdir), "%s/%s/Maildir/", dir, de->d_name);
+			r = snprintf(checkdir, sizeof(checkdir), "%s/%s/Maildir/", dir, de->d_name);
+			if (r == -1) {
+			    return -1;
+			}
 			tries = 5;
 			while (tries-- && readuserquota(checkdir, sizep, cntp))
 			{

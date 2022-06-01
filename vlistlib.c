@@ -184,6 +184,7 @@ void sort_dosort() {
 
 int default_options( listInfoType *LI, char *Address, int DomainOnly ) {
     int dotnum;
+    int r;
     char QmailName[MAX_FILE_NAME];
 
     /* These are currently set to defaults for a good, generic list.
@@ -207,7 +208,10 @@ int default_options( listInfoType *LI, char *Address, int DomainOnly ) {
 
     if(( LI->entry = get_domain_entries( LI->Domain )) == NULL ) return(3);
 
-    snprintf( LI->OwnerEmail,   sizeof(LI->OwnerEmail), "postmaster@%s", LI->Domain ); 
+    r = snprintf( LI->OwnerEmail,   sizeof(LI->OwnerEmail), "postmaster@%s", LI->Domain ); 
+    if (r == -1) {
+        return (11);
+    }
     snprintf( LI->ReplyTo_Addr, sizeof(LI->ReplyTo_Addr), "%s", "" );
     snprintf( LI->SQLBase,      sizeof(LI->SQLBase), "ezmlm" );
     snprintf( LI->SQLHost,      sizeof(LI->SQLHost), "localhost" );
@@ -229,12 +233,18 @@ int default_options( listInfoType *LI, char *Address, int DomainOnly ) {
 //    printf( "before Dir\n" );
 
     //   Build Dir Parm
-    snprintf( LI->Dir, sizeof(LI->Dir), "%s/%s", LI->entry->path, QmailName );
+    r = snprintf( LI->Dir, sizeof(LI->Dir), "%s/%s", LI->entry->path, QmailName );
+    if (r == -1) {
+        return (11);
+    }
 
 //    printf( "before Dot\n" );
 
     //   Build Dot Parm
-    snprintf( LI->Dot, sizeof(LI->Dot), "%s/.qmail-%s", LI->entry->path, QmailName );
+    r = snprintf( LI->Dot, sizeof(LI->Dot), "%s/.qmail-%s", LI->entry->path, QmailName );
+    if (r == -1) {
+        return (11);
+    }    
 
     LI->ReplyTo = REPLYTO_SENDER;
 
@@ -639,20 +649,27 @@ int ezmlm_path( listInfoType *LI, int mode, int size, char *path ) {
  *  Replaces the "Reply-To" line in <filename> with <newtext>.
  */
 
-void ezmlm_setReplyTo ( listInfoType *LI, char *filename, char *newtext)
+int ezmlm_setReplyTo ( listInfoType *LI, char *filename, char *newtext)
 {
   FILE *headerfile, *tempfile;
+  int r;
   char realfn[256];
   char tempfn[256];
   char buf[256];
 
-  sprintf (realfn, "%s/%s/%s", LI->entry->path, LI->Name, filename);
-  sprintf (tempfn, "%s.tmp", realfn);
-
+  r = snprintf (realfn, 256, "%s/%s/%s", LI->entry->path, LI->Name, filename);
+  if (r == -1) {
+    return -1;
+  }
+  r = snprintf (tempfn, 256, "%s.tmp", realfn);
+  if (r == -1) {
+    return -1;
+  }
+  
   headerfile = fopen(realfn, "r");
-  if (!headerfile) return;
+  if (!headerfile) return -1;
   tempfile = fopen(tempfn, "w");
-  if (!tempfile) { fclose (headerfile); return; }
+  if (!tempfile) { fclose (headerfile); return -1; }
 
   /* copy contents to new file, except for Reply-To header */
   while (fgets (buf, sizeof(buf), headerfile) != NULL) {
@@ -671,6 +688,8 @@ void ezmlm_setReplyTo ( listInfoType *LI, char *filename, char *newtext)
   //  never a time when the file does not exist to other processes.
   //unlink (realfn);
   rename (tempfn, realfn);
+  
+  return 0;
 }
 
 
@@ -684,6 +703,7 @@ int ezmlm_make ( listInfoType *LI )
 {
 //    FILE *file;
     int pid, stat;
+    int r;
 //    int I;
 //    char TmpBuf[MAX_BUFF];
     char ProgramPath[MAX_BUFF];
@@ -713,9 +733,12 @@ int ezmlm_make ( listInfoType *LI )
 
     //  If SQL selected, setup all the sql data into a single subfield
     if( LI->SQLSupport ) {
-        snprintf( SQLBuff, MAX_BUFF, "-6 %s:%d:%s:%s:%s:%s", 
+        r = snprintf( SQLBuff, MAX_BUFF, "-6 %s:%d:%s:%s:%s:%s", 
                   LI->SQLHost, LI->SQLPort, LI->SQLUser, 
                   LI->SQLPass, LI->SQLBase, LI->SQLTable );
+        }
+        if (r == -1) {
+            return (-1);
         }
     else {
         snprintf( SQLBuff, MAX_BUFF, " " );
@@ -1272,6 +1295,10 @@ void listGetError( char * buff, const int size, const int status ) {
 
         case 10 : 
             printf( "Unable to delete secondary file for list\n" );
+        break;
+        
+        case 11 :
+            printf( "temporary string buffer too small\n" );
         break;
 
         default : 

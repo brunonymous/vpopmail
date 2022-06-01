@@ -348,8 +348,10 @@ struct vqpasswd *vauth_getpw(char *user, char *domain)
 
     strncpy( in_domain, domain, sizeof(in_domain));
     in_domain[sizeof(in_domain)-1] = '\0';  /* ensure NULL termination */
-
-    set_vpasswd_files( in_domain );
+  
+    if (set_vpasswd_files( in_domain ) == -1) {
+        return (NULL);
+    }    
 
     if ((pwf = open(vpasswd_cdb_file,O_RDONLY)) < 0 ) {
 #ifdef FILE_LOCKING
@@ -444,10 +446,15 @@ struct vqpasswd *vauth_getall(char *domain, int first, int sortit)
  static FILE *fsv = NULL;
  struct vqpasswd *tmpwd;
 
-    set_vpasswd_files( domain );
+    if (set_vpasswd_files( domain ) == -1) {
+        return (NULL);
+    }
+    
     if ( first == 1 ) {
         if ( fsv != NULL ) fclose(fsv);
-        set_vpasswd_files( domain );
+        if (set_vpasswd_files( domain ) == -1) {
+            return (NULL);
+        }
         if ((fsv = fopen(vpasswd_file, "r")) == NULL) return(NULL);
     } else if ( fsv == NULL ) {
 		return(NULL);
@@ -465,11 +472,12 @@ void vauth_end_getall()
 {
 }
 
-void set_vpasswd_files( char *domain )
+int set_vpasswd_files( char *domain )
 {
  char *tmpstr;
  uid_t uid;
  gid_t gid;
+ int r;
  char Dir[156];
 
     vset_default_domain( domain );
@@ -485,15 +493,32 @@ void set_vpasswd_files( char *domain )
     } else {
         snprintf(vpasswd_dir, MAX_BUFF, "%s", Dir); 
     }
-    snprintf(vpasswd_file, MAX_BUFF, "%s/%s", vpasswd_dir,VPASSWD_FILE);
-    snprintf(vpasswd_bak_file, MAX_BUFF, "%s/%s.%d", 
+    r = snprintf(vpasswd_file, MAX_BUFF, "%s/%s", vpasswd_dir,VPASSWD_FILE);
+    if (r == -1) {
+        return -1;
+    }
+    r = snprintf(vpasswd_bak_file, MAX_BUFF, "%s/%s.%d", 
         vpasswd_dir,VPASSWD_BAK_FILE, getpid());
-    snprintf(vpasswd_cdb_file, MAX_BUFF, 
+    if (r == -1) {
+        return -1;
+    }
+    r = snprintf(vpasswd_cdb_file, MAX_BUFF, 
         "%s/%s", vpasswd_dir,VPASSWD_CDB_FILE);
-    snprintf(vpasswd_cdb_tmp_file, MAX_BUFF, 
+    if (r == -1) {
+        return -1;
+    }
+    r = snprintf(vpasswd_cdb_tmp_file, MAX_BUFF, 
         "%s/%s",vpasswd_dir,VPASSWD_CDB_TMP_FILE);
-    snprintf(vpasswd_lock_file, MAX_BUFF, 
+    if (r == -1) {
+        return -1;
+    }
+    r = snprintf(vpasswd_lock_file, MAX_BUFF, 
         "%s/%s", vpasswd_dir,VPASSWD_LOCK_FILE);
+    if (r == -1) {
+        return -1;
+    }
+        
+    return 0;
 }
 
 int vauth_adduser(char *user, char *domain, char *pass, char *gecos, char *dir, int apop )
@@ -513,7 +538,9 @@ int vauth_adduser(char *user, char *domain, char *pass, char *gecos, char *dir, 
       return( VA_ILLEGAL_USERNAME );
     }
 
-    set_vpasswd_files( domain );
+    if (set_vpasswd_files( domain ) == -1) {
+        return (-1);
+    }
 
     /* if the gecos field is null, set it to user name */
     if ( gecos==0 || gecos[0]==0) gecos=user;
@@ -587,7 +614,9 @@ int vauth_deluser( char *user, char *domain )
  int fd3;
 #endif
 
-    set_vpasswd_files( domain );
+    if (set_vpasswd_files( domain ) == -1) {
+        return (-1);
+    }
 
 #ifdef FILE_LOCKING
 	fd3 = open(vpasswd_lock_file, O_WRONLY | O_CREAT, S_IRUSR|S_IWUSR);
@@ -696,7 +725,10 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
 		return(VA_BAD_UID);
     }
 
-    set_vpasswd_files( domain );
+    if (set_vpasswd_files( domain ) == -1) {
+        return (-1);
+    }
+    
 #ifdef FILE_LOCKING
 	fd3 = open(vpasswd_lock_file, O_WRONLY | O_CREAT, S_IRUSR|S_IWUSR);
 	if ( get_write_lock(fd3) < 0 ) return(-2);
@@ -845,7 +877,11 @@ int vmkpasswd( char *domain )
     if ( chdir(Dir) != 0 ) return(VA_BAD_DIR);
 
     lowerit(domain);
-    set_vpasswd_files( domain );
+    
+    if (set_vpasswd_files( domain ) == -1) {
+        return (-1);
+    }
+    
 #ifdef FILE_LOCKING
 	fd3 = open(vpasswd_lock_file, O_WRONLY | O_CREAT, S_IRUSR|S_IWUSR);
 	if ( get_write_lock(fd3) < 0 ) return(-2);
@@ -1121,12 +1157,16 @@ int vread_dir_control(vdir_type *vdir, char *domain, uid_t uid, gid_t gid)
 int vwrite_dir_control(vdir_type *vdir, char *domain, uid_t uid, gid_t gid)
 { 
  FILE *fs;
+ int r;
  char dir_control_file[MAX_DIR_NAME];
  char dir_control_tmp_file[MAX_DIR_NAME];
 
     strncpy(dir_control_file,dc_filename(domain, uid, gid),MAX_DIR_NAME);
-    snprintf(dir_control_tmp_file, MAX_DIR_NAME, 
+    r = snprintf(dir_control_tmp_file, MAX_DIR_NAME, 
         "%s.%d", dir_control_file, getpid());
+    if (r == -1) {
+        return(-1);
+    }
 
     if ( (fs = fopen(dir_control_tmp_file, "w+")) == NULL ) {
         return(-1);

@@ -104,10 +104,18 @@ int do_all_domains()
  char assign_file[MAX_BUFF];
  static char tmpbuf[MAX_BUFF];
  int i;
+ int r;
 
-    snprintf(assign_file, sizeof(assign_file), "%s/users/assign",  QMAILDIR); 
+    r = snprintf(assign_file, sizeof(assign_file), "%s/users/assign",  QMAILDIR); 
+    if (r == -1) {
+        perror("temporary string buffer too short\n");
+        vexit(-1);
+    }
     if ( (fs=fopen(assign_file, "r"))==NULL ) {
-       snprintf(tmpbuf, sizeof(tmpbuf), "could not open qmail assign file at %s\n", assign_file);
+       r = snprintf(tmpbuf, sizeof(tmpbuf), "could not open qmail assign file at %s\n", assign_file);
+       if (r == -1) {
+            perror("temporary string buffer too short\n");
+       }
        perror(tmpbuf);
        vexit(-1);
     }
@@ -137,6 +145,7 @@ int conv_domain( char *domain )
 	char username[MAX_BUFF];
 	char alias_line[MAX_ALIAS_LINE];
 	char *p;
+	int r;
 	
 	DIR *domaindir;
 	struct dirent *direntry;
@@ -168,7 +177,11 @@ int conv_domain( char *domain )
 		/* process all other files starting with ".qmail-" */
 		if (strncmp (".qmail-", direntry->d_name, 7) == 0) {
 			snprintf (username, sizeof(username), "%s", &direntry->d_name[7]);
-			snprintf (dotqmail_fn, sizeof(dotqmail_fn), "%s/%s", domainpath, direntry->d_name);
+			r = snprintf (dotqmail_fn, sizeof(dotqmail_fn), "%s/%s", domainpath, direntry->d_name);
+			if (r == -1) {
+			    fprintf(stderr, "Temporary string buffe too short\n");
+                return -1;
+			}
 
 			/* convert to email address (change ':' to '.') */
 			strreplace (username, ':', '.');

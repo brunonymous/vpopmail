@@ -186,10 +186,14 @@ int cdb_to_default( char *domain )
  char assign_file[MAX_BUFF];
  uid_t uid;
  gid_t gid;
+ int r;
 
     snprintf(assign_file, sizeof(assign_file), "%s/users/assign",  QMAILDIR);      
     if ( (assign_fs=fopen(assign_file, "r"))==NULL ) {
-       snprintf(tmpbuf, sizeof(tmpbuf), "could not open qmail assign file at %s\n", assign_file);
+       r = snprintf(tmpbuf, sizeof(tmpbuf), "could not open qmail assign file at %s\n", assign_file);
+       if (r == -1) {
+          perror("temporary string buffer too short\n");
+       }
        perror(tmpbuf);
        return(-1);
     }
@@ -232,7 +236,10 @@ int cdb_to_default( char *domain )
 #ifdef USERS_BIG_DIR
     open_big_dir (domain, uid, gid);
 #endif
-    snprintf(tmpbuf, sizeof(tmpbuf), "%s/vpasswd", Dir);
+    r = snprintf(tmpbuf, sizeof(tmpbuf), "%s/vpasswd", Dir);
+    if (r == -1) {
+        return (-1);
+    }
     fs = fopen(tmpbuf,"r");
     if ( fs == NULL ) return(-1);
 
@@ -260,13 +267,18 @@ int sql_to_cdb( char *domain)
 #ifdef USE_SQL
  struct vqpasswd *pw;
  FILE *fs;
+ int r;
  char tmpbuf[MAX_BUFF];
 
         if (vget_assign(domain, Dir, sizeof(Dir), NULL, NULL ) == NULL) {
 		printf("Error. Domain not found\n");
 		return (-1);
 	}
-	snprintf(tmpbuf, sizeof(tmpbuf), "%s/vpasswd", Dir);
+	r = snprintf(tmpbuf, sizeof(tmpbuf), "%s/vpasswd", Dir);
+	if (r == -1) {
+	    printf("temporary string buffer too short\n");
+	    return (-1);
+	}
 	if ( (fs = fopen(tmpbuf,"w")) == NULL ) {
 		printf("could not open vpasswd file %s\n", tmpbuf);
 		return(-1);

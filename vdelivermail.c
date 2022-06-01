@@ -116,10 +116,14 @@ int vexiterr(int err, char *errstr) {
  */
 int main(int argc, char **argv) {
   char loopcheck[255];
+  int r;
 
   /* get the arguments to the program and setup things */
   get_arguments(argc, argv);
-  snprintf(loopcheck, sizeof(loopcheck), "%s@%s", TheUser, TheDomain);
+  r = snprintf(loopcheck, sizeof(loopcheck), "%s@%s", TheUser, TheDomain);
+  if (r == -1) {
+    vexiterr(EXIT_DEFER, "vdelivermail: email too long");
+  }
   if (is_looping(loopcheck) == 1) {
     vexiterr(EXIT_BOUNCE, "mail is looping");
   }
@@ -253,7 +257,7 @@ int process_valias(void) {
   int found = 0;
   char *tmpstr;
   char tmpuser[350];
-  char def[150];
+  char def[350];
   int i;
   int j = 0;
 
@@ -677,6 +681,7 @@ void deliver_mail(char *address, char *quota) {
   int child;
   unsigned int xcode;
   FILE *fs;
+  int r;
   char tmp_file[256];
   char maildirquota[80];
   char *email;
@@ -739,8 +744,12 @@ void deliver_mail(char *address, char *quota) {
          */
         if (user_over_maildirquota(address, format_maildirquota(quota)) == 1) {
           /* check for over quota message in domain */
-          snprintf(tmp_file, sizeof(tmp_file), "%s/.over-quota.msg",
+          r = snprintf(tmp_file, sizeof(tmp_file), "%s/.over-quota.msg",
                    TheDomainDir);
+          if (r == -1) {
+            printf("temporary string buffer too short\n");
+            vexit(EXIT_DEFER);
+          }
           if ((fs = fopen(tmp_file, "r")) == NULL) {
             /* if no domain over quota then check in vpopmail dir */
             snprintf(tmp_file, sizeof(tmp_file), "%s/%s/.over-quota.msg",
@@ -773,7 +782,11 @@ void deliver_mail(char *address, char *quota) {
     /* bk: check domain quota */
     if (domain_over_maildirquota(address) == 1) {
       /* check for over quota message in domain */
-      snprintf(tmp_file, sizeof(tmp_file), "%s/.over-quota.msg", TheDomainDir);
+      r = snprintf(tmp_file, sizeof(tmp_file), "%s/.over-quota.msg", TheDomainDir);
+      if (r == -1) {
+            printf("temporary string buffer too short\n");
+            vexit(EXIT_DEFER);
+          }
       if ((fs = fopen(tmp_file, "r")) == NULL) {
         /* if no domain over quota then check in vpopmail dir */
         snprintf(tmp_file, sizeof(tmp_file), "%s/%s/.over-quota.msg",
@@ -799,8 +812,12 @@ void deliver_mail(char *address, char *quota) {
 
     /* Set the Delivered-To: header */
     if (strcmp(address, bounce) == 0 || strcmp(email, "") == 0) {
-      snprintf(DeliveredTo, sizeof(DeliveredTo), "%sDelivered-To: %s@%s\n",
+      r = snprintf(DeliveredTo, sizeof(DeliveredTo), "%sDelivered-To: %s@%s\n",
                getenv("RPLINE"), TheUser, TheDomain);
+      if (r == -1) {
+        printf("temporary string buffer too short\n");
+        vexit(EXIT_DEFER);
+      }
     } else {
       snprintf(DeliveredTo, sizeof(DeliveredTo), "%sDelivered-To: %s\n",
                getenv("RPLINE"), email);
@@ -976,9 +993,14 @@ void (*f)();
  * return the pid or -1 if error
  */
 void run_command(const char *prog) {
-  int child;
-  const char *(args[4]);
-  int wstat;
+  int child; 
+  int wstat;  
+  char *const args[] = { 
+    "/bin/sh", 
+    "-c", 
+    (char *)prog, 
+    NULL 
+  };
 
   while ((*prog == ' ') || (*prog == '|')) ++prog;
 
@@ -987,12 +1009,7 @@ void run_command(const char *prog) {
       printf("Unable to fork: %d.", errno);
       vexit(EXIT_DEFER);
     case 0:
-
       putenv("SHELL=/bin/sh");
-      args[0] = "/bin/sh";
-      args[1] = "-c";
-      args[2] = prog;
-      args[3] = NULL;
       sig_catch(SIGPIPE, SIG_DFL);
       execv(*args, args);
       printf("Unable to run /bin/sh: %d.", errno);
@@ -1153,6 +1170,7 @@ void checkuser() {
  * the directions in the .qmail-default file
  */
 void usernotfound() {
+  int r;
   /* read the full message to avoid SIGPIPE if maildrop is calling us */
   if (message_size == 0) message_size = get_message_size();
 
@@ -1170,7 +1188,11 @@ void usernotfound() {
     FILE *fs;
     char tmp_file[256];
 
-    snprintf(tmp_file, sizeof(tmp_file), "%s/.no-user.msg", TheDomainDir);
+    r = snprintf(tmp_file, sizeof(tmp_file), "%s/.no-user.msg", TheDomainDir);
+    if (r == -1) {
+       printf("temporary string buffer too short\n");
+       vexit(EXIT_DEFER);
+    }
     if ((fs = fopen(tmp_file, "r")) == NULL) {
       /* if no domain no user then check in vpopmail dir */
       snprintf(tmp_file, sizeof(tmp_file), "%s/%s/.no-user.msg", VPOPMAILDIR,
@@ -1215,6 +1237,7 @@ int deliver_quota_warning(const char *dir, const char *q) {
   time_t tm;
   int fd, read_fd;
   int err;
+  int r;
   char newdir[400];
   struct stat sb;
   char quotawarnmsg[BUFF_SIZE];
@@ -1237,8 +1260,12 @@ int deliver_quota_warning(const char *dir, const char *q) {
   close(fd);
 
   /* Look in the domain for a .quotawarn.msg */
-  snprintf(quotawarnmsg, sizeof(quotawarnmsg), "%s/.quotawarn.msg",
+  r = snprintf(quotawarnmsg, sizeof(quotawarnmsg), "%s/.quotawarn.msg",
            TheDomainDir);
+  if (r == -1) {
+    printf("temporary string buffer too short\n");
+    return -2;
+  }
   if (((read_fd = open(quotawarnmsg, O_RDONLY)) < 0) ||
       (stat(quotawarnmsg, &sb) != 0)) {
     /* if that fails look in vpopmail dir */
