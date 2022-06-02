@@ -1,5 +1,4 @@
 /* 
- * $Id: hmac_md5.c 1014 2011-02-03 16:04:37Z volz0r $
  * Copyright (C) 1999-2009 Inter7 Internet Technologies, Inc.
 */
 

@@ -1,5 +1,4 @@
 /*
- * $Id: seek.h 1014 2011-02-03 16:04:37Z volz0r $
  * Copyright (C) 2009 Inter7 Internet Technologies, Inc.
  *
  * Copyright (c) 1987 University of Maryland Computer Science Department.

@@ -1,5 +1,4 @@
 /*
- * $Id: vmysql.c 1026 2011-02-08 21:35:17Z volz0r $
  * Copyright (C) 1999-2009 Inter7 Internet Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify

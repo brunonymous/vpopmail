@@ -1,5 +1,4 @@
 /*
- * $Id: vsavealiasdomains.c 2021-02-15
  * Roberto Puzzanghera - https://notes.sagredo.eu
  *
  * This program is free software; you can redistribute it and/or modify

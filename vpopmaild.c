@@ -1,5 +1,4 @@
 /*
- * $Id: vpopmaild.c 1015 2011-02-03 16:33:39Z volz0r $
  * Copyright (C) 2004-2009 Inter7 Internet Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify

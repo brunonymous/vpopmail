@@ -1,5 +1,4 @@
 /*
- * $Id: vchangepw.c 1014 2011-02-03 16:04:37Z volz0r $
  * Copyright (C) 1999-2009 Inter7 Internet Technologies, Inc.
  *
  * Modified version of vpasswd created by Rolf Eike Beer, November 2003

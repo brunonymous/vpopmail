@@ -1,5 +1,4 @@
 /* 
-   $Id: maildirquota.h 1014 2011-02-03 16:04:37Z volz0r $
    Copyright (C) 2009 Inter7 Internet Technologies, Inc.
  
    This is a composite of deliverquota's maildirquota.h, maildirmisc.h, and 
