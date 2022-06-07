@@ -852,7 +852,7 @@ int vauth_setpw( struct vqpasswd *inpw, char *domain )
  gid_t gid;
  int err;
  
-#if USE_ONCHANGE
+#ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif  
 
@@ -1442,7 +1442,7 @@ int valias_insert( char *alias, char *domain, char *alias_line)
 {
  int err;
  
-#if USE_ONCHANGE
+#ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif 
  
@@ -1481,7 +1481,7 @@ int valias_remove( char *alias, char *domain, char *alias_line)
 {
  int err;
  
-#if USE_ONCHANGE
+#ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif  
 
@@ -1518,7 +1518,7 @@ int valias_delete( char *alias, char *domain)
 {
  int err;
  
-#if USE_ONCHANGE
+#ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif   
 

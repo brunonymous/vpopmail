@@ -530,7 +530,7 @@ int vauth_setpw_size( struct vqpasswd *inpw, char *domain, int site_size)
  uid_t uid;
  gid_t gid;
  
-#if USE_ONCHANGE
+#ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
 #endif  
 
