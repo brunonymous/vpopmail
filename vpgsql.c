@@ -224,6 +224,7 @@ int load_connection_info() {
 int vauth_open( int will_update )
 {
     char dbconnect[512];
+    int r;
 
 #ifdef VPOPMAIL_DEBUG
 show_trace = ( getenv("VPSHOW_TRACE") != NULL);
@@ -259,19 +260,23 @@ dump_data  = ( getenv("VPDUMP_DATA")  != NULL);
   /* Try to connect to the pgserver with the specified database. */
   if (strlen(PGSQL_SERVER) != 0) {
     if (strlen(PGSQL_PASSWORD) != 0) {
-       snprintf(dbconnect, 512, "host=%s port=%d user=%s password=%s dbname=%s", 
+       r = snprintf(dbconnect, 512, "host=%s port=%d user=%s password=%s dbname=%s", 
         PGSQL_SERVER, PGSQL_PORT, PGSQL_USER, PGSQL_PASSWORD, PGSQL_DATABASE);
     } else {
-      snprintf(dbconnect, 512, "host=%s port=%d user=%s dbname=%s", 
+      r = snprintf(dbconnect, 512, "host=%s port=%d user=%s dbname=%s", 
         PGSQL_SERVER, PGSQL_PORT, PGSQL_USER, PGSQL_DATABASE);
     }
   } else {
     if (strlen(PGSQL_PASSWORD) != 0) {    
-      snprintf(dbconnect, 512, "user=%s password=%s dbname=%s", 
+      r = snprintf(dbconnect, 512, "user=%s password=%s dbname=%s", 
         PGSQL_USER, PGSQL_PASSWORD, PGSQL_DATABASE);
     } else {
-      snprintf(dbconnect, 512, "user=%s dbname=%s", PGSQL_USER, PGSQL_DATABASE);
+      r = snprintf(dbconnect, 512, "user=%s dbname=%s", PGSQL_USER, PGSQL_DATABASE);
     }
+  }
+  if (r == -1) {
+    fprintf(stderr, "vauth_open: string buffer too short\n");
+    return -1;
   }
   pgc = PQconnectdb(dbconnect);
   
