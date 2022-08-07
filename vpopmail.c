@@ -4373,6 +4373,7 @@ struct linklist *linklist_del(struct linklist *list) {
   return next;
 }
 
+#if USE_ONCHANGE
 /* simplify the calls of call_onchange & logmessage
    change = 1 for the ONCHANGE_SCRIPT option
    mode = 0 for before, and 1 for after
@@ -4401,6 +4402,7 @@ void on_change(const char *cmd, const char *arg1, const char *arg2, int change,
 #endif
   }
 }
+#endif
 
 #if defined(ONCHANGE_SCRIPT) | defined(ONCHANGE_SCRIPT_BEFORE_AND_AFTER)
 /************************************************************************
