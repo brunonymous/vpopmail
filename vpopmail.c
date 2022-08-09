@@ -4373,7 +4373,7 @@ struct linklist *linklist_del(struct linklist *list) {
   return next;
 }
 
-#if USE_ONCHANGE
+#ifdef USE_ONCHANGE
 /* simplify the calls of call_onchange & logmessage
    change = 1 for the ONCHANGE_SCRIPT option
    mode = 0 for before, and 1 for after
