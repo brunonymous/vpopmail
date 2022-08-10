@@ -220,7 +220,7 @@ install-data-local:
 	$(INSTALL) -o root -m 0444 \
 	  config.h $(DESTDIR)@vpopmaildir@/include/vpopmail_config.h
 
-	for include in vpopmail.h config.h vauth.h vlimits.h storage.h client.h conf.h ippp.h ; do \
+	for include in vpopmail.h config.h vauth.h vlimits.h storage.h client.h conf.h ippp.h vlogger.h; do \
 	    $(INSTALL) -o root -m 0444 $$include \
 		$(DESTDIR)@vpopmaildir@/include/ ; \
 	done
