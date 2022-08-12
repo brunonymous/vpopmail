@@ -650,8 +650,7 @@ void run_command(char *prog)
  char *(args[4]);
  int wstat;
 
- while (*prog==' ') ++prog;
- while (*prog=='|') ++prog;
+ while ((*prog == ' ') || (*prog == '|')) ++prog;
 
     if ( lseek(0, 0L, SEEK_SET) < 0 ) {
         printf("lseek errno=%d\n", errno);
