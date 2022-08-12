@@ -997,7 +997,7 @@ void run_command(const char *prog) {
   int wstat; 
   char *(args[4]);	
 
-      while ((*prog == ' ') || (*prog == '|')) ++prog;
+  while ((*prog == ' ') || (*prog == '|')) ++prog;
 
   switch (child = fork()) {
     case -1:
