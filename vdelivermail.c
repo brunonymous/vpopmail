@@ -997,7 +997,7 @@ void run_command(const char *prog) {
   int wstat; 
   char *(args[4]);	
 
-  while ((*prog == ' ') || (*prog == '|')) ++prog;
+      while ((*prog == ' ') || (*prog == '|')) ++prog;
 
   switch (child = fork()) {
     case -1:
@@ -1005,7 +1005,7 @@ void run_command(const char *prog) {
       vexit(EXIT_DEFER);
     case 0:
       putenv("SHELL=/bin/sh");
-			args[0] = "/bin/sh"; args[1] = "-c"; args[2] = prog; args[3] = NULL;
+      args[0] = "/bin/sh"; args[1] = "-c"; args[2] = prog; args[3] = NULL;
       sig_catch(SIGPIPE, SIG_DFL);
       execv(*args, args);
       printf("Unable to run /bin/sh: %d.", errno);
