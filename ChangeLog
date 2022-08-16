@@ -116,6 +116,11 @@ Unreleased -
       
   - Merge patch from Paul Oehler:
      - Fix bug in string_list_add when resizing the list
+     
+  - Merge patch from Nathanaël Semhoun:
+     - Fixes for compiling without log on change, and fixe for included files
+     - We need to remove | or ' ' before creating the args[] for sh, otherwise | 
+       will be an argument of bash.
        
   Patrice Duhamel
   - Add an option --enable-onchange-script-before-and-after to call onchange
@@ -143,6 +148,8 @@ Unreleased -
   - Simplify calls to call_onchange, and add an option to log all changes
     to syslog or a sqlite database
   - add missing includes and compilation option for c99
+  - fix ldap module compilation for recent openldap versions (untested), 
+    and disable ldap sorting because it's not supported by openldap
 
 5.4.33 - Released 10-23-2012
   Matt Brookings

@@ -95,7 +95,7 @@ ssize_t get_message_size();
 void deliver_mail(char *address, char *quota);
 int check_forward_deliver(char *dir);
 int is_looping(char *address);
-static void run_command(const char *prog);
+static void run_command(char *prog);
 void checkuser(void);
 void usernotfound(void);
 int is_loop_match(const char *dt, const char *address);
@@ -992,7 +992,7 @@ void (*f)();
 /* open a pipe to a command
  * return the pid or -1 if error
  */
-void run_command(const char *prog) {
+void run_command(char *prog) {
   int child; 
   int wstat; 
   char *(args[4]);	
