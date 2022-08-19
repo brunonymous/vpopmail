@@ -1657,9 +1657,17 @@ int vdel_limits(const char *domain) {
 int vauth_crypt(char *user, char *domain, char *clear_pass,
                 struct vqpasswd *vpw) {
   const char *c;
-  if (vpw == NULL) return (-1);
-
-  c = crypt(clear_pass, vpw->pw_passwd);
+	const char *p;
+  if ( vpw == NULL ) return(-1);
+	p = vpw->pw_passwd;
+	
+  /* if needed remove {XXX-CRYPT}$ */
+	if (p[0] == '{') {
+		const char *k = strchr(p, '}');
+		if (k != NULL) p = k + 1;
+	}
+	
+  c = crypt(clear_pass, p);
   if (c == NULL) return (-1);
-  return (strcmp(c, vpw->pw_passwd));
+  return(strcmp(c, p));
 }

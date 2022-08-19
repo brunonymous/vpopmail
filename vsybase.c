@@ -646,9 +646,17 @@ int vshow_ip_map( int first, char *ip, char *domain);
 int vauth_crypt(char *user,char *domain,char *clear_pass,struct vqpasswd *vpw)
 {
   const char *c;
+	const char *p;
   if ( vpw == NULL ) return(-1);
-
-  c = crypt(clear_pass,vpw->pw_passwd);
-  if (c == NULL) return -1;
-  return(strcmp(c,vpw->pw_passwd));
+	p = vpw->pw_passwd;
+	
+  /* if needed remove {XXX-CRYPT}$ */
+	if (p[0] == '{') {
+		const char *k = strchr(p, '}');
+		if (k != NULL) p = k + 1;
+	}
+	
+  c = crypt(clear_pass, p);
+  if (c == NULL) return (-1);
+  return(strcmp(c, p));
 }
