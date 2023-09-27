@@ -3149,7 +3149,6 @@ char *vget_assign(char *domain, char *dir, int dir_len, uid_t *uid,
 
   /* try to open the cdb file */
   if ((fs = fopen(cdb_file, "r")) == 0) {
-    fprintf(stderr, "Error, cdb file %s not found in %s/users/\n", QMAIL_CDB_NAME, QMAILDIR);
     return (NULL);
   }
 

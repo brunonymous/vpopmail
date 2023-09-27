@@ -150,6 +150,8 @@ Unreleased -
   - add missing includes and compilation option for c99
   - fix ldap module compilation for recent openldap versions (untested), 
     and disable ldap sorting because it's not supported by openldap
+  - add an option --enable-qmail-cdb-name to set qmail cdb file name, 
+    after Erwin Hoffmann changed cdb name since s/qmail 4.2.03
 
 5.4.33 - Released 10-23-2012
   Matt Brookings
