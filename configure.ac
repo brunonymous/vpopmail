@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.52])
-AC_INIT(vpopmail,5.4.33)
+AC_PREREQ([2.71])
+AC_INIT([vpopmail],[5.4.33])
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
 
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE()
 
 AC_CANONICAL_HOST
@@ -36,8 +36,8 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
-#AC_AIX
-AC_ISC_POSIX
+#AC_USE_SYSTEM_EXTENSIONS
+AC_SEARCH_LIBS([strerror],[cposix])
 
 #----------------------------------------------------------------------
 
@@ -49,7 +49,15 @@ AC_CHECK_LIB(crypt, crypt)
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
-AC_HEADER_STDC
+m4_warn([obsolete],
+[The preprocessor macro `STDC_HEADERS' is obsolete.
+  Except in unusual embedded environments, you can safely include all
+  ISO C90 headers unconditionally.])dnl
+# Autoupdate added the next two lines to ensure that your configure
+# script's behavior did not change.  They are probably safe to remove.
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([inttypes.h arpa/inet.h endian.h byteswap.h fcntl.h memory.h sys/endian.h machine/endian.h netinet/in.h shadow.h stdlib.h string.h sys/file.h sys/param.h sys/socket.h sys/time.h syslog.h unistd.h utime.h crypt.h err.h])
 
@@ -76,24 +84,34 @@ AC_FUNC_CLOSEDIR_VOID
 #AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 #AC_FUNC_MALLOC
 #AC_FUNC_REALLOC
-AC_TYPE_SIGNAL
+m4_warn([obsolete],
+[your code may safely assume C89 semantics that RETSIGTYPE is void.
+Remove this warning and the `AC_CACHE_CHECK' when you adjust the code.])dnl
+AC_CACHE_CHECK([return type of signal handlers],[ac_cv_type_signal],[AC_COMPILE_IFELSE(
+[AC_LANG_PROGRAM([#include <sys/types.h>
+#include <signal.h>
+],
+		 [return *(signal (0, 0)) (0) == 1;])],
+		   [ac_cv_type_signal=int],
+		   [ac_cv_type_signal=void])])
+AC_DEFINE_UNQUOTED([RETSIGTYPE],[$ac_cv_type_signal],[Define as the return type of signal handlers
+		    (`int' or `void').])
+
 #AC_FUNC_STAT
 AC_FUNC_UTIME_NULL
 AC_CHECK_FUNCS([htonll ntohll bzero dup2 fdatasync getcwd gethostname getpass getspnam memset mkdir putenv rmdir socket strchr strdup strerror strncasecmp strrchr strspn strstr utime warn])
 AC_MSG_CHECKING(for bswap64)
-AC_TRY_LINK([
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[
         #ifdef HAVE_SYS_ENDIAN_H
                 #include <sys/endian.h>
         #endif
         #ifdef HAVE_MACHINE_ENDIAN_H
                 #include <machine/endian.h>
         #endif
-        ],[ bswap64(0); ],
-[
+        ]], [[ bswap64(0); ]])],[
         AC_MSG_RESULT(yes)
         AC_DEFINE(HAVE_BSWAP64,1,[bswap64 defined])
-],
-[
+],[
         AC_MSG_RESULT(no)
 ])
 
@@ -419,7 +437,7 @@ AC_SUBST(vpopgroup)
 AC_MSG_RESULT(yes)
 
 AC_MSG_CHECKING(whether password file entry for the vpopmail user exists)
-AC_TRY_RUN( [
+AC_RUN_IFELSE([AC_LANG_SOURCE([[
   #include <stdio.h>
   #include <pwd.h>
   #include <stdlib.h>
@@ -464,12 +482,9 @@ AC_TRY_RUN( [
         }
         return(0);
   }
-  ],
-    AC_MSG_RESULT(yes),
-    AC_MSG_RESULT(no)
-    AC_MSG_ERROR(Could not compile and run even a trivial ANSI C program - check CC.),
-    AC_MSG_ERROR(Could not compile and run even a trivial ANSI C program - check CC.)
-)
+  ]])],[AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)
+    AC_MSG_ERROR(Could not compile and run even a trivial ANSI C program - check CC.)],[AC_MSG_ERROR(Could not compile and run even a trivial ANSI C program - check CC.)
+])
 
 if test ! -f vpopmail.uid
 then
@@ -1507,6 +1522,16 @@ AC_DEFINE_UNQUOTED(LOG_NAME,"$log_name","")
 
 #----------------------------------------------------------------------
 
+qmail_cdb_name="cdb"
+AC_ARG_ENABLE(qmail_cdb_name,
+    [ --enable-qmail-cdb-name=TEXT      Set qmail cdb file name [cdb].],
+    qmail_cdb_name="$enableval",
+)
+
+AC_DEFINE_UNQUOTED(QMAIL_CDB_NAME,"$qmail_cdb_name","")
+
+#----------------------------------------------------------------------
+
 AC_MSG_CHECKING(whether auth-logging is enabled)
 AC_ARG_ENABLE(auth-logging,
         [  --disable-auth-logging     Don't record time and ip of last auth attempt. Valid only for CDB, MySQL, PGSQL, LDAP.],
@@ -1903,7 +1928,8 @@ AC_MSG_RESULT(no)
 
 #----------------------------------------------------------------------
 
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
 
 #----------------------------------------------------------------------
 
