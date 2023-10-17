@@ -298,4 +298,4 @@ int vcreate_sql_aliasdomain(char *domain, char *alias);
       domain varchar(100) NOT NULL, \
       PRIMARY KEY (alias)"
 
-int vcreate_pwd_query_proc();
+int vcreate_sql_procedures();

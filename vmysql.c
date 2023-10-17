@@ -370,7 +370,7 @@ int vauth_adddomain( char *domain )
 {
 #ifndef MANY_DOMAINS
 #ifdef SQL_ALIASDOMAINS
-  vcreate_pwd_query_proc();
+  vcreate_sql_procedures();
 #endif
   vset_default_domain( domain );
   return (vauth_create_table (vauth_munch_domain( domain ), TABLE_LAYOUT, 1));
@@ -1926,17 +1926,17 @@ int vauth_crypt(char *user,char *domain,char *clear_pass,struct vqpasswd *vpw)
 /************************************************************************/
 #ifndef MANY_DOMAINS
 #ifdef SQL_ALIASDOMAINS
-int vcreate_pwd_query_proc()
+int vcreate_sql_procedures()
 {
   char sql_file[256], command[256];
   FILE *sql;
 
   /* retrieve the file with the sql stuff */
-  snprintf(sql_file, sizeof(sql_file), "%s/etc/pwd-query_disable-many-domains.sql",VPOPMAILDIR);
+  snprintf(sql_file, sizeof(sql_file), "%s/etc/disable-many-domains_procedures.sql",VPOPMAILDIR);
   sql = fopen(sql_file, "r");
   if( sql == NULL )
   {
-     printf("\nERROR: Missing %s/etc/pwd-query_disable-many-domains.sql file.\n",VPOPMAILDIR);
+     printf("\nERROR: Missing %s/etc/disable-many-domains_procedures.sql file.\n",VPOPMAILDIR);
      exit(EXIT_FAILURE);
   }
 

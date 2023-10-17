@@ -1,5 +1,5 @@
-/************************************************************************************************
-  password_query procedure for dovecot's sql auth in case of --disable-many-domains.
+/*******************************************************************************************************
+  password_query and user_query procedures for dovecot's sql auth in case of --disable-many-domains.
   It supports aliasdomains and mysql-limits.
 
   More info here
@@ -20,14 +20,14 @@ userdb {
 
 # This is for LDA.
 userdb {
-  driver = static
-  args = uid=89 gid=89 home=/home/vpopmail/domains/%d/%n
-}
+  driver = sql
+  args = /usr/local/dovecot/etc/dovecot/dovecot-sql.conf.ext
 }
 
 ##### dovecot-sql.conf.ext
 
 password_query = CALL dovecot_password_query_disable_many_domains('%n','%d','127.0.0.1','%r','%a')
+user_query = CALL dovecot_user_query_disable_many_domains('%n','%d')
 
  ***************************************************************************************************/
 
@@ -131,6 +131,31 @@ ELSE
 	('",remote_ip,"'!='",webmail_ip,"' OR COALESCE(disable_webmail,0)!=1)
 	AND
 	('",remote_ip,"'='",webmail_ip,"' OR COALESCE(disable_imap,0)!=1)");
+END IF;
+
+PREPARE sql_code FROM @SQL;
+EXECUTE sql_code;
+DEALLOCATE PREPARE sql_code;
+
+END$$
+DELIMITER ;
+
+
+/**************************************************************************
+  Stored procedure for user_query in case of "disabled many domains"
+ **************************************************************************/
+DROP PROCEDURE IF EXISTS `dovecot_user_query_disable_many_domains`;
+
+DELIMITER $$
+CREATE PROCEDURE `dovecot_user_query_disable_many_domains`(IN `name` VARCHAR(255), IN `domain` VARCHAR(255))
+BEGIN
+DECLARE vpopmail varchar(256);
+SET vpopmail = get_domain_table(domain);
+
+IF (vpopmail) IS NULL THEN
+	SET @SQL = "SELECT NULL";
+ELSE
+	set @SQL = concat("SELECT ",vpopmail,".pw_dir AS home, 89 AS uid, 89 AS gid FROM ",vpopmail," where ",vpopmail,".pw_name='",name,"'");
 END IF;
 
 PREPARE sql_code FROM @SQL;

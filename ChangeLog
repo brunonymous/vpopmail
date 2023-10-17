@@ -76,7 +76,7 @@ Unreleased -
       It supports aliasdomains and user/domain limits.
       This feature does nothing if you have all domains in the vpopmail table 
       (--enable-many-domains).
-      See doc/README.dovecot-pwd-query for more info.
+      See README.dovecot-sql-procedures for more info.
     - A patch which makes vpopmail to copy your favourite delivery agent 
       (stored in QMAILDIR/control/defauldelivery)into the .qmail-default file 
       of any newly created domain, overriding the default vpopmail's behaviour,

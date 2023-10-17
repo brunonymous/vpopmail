@@ -28,7 +28,7 @@ INSTALL_STRIP_PROGRAM=${INSTALL_PROGRAM} -s
 MYSQLCONF=$(DESTDIR)@vpopmaildir@/etc/vpopmail.mysql
 VLIMITS=$(DESTDIR)@vpopmaildir@/etc/vlimits.default
 VUSAGECCONF=$(DESTDIR)@vpopmaildir@/etc/vusagec.conf
-DOVECOT_SQL=$(DESTDIR)@vpopmaildir@/etc/pwd-query_disable-many-domains.sql
+DOVECOT_SQL=$(DESTDIR)@vpopmaildir@/etc/disable-many-domains_procedures.sql
 
 noinst_LIBRARIES=libvpopmail.a
 
@@ -175,7 +175,7 @@ install-data-local:
 	if test @MANY_DOMAINS@ = 0; then \
 		if test ! -r $(DOVECOT_SQL); then \
 			$(INSTALL) -o root -m 0644 \
-			dovecot/pwd-query_disable-many-domains.sql $(DOVECOT_SQL); \
+			dovecot/disable-many-domains_procedures.sql $(DOVECOT_SQL); \
 		fi \
 	fi
 
