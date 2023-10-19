@@ -243,9 +243,22 @@ level_end0, level_end1, level_end2, \
 level_mod0, level_mod1, level_mod2, \
 level_index0, level_index1, level_index2, the_dir"
 
-#define VALIAS_TABLE_LAYOUT "alias char(32) not null, \
-domain char(96) not null, \
-valias_line text not null, index (alias, domain)"
+#ifdef DEFAULTDELIVERY
+#define VALIAS_TABLE_LAYOUT \
+"valias_type tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=forwarder 0=lda', \
+alias char(32) NOT NULL, \
+domain char(96) NOT NULL, \
+valias_line text NOT NULL, \
+copy tinyint(1) NOT NULL DEFAULT 0 COMMENT '0=redirect 1=copy&redirect', \
+PRIMARY KEY (alias,domain,valias_type), \
+INDEX (alias, domain)"
+#else
+#define VALIAS_TABLE_LAYOUT "id int(11) PRIMARY KEY AUTO_INCREMENT, \
+alias char(32) NOT NULL, \
+domain char(96) NOT NULL, \
+valias_line text NOT NULL, \
+INDEX (alias, domain)"
+#endif
 
 #endif
 

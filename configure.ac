@@ -1670,7 +1670,7 @@ esac
 
 AC_MSG_CHECKING(whether defaultdelivery is enabled)
 AC_ARG_ENABLE(defaultdelivery,
-        [  --enable-defaultdelivery   Copy the content of control/defaultdelivery to .qmail-default on domain creation.],
+        [  --enable-defaultdelivery   Copy the content of control/defaultdelivery to ~mailbox/.qmail on user creation.],
         DEFAULT_DELIVERY=$enableval,
                 [
                         DEFAULT_DELIVERY=n
@@ -1687,6 +1687,7 @@ case $DEFAULT_DELIVERY in
         AC_MSG_RESULT(no)
         ;;
 esac
+
 
 #----------------------------------------------------------------------
 

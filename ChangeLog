@@ -77,11 +77,10 @@ Unreleased -
       This feature does nothing if you have all domains in the vpopmail table 
       (--enable-many-domains).
       See README.dovecot-sql-procedures for more info.
-    - A patch which makes vpopmail to copy your favourite delivery agent 
-      (stored in QMAILDIR/control/defauldelivery)into the .qmail-default file 
-      of any newly created domain, overriding the default vpopmail's behaviour,
-      where vpopmail copies its delivery agent vdelivermail.
-      configure --enable-defaultdelivery (default is OFF) to enable this 
+    - A patch which makes vpopmail to copy you favourite delivery agent,
+      stored in QMAILDIR/control/defauldelivery, in the mailbox's .qmail and
+      the vpopmail delivery agent in the domain's .qmail-default.
+      configure --enable-defaultdelivery (default is OFF) to enable this
       functionality.
       See doc/README.defaultdelivery for more info.
     - vusaged-configure patch

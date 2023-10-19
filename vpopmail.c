@@ -145,18 +145,9 @@ int vadddomain(char *domain, char *dir, uid_t uid, gid_t gid) {
   char Dir[MAX_BUFF];
   int call_dir;
   string_list aliases;
-  char ch, defaultdelivery_file[MAX_BUFF];
-  FILE *defaultdelivery;
-  int default_delivery_option;
   char *ptld;
   size_t sz;
   int r;
-
-#ifdef DEFAULT_DELIVERY
-  default_delivery_option = 1;
-#else
-  default_delivery_option = 0;
-#endif
 
 #ifdef ONCHANGE_SCRIPT
   /*  Don't execute any implied onchange in called functions  */
@@ -298,29 +289,10 @@ int vadddomain(char *domain, char *dir, uid_t uid, gid_t gid) {
     fchdir(call_dir);
     close(call_dir);
     return (VA_COULD_NOT_OPEN_QMAIL_DEFAULT);
-  } else if (default_delivery_option == 1) {
-    /* Copy the content of control/defaultdelivery into .qmail-default */
-
-    snprintf(defaultdelivery_file, sizeof(defaultdelivery_file),
-             "%s/control/defaultdelivery", QMAILDIR);
-    defaultdelivery = fopen(defaultdelivery_file, "r");
-    if (defaultdelivery == NULL) {
-      printf("\nERROR: Missing %s/control/defaultdelivery file.\n", QMAILDIR);
-      printf("To create a %s/control/defaultdelivery file type:\n", QMAILDIR);
-      printf(
-          "echo \"| %s/bin/vdelivermail '' delete\" > "
-          "%s/control/defaultdelivery\n\n",
-          VPOPMAILDIR, QMAILDIR);
-      exit(EXIT_FAILURE);
-    }
-
-    while ((ch = fgetc(defaultdelivery)) != EOF) fputc(ch, fs);
-
-    fclose(defaultdelivery);
   } else {
     fprintf(fs, "| %s/bin/vdelivermail '' delete\n", VPOPMAILDIR);
+    fclose(fs);
   }
-  fclose(fs);
 
   /* create an entry in the assign file for our new domain */
   r = snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s/%s", dir, DOMAINS_DIR,
@@ -756,6 +728,18 @@ int vadduser(char *username, char *domain, char *password, char *gecos,
   gid_t gid = VPOPMAILGID;
   struct vlimits limits;
   char quota[50];
+  /* defauldelivery patch */
+  FILE *fs;
+  char tmpbuf[MAX_BUFF];
+  char ch, defaultdelivery_file[MAX_BUFF];
+  FILE *defaultdelivery;
+  int default_delivery_option;
+#ifdef DEFAULT_DELIVERY
+  default_delivery_option = 1;
+#else
+  default_delivery_option = 0;
+ #endif
+ /* end defauldelivery patch */
 
 #ifdef USE_ONCHANGE
   char user_domain[MAX_BUFF];
@@ -892,6 +876,33 @@ int vadduser(char *username, char *domain, char *password, char *gecos,
   on_change("add_user", user_domain, "-", 1, 1);
   allow_onchange = 1;
 #endif
+
+  /************************** defauldelivery patch ****************************************************************/
+  if (default_delivery_option == 1) {
+    /* create the .qmail file */
+    snprintf(tmpbuf, sizeof(tmpbuf), "%s/%s/%s/.qmail", Dir, user_hash, username);
+    if ( (fs = fopen(tmpbuf, "w+"))==NULL) vexit(VA_COULD_NOT_OPEN_DOT_QMAIL);
+    /* setup the permission of the .qmail file */
+    chown(tmpbuf, uid, gid);
+    chmod(tmpbuf, 0600);
+
+    /* Copy the content of control/defaultdelivery into ~userhomedir/.qmail */
+    snprintf(defaultdelivery_file, sizeof(defaultdelivery_file), "%s/control/defaultdelivery", QMAILDIR);
+    defaultdelivery = fopen(defaultdelivery_file, "r");
+    if( defaultdelivery == NULL )
+    {
+      printf("\nERROR: Missing %s/control/defaultdelivery file.\n", QMAILDIR);
+      printf("To create a %s/control/defaultdelivery type:\n", QMAILDIR);
+      printf("echo \"| %s/bin/vdelivermail '' delete\" > %s/control/defaultdelivery\n\n", VPOPMAILDIR, QMAILDIR);
+      vexit(EXIT_FAILURE);
+    }
+
+    while ( ( ch = fgetc(defaultdelivery) ) != EOF ) fputc(ch, fs);
+
+    fclose(defaultdelivery); // close control/defaultdelivery
+    fclose(fs);              // close .qmail
+  }
+  /*********************** end defauldelivery patch *****************************************************************/
 
   return (VA_SUCCESS);
 }
