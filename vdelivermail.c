@@ -736,7 +736,7 @@ void deliver_mail(char *address, char *quota) {
       vpw = vauth_getpw(TheUser, TheDomain);
     }
     if (vpw != NULL &&
-        (limits.disable_spamassassin == 1 || (vpw->pw_gid & NO_MAILDROP))) {
+        if ( vpw!=NULL && (limits.disable_maildrop==1 || (vpw->pw_gid & NO_MAILDROP))) {
 #endif
       if (strncmp(quota, "NOQUOTA", 2) != 0) {
         /* If the user is over their quota, return it back

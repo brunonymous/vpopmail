@@ -905,7 +905,8 @@ void vclear_open_smtp(time_t clear_minutes, time_t mytime)
   time_t delete_time;
   int err;
     
-  if ( (err=vauth_open(1)) != 0 ) return;
+  // open_smtp_relay() expects "-1" on database errors. "0" means duplicate record. (See vpopmail.c)
+  if ( (err=vauth_open(1)) != 0 ) return (-1);
   delete_time = mytime - clear_minutes;
 
   snprintf( SqlBufUpdate, SQL_BUF_SIZE, 

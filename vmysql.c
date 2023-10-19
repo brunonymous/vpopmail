@@ -928,8 +928,8 @@ int vopen_smtp_relay()
     if ( ipaddr == NULL ) {
         return 0;
     }
-
-    if ( (err=vauth_open_update()) != 0 ) return 0;
+    // open_smtp_relay() expects "-1" on database errors. "0" means duplicate record. (See vpopmail.c)
+    if ( (err=vauth_open_update()) != 0 ) return (-1);
 
     qnprintf( SqlBufUpdate, SQL_BUF_SIZE,
 "replace into relay ( ip_addr, timestamp ) values ( '%s', %d )",
@@ -1893,6 +1893,11 @@ int vset_limits(const char *domain, const struct vlimits *limits)
 /************************************************************************/
 int vdel_limits(const char *domain)
 {
+ int err;
+
+    // CHECKS IF A DATABASE CONNECTION IS AVAILABLE, CONNECTS IF NOT.
+    // THIS CHECK PREVENTS "CORE-DUMP" OF vqadmin.cgi.
+    if ( (err=vauth_open_update()) != 0 ) return (err);
     qnprintf(SqlBufUpdate, SQL_BUF_SIZE, "DELETE FROM limits WHERE domain = '%s'", domain);
 
     if (mysql_query(&mysql_update,SqlBufUpdate))

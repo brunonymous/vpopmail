@@ -96,6 +96,13 @@ Unreleased -
     - A "recipient check" program to be used with E. Hoffmann's s/qmail.
       Look at doc/README.vrcptcheck for more info.
     - A patch which gets vpopmail to compile with gcc-10
+
+  - Merge patch by Ali Erturk TURKER
+    - vdelivermail.c checks spamassassin permissions, instead of maildrop permissions.
+    - vopen_smtp_relay() return values corrected, so that open_smtp_relay() can
+      detect and report database connection errors (vmysql.c, voracle.pc, vpgsql.c )
+    - vdel_limits() core-dumps if a database connection is not available beforehand.
+      (vmysql.c, voracle.pc )
   
   - Merge patches by Rolf Eike Beer:
     - Fix strncat warnings
