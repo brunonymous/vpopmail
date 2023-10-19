@@ -140,9 +140,6 @@ vverifypw_LDADD = libvpopmail.a @auth_libs@
 vmakedotqmail_SOURCES = vmakedotqmail.c
 vmakedotqmail_LDADD = libvpopmail.a @auth_libs@
 
-vmakedotqmail_SOURCES = vmakedotqmail.c
-vmakedotqmail_LDADD = libvpopmail.a @auth_libs@
-
 DEFS=-I. @auth_inc@ 
 
 install: install-recursive vusage-msg
