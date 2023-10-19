@@ -68,7 +68,7 @@ Unreleased -
       modify the sql query accordingly.
       See doc/README.sql-aliasdomains for more info.
     - A patch which installs the sql procedure needed for the dovecot's 
-      password_query for servers with one table for each domains 
+      queries for servers with one table for each domains 
       (--disable-many-domains).
       You have to add --enable-mysql-bin to you configure command.
       The sql procedure is in the vpopmail-5.4.33/dovecot/ folder and it will 
@@ -96,6 +96,8 @@ Unreleased -
     - A "recipient check" program to be used with E. Hoffmann's s/qmail.
       Look at doc/README.vrcptcheck for more info.
     - A patch which gets vpopmail to compile with gcc-10
+    - vuserinfo-D_newline patch, which prints a new line to separate users'
+      infos when typing "vuserinfo -D domain".
 
   - Merge patch by Ali Erturk TURKER
     - vdelivermail.c checks spamassassin permissions, instead of maildrop permissions.

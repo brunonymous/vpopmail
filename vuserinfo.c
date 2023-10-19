@@ -109,6 +109,8 @@ int main(int argc, char *argv[])
 	}
 	while( (mypw=vauth_getall(Domain, first, 1))) {
 		first = 0;
+        /* When all users of a domain are displayed, print a new line to recognize where each user's info starts/ends */
+        printf("------------------------------------------\n");
 		/* display each user in the domain */
 		display_user(mypw, Domain);
 	}
