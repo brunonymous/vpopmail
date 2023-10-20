@@ -68,7 +68,7 @@ Unreleased -
       modify the sql query accordingly.
       See doc/README.sql-aliasdomains for more info.
     - A patch which installs the sql procedure needed for the dovecot's 
-      password_query for servers with one table for each domains 
+      queries for servers with one table for each domains 
       (--disable-many-domains).
       You have to add --enable-mysql-bin to you configure command.
       The sql procedure is in the vpopmail-5.4.33/dovecot/ folder and it will 
@@ -76,12 +76,11 @@ Unreleased -
       It supports aliasdomains and user/domain limits.
       This feature does nothing if you have all domains in the vpopmail table 
       (--enable-many-domains).
-      See doc/README.dovecot-pwd-query for more info.
-    - A patch which makes vpopmail to copy your favourite delivery agent 
-      (stored in QMAILDIR/control/defauldelivery)into the .qmail-default file 
-      of any newly created domain, overriding the default vpopmail's behaviour,
-      where vpopmail copies its delivery agent vdelivermail.
-      configure --enable-defaultdelivery (default is OFF) to enable this 
+      See README.dovecot-sql-procedures for more info.
+    - A patch which makes vpopmail to copy you favourite delivery agent,
+      stored in QMAILDIR/control/defauldelivery, in the mailbox's .qmail and
+      the vpopmail delivery agent in the domain's .qmail-default.
+      configure --enable-defaultdelivery (default is OFF) to enable this
       functionality.
       See doc/README.defaultdelivery for more info.
     - vusaged-configure patch
@@ -96,6 +95,15 @@ Unreleased -
     - A "recipient check" program to be used with E. Hoffmann's s/qmail.
       Look at doc/README.vrcptcheck for more info.
     - A patch which gets vpopmail to compile with gcc-10
+    - vuserinfo-D_newline patch, which prints a new line to separate users'
+      infos when typing "vuserinfo -D domain".
+
+  - Merge patch by Ali Erturk TURKER
+    - vdelivermail.c checks spamassassin permissions, instead of maildrop permissions.
+    - vopen_smtp_relay() return values corrected, so that open_smtp_relay() can
+      detect and report database connection errors (vmysql.c, voracle.pc, vpgsql.c )
+    - vdel_limits() core-dumps if a database connection is not available beforehand.
+      (vmysql.c, voracle.pc )
   
   - Merge patches by Rolf Eike Beer:
     - Fix strncat warnings
