@@ -104,3 +104,4 @@ Makefile
 
 # vpopmail
 vauth.c
+*.m4
