@@ -52,7 +52,7 @@ Mkfile.old
 dkms.conf
 
 # autotools
-# *~
+*~
 
 # automake
 # Makefile.in
