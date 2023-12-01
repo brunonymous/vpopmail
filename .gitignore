@@ -55,7 +55,7 @@ dkms.conf
 *~
 
 # automake
-# Makefile.in
+Makefile.in
 ar-lib
 mdate-sh
 py-compile
@@ -72,16 +72,18 @@ aclocal.m4
 compile
 config.cache
 config.guess
+config.h
 config.h.in
 config.log
 config.status
 config.sub
-# configure
+configure
 configure.scan
 depcomp
 install-sh
 missing
 stamp-h1
+cdb/
 
 # libtool
 ltmain.sh
@@ -96,7 +98,7 @@ m4/
 # (meta build system like autotools,
 # can automatically generate from config.status script
 # (which is called by configure script))
-# Makefile
+Makefile
 
 # vpopmail
 vauth.c
