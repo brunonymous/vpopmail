@@ -83,7 +83,9 @@ depcomp
 #install-sh
 #missing
 stamp-h1
-cdb/
+cdb/compile
+cdb/conf-*
+cdb/load
 
 # libtool
 ltmain.sh
