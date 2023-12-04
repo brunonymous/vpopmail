@@ -1,5 +1,5 @@
 /*
- * vmakedotqmail v. 1.0.0 (Aug 18, 2023)
+ * vmakedotqmail v. 1.0.1 (Nov 11, 2023)
  * Roberto Puzzanghera - https://notes.sagredo.eu
  *
  * This program is free software; you can redistribute it and/or modify
@@ -108,6 +108,19 @@ int make_dotqmail(char *homedir) {
   char tmpbuf[MAX_BUFF];
   char ch, defaultdelivery_file[MAX_BUFF];
   FILE *defaultdelivery;
+
+  // exit if control/defaultdelivery already has vdelivermail, to avoid vpopmail loop
+  if (!reverse) {
+    snprintf(defaultdelivery_file, sizeof(defaultdelivery_file), "%s/control/defaultdelivery", QMAILDIR);
+    defaultdelivery = fopen(defaultdelivery_file, "r");
+    while((fgets(tmpbuf, MAX_BUFF, defaultdelivery)!=NULL)) {
+      if(strstr(tmpbuf, "vdelivermail")!=NULL) {
+        return 4;
+        break;
+      }
+    }
+    rewind(defaultdelivery);
+  }
 
   // build .qmail path
   snprintf(tmpbuf, sizeof(tmpbuf), "%s/.qmail", homedir);
@@ -242,6 +255,7 @@ int make_mailbox(char *address) {
     get_homedir(user, domain, homedir);
     // install qmail in user's home dir
     if ((i = make_dotqmail(homedir))==0) printf("%s%s DONE\n", teststr, address);
+    else if (i == 4) printf("%s%s SKIP (control/defaultdelivery already has vdelivermail)\n", teststr, address);
     else if (i == 3) printf("%s%s REMOVED existing .qmail\n", teststr, address);
     else if (i == 2) printf("%s%s DONE (existing .qmail overwritten)\n", teststr, address);
     else if (i == 1) printf("%s%s SKIP (.qmail already exists)\n", teststr, address);

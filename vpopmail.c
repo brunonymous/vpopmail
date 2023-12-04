@@ -730,7 +730,7 @@ int vadduser(char *username, char *domain, char *password, char *gecos,
   char quota[50];
   /* defauldelivery patch */
   FILE *fs;
-  char tmpbuf[MAX_BUFF];
+  char tmpbuf[MAX_BUFF], tmpbuf2[MAX_BUFF];
   char ch, defaultdelivery_file[MAX_BUFF];
   FILE *defaultdelivery;
   int default_delivery_option;
@@ -897,10 +897,23 @@ int vadduser(char *username, char *domain, char *password, char *gecos,
       vexit(EXIT_FAILURE);
     }
 
+    // is_vdelivermail = 1 if defaultdelivery already contains vdelivermail
+    int is_vdelivermail = 0;
+    while((fgets(tmpbuf2, MAX_BUFF, defaultdelivery)!=NULL)) {
+      if(strstr(tmpbuf2, "vdelivermail")!=NULL) {
+        is_vdelivermail = 1;
+        break;
+      }
+    }
+    rewind(defaultdelivery);
+
     while ( ( ch = fgetc(defaultdelivery) ) != EOF ) fputc(ch, fs);
 
     fclose(defaultdelivery); // close control/defaultdelivery
     fclose(fs);              // close .qmail
+
+    // if defaultdelivery already contains vdelivermail remove the .qmail file
+    if (is_vdelivermail == 1) remove(tmpbuf);
   }
   /*********************** end defauldelivery patch *****************************************************************/
 
