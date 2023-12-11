@@ -1,7 +1,7 @@
 Numbers in square brackets ([]) are tracker items on SourceForge with patch
 or info related to the entry. <http://sourceforge.net/projects/vpopmail/>
 
-Unreleased -
+5.6.0 - Released 2023/12/11
   - Merge patches from FreeBSD:
     (Peter Pentchev <roam@FreeBSD.org>)
     - authvchkpw.c: Various sanity- and security-related fixes.
@@ -97,6 +97,12 @@ Unreleased -
     - A patch which gets vpopmail to compile with gcc-10
     - vuserinfo-D_newline patch, which prints a new line to separate users'
       infos when typing "vuserinfo -D domain".
+    - autotools and .gitignore changes to allow users to configure vpopmail 
+      with no autoreconf. 
+      I think this is important because the configure.in requires the latest 
+      autoconf version.
+    - defauldelivery patch bug fix: if defaultdelivery already contains 
+      vdelivermail do not create .qmail
 
   - Merge patch by Ali Erturk TURKER
     - vdelivermail.c checks spamassassin permissions, instead of maildrop permissions.
