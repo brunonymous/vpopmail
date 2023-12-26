@@ -1441,23 +1441,44 @@ char *valias_select_next()
 int valias_insert( char *alias, char *domain, char *alias_line)
 {
  int err;
- 
+
+#ifdef DEFAULT_DELIVERY
+int valias_type = 1;
+#endif
+
 #ifdef USE_ONCHANGE
  char user_domain[MAX_BUFF];
-#endif 
- 
+#endif
+
     if ( (err=vauth_open_update()) != 0 ) return(err);
-    
+
 #ifdef USE_ONCHANGE
   snprintf( user_domain, MAX_BUFF, "%s@%s", alias, domain);
   on_change("valias_insert", user_domain, alias_line, 0, 0);
 #endif
-    
-    while(*alias_line==' ' && *alias_line!=0) ++alias_line;
 
-    qnprintf( SqlBufUpdate, SQL_BUF_SIZE, "insert into valias \
-( alias, domain, valias_line ) values ( '%s', '%s', '%s')",
-        alias, domain, alias_line );
+    while(*alias_line==' ' && *alias_line!=0) ++alias_line;
+#ifdef DEFAULT_DELIVERY
+/*
+  Roberto Puzzanghera Dec 26, 2023
+
+  If one has the vpopmail.valias table modified by --enable-defaultdelivery,
+  creating an autoresponder with the default query will cause the silent
+  rejection of a new row with same alias/domain, due to the multiple column
+  PRIMARY KEY (`valias_type`, `alias`, `domain`).
+  This patch uses the valias_type column (1=forwarder/0=other) to allow the
+  insertion of a second row with the same alias/domain.
+ */
+    if (alias_line[0] == '|') valias_type = 0;
+    snprintf( SqlBufUpdate, SQL_BUF_SIZE, "insert into valias \
+     ( alias, domain, valias_line, valias_type) values ( '%s', '%s', '%s', '%d')",
+       alias, domain,  alias_line, valias_type);
+/* end patch */
+#else
+    snprintf( SqlBufUpdate, SQL_BUF_SIZE, "insert into valias \
+     ( alias, domain, valias_line ) values ( '%s', '%s', '%s')",
+       alias, domain,  alias_line );
+#endif
 
     if (mysql_query(&mysql_update,SqlBufUpdate)) {
         vcreate_valias_table();
