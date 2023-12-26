@@ -243,7 +243,7 @@ level_end0, level_end1, level_end2, \
 level_mod0, level_mod1, level_mod2, \
 level_index0, level_index1, level_index2, the_dir"
 
-#ifdef DEFAULTDELIVERY
+#ifdef DEFAULT_DELIVERY
 #define VALIAS_TABLE_LAYOUT \
 "valias_type tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=forwarder 0=lda', \
 alias char(32) NOT NULL, \
