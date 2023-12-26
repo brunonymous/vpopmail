@@ -86,6 +86,8 @@ stamp-h1
 cdb/compile
 cdb/conf-*
 cdb/load
+cdb/systype
+cdb/uint32.h
 
 # libtool
 ltmain.sh
