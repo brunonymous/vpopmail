@@ -3,7 +3,7 @@ or info related to the entry. <http://sourceforge.net/projects/vpopmail/>
 
 5.6.1
   - vmysql.c: allow the insertion of a second valias row with the same alias/domain
-    when vpopmail is configured with --enable-defaultdomain and --enable-valias
+    when vpopmail is configured with --enable-defaultdelivery and --enable-valias
   - bug fix in mysql.h: wrong definition of VALIAS_TABLE_LAYOUT as it was looking
     for DEFAULTDELIVERY definition instead of DEFAULT_DELIVERY
   - configure.ac: solved all autoconf warnings
