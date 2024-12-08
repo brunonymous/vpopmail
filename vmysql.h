@@ -87,13 +87,13 @@ primary key (pw_name ) "
 #endif
 #endif
 
-#define RELAY_TABLE_LAYOUT "ip_addr char(18) not null, \
+#define RELAY_TABLE_LAYOUT "ip_addr varchar(39) not null, \
 timestamp char(12), primary key (ip_addr)"
 
 #define LASTAUTH_TABLE_LAYOUT \
-"user char(32) NOT NULL, \
+"user char(64) NOT NULL, \
 domain char(96) NOT NULL,\
-remote_ip char(18) not null,  \
+remote_ip varchar(39) not null,  \
 timestamp bigint default 0 NOT NULL, \
 primary key (user, domain)"
 
@@ -225,7 +225,7 @@ where pw_name = \"%s\" "
 #endif
 
 #ifdef IP_ALIAS_DOMAINS
-#define IP_ALIAS_TABLE_LAYOUT "ip_addr char(18) not null, domain char(96),  primary key(ip_addr)"
+#define IP_ALIAS_TABLE_LAYOUT "ip_addr varchar(39) not null, domain char(96),  primary key(ip_addr)"
 #endif
 
 #define DIR_CONTROL_TABLE_LAYOUT "domain char(96) not null, cur_users int, \
@@ -264,9 +264,9 @@ INDEX (alias, domain)"
 
 #ifdef ENABLE_SQL_LOGGING
 #define VLOG_TABLE_LAYOUT "id BIGINT PRIMARY KEY AUTO_INCREMENT, \
-      user char(32), passwd CHAR(32), \
+      user char(64), passwd CHAR(32), \
       domain CHAR(96), logon VARCHAR(200), \
-      remoteip char(18), message VARCHAR(255), \
+      remoteip varchar(39), message VARCHAR(255), \
       timestamp bigint default 0 NOT NULL, error INT, \
       INDEX user_idx (user), \
       INDEX domain_idx (domain), INDEX remoteip_idx (remoteip), \
